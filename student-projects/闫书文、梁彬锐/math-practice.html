@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数学计算题练习 · 错题本（小学 / 初中 / 高中）</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<style>
+  :root{
+    --bg:#e7ddc6; --card:#f8f1e1; --ink:#3a2a1a; --sub:#7c6a4f;
+    --primary:#9e2b25; --primary-d:#7a1d18; --ok:#3f7d52; --bad:#c0392b;
+    --line:#d8c7a6; --chip:#efe3cb; --shadow:0 8px 24px rgba(80,50,20,.14);
+    --gold:#b8893b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Songti SC","STSong","SimSun","Source Han Serif SC",serif;
+    background:
+      radial-gradient(circle at 18% 0%, rgba(255,255,255,.35), transparent 42%),
+      repeating-linear-gradient(0deg, rgba(120,90,50,.035) 0 2px, transparent 2px 22px),
+      repeating-linear-gradient(90deg, rgba(120,90,50,.035) 0 2px, transparent 2px 22px),
+      linear-gradient(160deg,#ece3cf,#e2d7bc);
+    color:var(--ink);line-height:1.6;}
+  .wrap{max-width:820px;margin:0 auto;padding:18px 16px 60px;}
+  header{position:relative;background:linear-gradient(180deg,#a8332b,#8f241d);color:#f7e9c8;border-radius:14px;
+    padding:24px 28px 18px;overflow:hidden;
+    box-shadow:var(--shadow), inset 0 0 0 2px rgba(247,233,200,.35), inset 0 0 0 6px rgba(0,0,0,.10);}
+  header h1{margin:0 0 6px;font-size:24px;letter-spacing:3px;font-weight:700;
+    font-family:"STKaiti","KaiTi","楷体","Songti SC",serif;text-shadow:0 1px 0 rgba(0,0,0,.25);}
+  header p{margin:0;opacity:.95;font-size:13px;letter-spacing:1px;}
+  .seal{position:absolute;top:14px;right:16px;width:38px;height:38px;border-radius:5px;background:#b5392f;
+    color:#f7e9c8;font-family:"STKaiti","KaiTi",serif;font-weight:700;font-size:23px;display:flex;align-items:center;
+    justify-content:center;box-shadow:inset 0 0 0 2px rgba(247,233,200,.6);transform:rotate(-3deg);}
+  .fret{height:11px;margin-top:14px;opacity:.55;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='11'%3E%3Cpath d='M0 9 H4 V2 H10 V9 H15 V4 H8' fill='none' stroke='%23f7e9c8' stroke-width='1.4'/%3E%3C/svg%3E") repeat-x;
+    background-size:auto 11px;}
+  .tabs{display:flex;gap:8px;margin:18px 0;}
+  .tab{flex:1;text-align:center;padding:12px;border-radius:10px;background:#d9c9a8;border:1px solid #c2ad84;
+    cursor:pointer;font-weight:700;color:#5c4a32;transition:.15s;user-select:none;letter-spacing:1px;
+    font-family:"STKaiti","KaiTi","楷体",serif;}
+  .tab.active{background:linear-gradient(180deg,#a8332b,#8f241d);color:#f7e9c8;border-color:#7a1d18;
+    box-shadow:0 6px 16px rgba(120,30,20,.3), inset 0 0 0 1px rgba(247,233,200,.4);}
+  .card{background:var(--card);border-radius:12px;padding:20px;margin-bottom:16px;border:1px solid var(--line);
+    box-shadow:var(--shadow), inset 0 0 0 1px rgba(184,137,59,.18);}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  label.fld{display:block;font-size:13px;color:var(--sub);margin:14px 0 6px;font-weight:600;}
+  .types{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .types label{display:flex;align-items:center;gap:8px;background:var(--chip);border:1px solid transparent;
+    padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px;user-select:none;}
+  .types label input{accent-color:var(--primary);width:16px;height:16px;}
+  .types label.on{border-color:var(--primary);background:#f3e2cf;}
+  .seg{display:flex;gap:8px;}
+  .seg button{flex:1;padding:10px;border:1px solid var(--line);background:var(--card);border-radius:10px;
+    cursor:pointer;font-size:14px;color:var(--sub);font-weight:600;}
+  .seg button.on{background:linear-gradient(180deg,#a8332b,#8f241d);color:#f7e9c8;border-color:#7a1d18;}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+  input[type=number]{width:90px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;font-size:15px;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 18px;border:none;
+    border-radius:11px;background:linear-gradient(180deg,#a8332b,#8f241d);color:#f7e9c8;font-size:15px;font-weight:700;
+    cursor:pointer;transition:.15s;font-family:"STKaiti","KaiTi","楷体",serif;letter-spacing:1px;
+    box-shadow:0 6px 16px rgba(120,30,20,.32), inset 0 0 0 1px rgba(247,233,200,.35);}
+  .btn:hover{background:linear-gradient(180deg,#b53b30,#9e2b25);}
+  .btn.ghost{background:var(--card);color:var(--primary);border:1px solid var(--primary);box-shadow:none;}
+  .btn.red{background:linear-gradient(180deg,#c0392b,#a3301f);box-shadow:0 6px 16px rgba(160,40,25,.32);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .quiz-hide{display:none;}
+  .prog{display:flex;justify-content:space-between;align-items:center;color:var(--sub);font-size:13px;margin-bottom:10px;}
+  .bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin-bottom:14px;}
+  .bar>i{display:block;height:100%;background:linear-gradient(90deg,#b8893b,#9e2b25);width:0;transition:.25s;}
+  .qbox{font-size:22px;font-weight:700;letter-spacing:.5px;background:#fbf6ea;border:2px solid var(--line);
+    border-radius:12px;padding:22px;white-space:pre-line;text-align:center;word-break:break-word;
+    font-family:"STKaiti","KaiTi","Songti SC",serif;box-shadow:inset 0 0 0 4px rgba(184,137,59,.12);}
+  .hint{color:var(--sub);font-size:13px;margin:10px 2px;font-weight:500;}
+  .ans{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+  .ans input{flex:1;min-width:200px;padding:13px 14px;border:1px solid var(--line);border-radius:12px;font-size:18px;}
+  .ans input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(158,43,37,.15);}
+  .feedback{margin-top:14px;padding:12px 14px;border-radius:12px;font-size:14px;font-weight:600;display:none;}
+  .feedback.ok{display:block;background:#e7f1e9;color:var(--ok);}
+  .feedback.bad{display:block;background:#f7e6e2;color:var(--bad);}
+  .feedback .fb-explain{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(0,0,0,.12);font-size:13px;font-weight:500;line-height:1.7;color:#6a4a3a;}
+  .summary{text-align:center;}
+  .summary .big{font-size:46px;font-weight:800;margin:6px 0;}
+  .wb-list{display:flex;flex-direction:column;gap:10px;}
+  .wb-item{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fbf6ea;}
+  .wb-item .t{font-size:12px;color:var(--primary);font-weight:700;margin-bottom:6px;}
+  .wb-item .q{font-size:18px;font-weight:700;white-space:pre-line;word-break:break-word;}
+  .wb-item .meta{font-size:13px;margin-top:8px;color:var(--sub);}
+  .wb-item .meta b.bad{color:var(--bad);}
+  .wb-item .meta b.ok{color:var(--ok);}
+  .wb-item .explain{margin-top:10px;padding:10px 12px;border-left:4px solid var(--primary);background:linear-gradient(90deg,#f4ecd8,#fbf6ea);border-radius:8px;font-size:13.5px;line-height:1.7;color:#5a4a32;}
+  .wb-item .explain .ex-label{display:inline-block;font-weight:800;color:var(--primary);margin-right:6px;}
+  .empty{text-align:center;color:var(--sub);padding:40px 10px;}
+  .empty .em{font-size:40px;}
+  .stat{display:flex;gap:10px;margin-bottom:14px;}
+  .stat .s{flex:1;background:var(--chip);border-radius:12px;padding:12px;text-align:center;}
+  .stat .s b{display:block;font-size:24px;color:var(--primary);}
+  .stat .s span{font-size:12px;color:var(--sub);}
+  .foot{text-align:center;color:var(--sub);font-size:12px;margin-top:10px;}
+  .map-prog{display:flex;align-items:center;gap:16px;margin-bottom:14px;}
+  .map-prog .big{font-size:30px;font-weight:800;color:var(--gold);line-height:1;}
+  .map-prog .sub2{font-size:12px;color:var(--sub);}
+  .map-prog .grow{flex:1;}
+  #musicBtn.playing{background:#f3e2cf;border-color:var(--primary);color:var(--primary);}
+  .map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:10px;}
+  .spot{border:1px solid var(--line);border-radius:14px;padding:14px 10px;text-align:center;background:#fbf6ea;position:relative;transition:.2s;}
+  .spot.lit{background:linear-gradient(135deg,#fff6e0,#ffe7c2);border-color:#ffcf7a;box-shadow:0 6px 16px rgba(255,180,60,.25);}
+  .spot .em{font-size:32px;filter:grayscale(1);opacity:.3;}
+  .spot.lit .em{filter:none;opacity:1;}
+  .spot .nm{font-weight:700;font-size:14px;margin-top:6px;color:var(--ink);}
+  .spot .ct{font-size:12px;color:var(--sub);margin-top:2px;}
+  .spot .lv{position:absolute;top:7px;right:7px;font-size:10px;background:var(--chip);color:var(--primary);border-radius:6px;padding:1px 6px;font-weight:700;}
+  .spot.lit .lv{background:#ffd98a;color:#7a4f00;}
+  /* 山西游地图 */
+  .map-wrap{position:relative;width:100%;}
+  .map-canvas{position:relative;width:100%;aspect-ratio:5/7;min-height:640px;background:
+     radial-gradient(circle at 55% 30%, #f3ecdb, #e9dfc8 60%, #dccfb4 100%);
+     border:3px solid #6e4b2a;border-radius:14px;overflow:hidden;
+     box-shadow:var(--shadow), inset 0 0 0 2px rgba(247,233,200,.45);transition:transform .45s ease;}
+  .map-canvas .bg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;user-select:none;display:block;}
+  .leaflet-host{position:absolute;inset:0;z-index:3;display:none;}
+  .leaflet-host.show{display:block;}
+  .leaflet-host .leaflet-control-attribution{font-size:9px;background:rgba(255,255,255,.7);}
+  .sat-note{position:absolute;left:8px;bottom:8px;z-index:4;font-size:10px;color:#fff;background:rgba(31,42,68,.62);
+    padding:3px 8px;border-radius:8px;pointer-events:none;}
+  .sat-pin{font-size:18px;line-height:1;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.6);}
+  .sat-pin.lock{filter:grayscale(1) opacity(.85);}
+  .sat-pin .nm{display:block;font-size:10px;color:#fff;background:rgba(31,42,68,.78);padding:1px 5px;border-radius:6px;margin-top:1px;white-space:nowrap;}
+  .sat-pin .ct{display:block;font-size:9px;color:#d8e6ff;background:rgba(31,42,68,.6);padding:0 4px;border-radius:5px;margin-top:1px;white-space:nowrap;}
+  .sat-pin.lock .nm{filter:none;opacity:1;background:rgba(31,42,68,.6);color:#e8edf6;}
+  .sat-pin.lock .ct{filter:none;opacity:1;color:#aebdd1;}
+  .map-canvas .bg svg{width:100%;height:100%;display:block;}
+  .pin{position:absolute;transform:translate(-50%,-50%);width:78px;text-align:center;cursor:default;}
+  .pin.lit{cursor:pointer;}
+  .pin .dot{width:40px;height:40px;margin:0 auto;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:21px;
+     background:#fff;border:2px solid var(--line);box-shadow:0 2px 6px rgba(40,70,140,.15);filter:grayscale(1);opacity:.45;transition:.2s;}
+  .pin.lit .dot{filter:none;opacity:1;border-color:#ffc35c;background:linear-gradient(135deg,#fff6e0,#ffe1ad);box-shadow:0 4px 12px rgba(255,170,40,.5);}
+  .pin .lab{font-size:11px;line-height:1.2;margin-top:3px;color:var(--sub);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pin .lab .lc{font-weight:400;opacity:.8;}
+  .pin.lit .lab{color:#7a4f00;}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--sub);margin-top:12px;}
+  .legend span{display:inline-flex;align-items:center;gap:4px;}
+  .legend b{color:var(--gold);}
+  .spot-detail{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:16px;background:#fbf6ea;min-height:72px;}
+  .spot-detail .dh{display:flex;align-items:center;gap:12px;}
+  .spot-detail .dh .e{font-size:32px;line-height:1;}
+  .spot-detail .dh .t{font-weight:800;font-size:17px;color:var(--ink);}
+  .spot-detail .dh .c{font-size:12px;color:var(--sub);margin-top:2px;}
+  /* 景点配图卡片（按类型生成的水墨意境图） */
+  .spot-art{position:relative;height:152px;border-radius:12px;overflow:hidden;margin-bottom:13px;
+     box-shadow:inset 0 0 0 1px rgba(110,75,42,.28), 0 4px 10px rgba(60,40,20,.12);}
+  .spot-art .sil{position:absolute;left:0;right:0;bottom:0;height:48%;background-repeat:no-repeat;
+     background-position:center bottom;background-size:100% 100%;}
+  .spot-art .ea{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font-size:62px;
+     filter:drop-shadow(0 4px 6px rgba(0,0,0,.22));}
+  .spot-art .cat{position:absolute;left:10px;top:9px;font-size:11px;color:#fff;background:rgba(58,42,26,.55);
+     padding:2px 9px;border-radius:11px;letter-spacing:1px;z-index:3;}
+  .spot-art .seal{position:absolute;right:9px;bottom:9px;background:#b5392f;color:#fbf3e2;font-size:12px;
+     font-weight:700;padding:3px 8px;border-radius:6px;font-family:serif;letter-spacing:1px;
+     box-shadow:0 1px 3px rgba(0,0,0,.3);z-index:3;}
+  .cat-arch{background:linear-gradient(180deg,#f6dcc0,#e7b98f);}
+  .cat-mount{background:linear-gradient(180deg,#cfe0e6,#9fc0c8);}
+  .cat-water{background:linear-gradient(180deg,#cfe0ee,#a9c8dc);}
+  .cat-tree{background:linear-gradient(180deg,#dfeccf,#bcd49a);}
+  .cat-arch .sil{background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='80' viewBox='0 0 300 80'><path d='M0,80 L0,52 L26,52 L44,34 L72,34 L90,52 L118,52 L134,32 L166,32 L182,52 L214,52 L230,36 L262,36 L280,52 L300,52 L300,80 Z' fill='%236e4b2a'/></svg>");}
+  .cat-mount .sil{background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='90' viewBox='0 0 300 90'><path d='M0,90 L0,60 L55,22 L105,52 L160,16 L225,58 L300,26 L300,90 Z' fill='%23456b3f'/><path d='M0,90 L70,46 L130,70 L200,40 L300,68 L300,90 Z' fill='%233a5a35' opacity='0.85'/></svg>");}
+  .cat-water .sil{background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='70' viewBox='0 0 300 70'><path d='M0,38 q25,-14 50,0 t50,0 t50,0 t50,0 t50,0 t50,0' fill='none' stroke='%234f93c0' stroke-width='3' opacity='0.7'/><path d='M0,54 q25,-14 50,0 t50,0 t50,0 t50,0 t50,0 t50,0' fill='none' stroke='%234f93c0' stroke-width='3' opacity='0.5'/></svg>");}
+  .cat-tree .sil{background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='90' viewBox='0 0 300 90'><rect x='145' y='48' width='10' height='42' fill='%235b3f24'/><circle cx='150' cy='40' r='30' fill='%23456b3f'/><circle cx='128' cy='50' r='16' fill='%233a5a35'/><circle cx='172' cy='50' r='16' fill='%233a5a35'/></svg>");}
+  /* 真实照片层：抓取成功后淡入覆盖在 SVG 卡之上，仅保留类型标签与城市朱印 */
+  .spot-art .spot-real{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;
+     transition:opacity .55s ease;z-index:2;background:#e9dfc8;}
+  .spot-art.has-photo .sil,.spot-art.has-photo .ea{opacity:0;transition:opacity .4s ease;}
+  .spot-detail .dd{margin-top:8px;font-size:14px;color:#4a3a28;line-height:1.7;}
+  @media(max-width:560px){.types{grid-template-columns:1fr;}.qbox{font-size:19px;}.pin{width:64px;}.pin .dot{width:32px;height:32px;font-size:17px;}}
+
+  /* 封面花瓣飘落特效 */
+  .petal-layer{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:40;}
+  .petal{position:absolute;top:-12vh;will-change:transform,opacity;
+    animation-name:petalfall;animation-timing-function:linear;animation-iteration-count:infinite;}
+  .petal .leaf{display:block;width:100%;height:100%;
+    background:radial-gradient(circle at 35% 30%, #fffdfa 0%, #ffd9e6 52%, #f4a3c0 100%);
+    border-radius:100% 0 100% 0;
+    filter:drop-shadow(0 1px 1px rgba(200,120,150,.35));
+    animation-name:petalflut;animation-timing-function:ease-in-out;animation-iteration-count:infinite;animation-direction:alternate;}
+  @keyframes petalfall{
+    0%{transform:translate3d(0,-12vh,0) rotate(0deg);opacity:0;}
+    8%{opacity:.95;}
+    50%{transform:translate3d(16px,52vh,0) rotate(180deg);}
+    92%{opacity:.9;}
+    100%{transform:translate3d(-12px,114vh,0) rotate(360deg);opacity:0;}
+  }
+  @keyframes petalflut{
+    0%{transform:rotate(-12deg) scale(1);}
+    100%{transform:rotate(28deg) scale(.82);}
+  }
+  @media (prefers-reduced-motion: reduce){.petal-layer{display:none;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="seal">华</div>
+    <h1>🧮 数学计算题练习</h1>
+    <p>随机出题 · 即时判分 · 错题自动入册，可反复重做巩固（覆盖小学、初中与高中）</p>
+    <div class="fret"></div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="practice">✏️ 开始练习</div>
+    <div class="tab" data-tab="wrong">📒 错题本 <span id="wbc"></span></div>
+    <div class="tab" data-tab="reward">🗺️ 中华游 <span id="rlc"></span></div>
+  </div>
+
+  <!-- 练习面板 -->
+  <section class="panel active" id="practice">
+    <div class="card" id="cfgCard">
+      <label class="fld">学段</label>
+      <div class="seg" id="levelBox">
+        <button data-l="xiao">小学</button>
+        <button data-l="chu" class="on">初中</button>
+        <button data-l="gao">高中</button>
+      </div>
+
+      <label class="fld">选择题型（可多选）</label>
+      <div class="types" id="typeBox"></div>
+
+      <label class="fld">难度</label>
+      <div class="seg" id="diffBox">
+        <button data-d="easy">简单</button>
+        <button data-d="mid" class="on">中等</button>
+        <button data-d="hard">较难</button>
+      </div>
+
+      <label class="fld">本次题量</label>
+      <div class="row">
+        <input type="number" id="count" value="10" min="1" max="50">
+        <span style="color:var(--sub);font-size:13px;">题（1–50）</span>
+      </div>
+
+      <div style="margin-top:20px;">
+        <button class="btn" id="startBtn">🚀 开始练习</button>
+      </div>
+    </div>
+
+    <!-- 答题区 -->
+    <div id="quizCard" class="card quiz-hide">
+      <div class="prog">
+        <span id="progText">第 1 / 10 题</span>
+        <span id="progScore">✅ 0  ❌ 0</span>
+      </div>
+      <div class="bar"><i id="progBar"></i></div>
+      <div class="qbox" id="qBox"></div>
+      <div class="hint" id="qHint"></div>
+      <div class="ans">
+        <input type="text" id="ansInput" placeholder="在这里输入答案，回车提交" autocomplete="off">
+        <button class="btn" id="submitBtn">提交</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <div style="margin-top:14px;display:flex;gap:10px;">
+        <button class="btn ghost" id="nextBtn" disabled>下一题 →</button>
+        <button class="btn ghost quiz-hide" id="endBtn">结束练习</button>
+      </div>
+    </div>
+
+    <!-- 小结 -->
+    <div id="sumCard" class="card quiz-hide summary">
+      <h2>🎉 本次练习完成！</h2>
+      <div class="big" id="sumRate">100%</div>
+      <p id="sumText" style="color:var(--sub)"></p>
+      <div style="margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn" id="againBtn">🔁 再来一组</button>
+        <button class="btn ghost" id="toWrongBtn">查看错题本</button>
+        <button class="btn ghost" id="toRewardBtn">🗺️ 查看中华游</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 错题本面板 -->
+  <section class="panel" id="wrong">
+    <div class="card">
+      <div class="stat">
+        <div class="s"><b id="stTotal">0</b><span>错题总数</span></div>
+        <div class="s"><b id="stType">0</b><span>涉及题型</span></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn" id="redoBtn">🔁 重做全部错题</button>
+        <button class="btn red" id="clearBtn">🗑️ 清空错题本</button>
+      </div>
+    </div>
+    <div id="wbBox" class="card"></div>
+  </section>
+
+  <!-- 山西游奖励面板 -->
+  <section class="panel" id="reward">
+    <div class="card">
+      <div class="map-prog">
+        <div><div class="big" id="litCount">0</div><div class="sub2" id="litTotal">已点亮 / 0 个中国景点</div></div>
+        <div class="grow"><div class="bar"><i id="litBar"></i></div></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <span style="font-size:13px;color:var(--sub)">每完成一个题型点亮一座景点，持续练习还能解锁 ★ 彩蛋景点 🏯</span>
+        <button class="btn ghost" id="musicBtn" title="播放/暂停《山西印象》">🎵 山西印象</button>
+        <button class="btn ghost" id="resetRewardBtn" style="margin-left:auto;">重置点亮</button>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:var(--sub)">💡 提示：在地图上<b>双击</b>或<b>右键</b>某景点，可放大查看该处（再次双击/右键复位）。</div>
+    </div>
+    <div class="card">
+      <div class="map-wrap">
+      <div class="map-canvas" id="mapCanvas"><div class="bg"><svg viewBox="0 0 100 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="ink" x="-20%" y="-20%" width="140%" height="140%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="3" seed="7" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+          <filter id="soft"><feGaussianBlur stdDeviation="1.6"/></filter>
+          <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/>
+            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.045 0"/></filter>
+          <radialGradient id="mtn" cx="40%" cy="30%" r="80%">
+            <stop offset="0%" stop-color="#84b366"/><stop offset="60%" stop-color="#5c9150"/><stop offset="100%" stop-color="#3f6e3c"/>
+          </radialGradient>
+          <radialGradient id="mtnN" cx="45%" cy="30%" r="80%">
+            <stop offset="0%" stop-color="#7aa85c"/><stop offset="60%" stop-color="#4f7d44"/><stop offset="100%" stop-color="#346030"/>
+          </radialGradient>
+          <radialGradient id="basin" cx="50%" cy="40%" r="75%">
+            <stop offset="0%" stop-color="#efe4c8"/><stop offset="100%" stop-color="#dccda4"/>
+          </radialGradient>
+          <linearGradient id="fen" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#5d97c4"/><stop offset="100%" stop-color="#3f7aa6"/>
+          </linearGradient>
+          <linearGradient id="yellow" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4f93c0"/><stop offset="100%" stop-color="#2f6f9c"/>
+          </linearGradient>
+          <pattern id="ridge" width="3.4" height="3.4" patternUnits="userSpaceOnUse" patternTransform="rotate(38)">
+            <path d="M0,1.7 L3.4,1.7" stroke="#ffffff" stroke-width="0.45" opacity="0.16"/>
+          </pattern>
+          <pattern id="contour" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(0)">
+            <path d="M0,3 C2,2 4,4 6,3" stroke="#3a5a35" stroke-width="0.3" fill="none" opacity="0.22"/>
+          </pattern>
+        </defs>
+                <!-- 宣纸底 -->
+        <rect x="0" y="0" width="100" height="120" fill="#efe7d3"/>
+        <!-- 中国轮廓（淡底 + 纹理 + 轮廓线） -->
+        <path filter="url(#ink)" fill="url(#basin)" opacity="0.42" d="M98.87,19.00 L93.23,17.00 L87.90,13.33 L79.84,2.33 L75.81,6.67 L67.74,15.00 L61.29,16.67 L51.61,23.33 L43.55,26.67 L37.10,35.00 L30.65,38.33 L27.42,40.00 L19.35,40.00 L11.29,43.33 L3.23,51.67 L2.42,56.67 L8.06,63.33 L9.68,73.33 L13.71,78.67 L20.16,85.67 L24.19,87.33 L30.16,87.33 L35.48,83.33 L41.13,87.33 L41.45,88.33 L39.52,100.00 L42.26,106.67 L46.77,105.33 L54.03,105.67 L56.45,108.33 L59.68,110.00 L65.32,106.00 L70.97,101.67 L75.00,96.00 L78.23,85.00 L78.87,76.67 L76.29,71.67 L74.52,63.33 L80.32,56.00 L77.42,55.00 L79.35,55.33 L78.23,50.00 L82.90,46.67 L88.71,40.00 L92.74,37.00 L93.55,35.00 L96.45,30.00 Z"/>
+        <path filter="url(#ink)" fill="url(#ridge)" opacity="0.45" d="M98.87,19.00 L93.23,17.00 L87.90,13.33 L79.84,2.33 L75.81,6.67 L67.74,15.00 L61.29,16.67 L51.61,23.33 L43.55,26.67 L37.10,35.00 L30.65,38.33 L27.42,40.00 L19.35,40.00 L11.29,43.33 L3.23,51.67 L2.42,56.67 L8.06,63.33 L9.68,73.33 L13.71,78.67 L20.16,85.67 L24.19,87.33 L30.16,87.33 L35.48,83.33 L41.13,87.33 L41.45,88.33 L39.52,100.00 L42.26,106.67 L46.77,105.33 L54.03,105.67 L56.45,108.33 L59.68,110.00 L65.32,106.00 L70.97,101.67 L75.00,96.00 L78.23,85.00 L78.87,76.67 L76.29,71.67 L74.52,63.33 L80.32,56.00 L77.42,55.00 L79.35,55.33 L78.23,50.00 L82.90,46.67 L88.71,40.00 L92.74,37.00 L93.55,35.00 L96.45,30.00 Z"/>
+        <path filter="url(#ink)" fill="none" stroke="#3a3326" stroke-width="0.7" opacity="0.6" d="M98.87,19.00 L93.23,17.00 L87.90,13.33 L79.84,2.33 L75.81,6.67 L67.74,15.00 L61.29,16.67 L51.61,23.33 L43.55,26.67 L37.10,35.00 L30.65,38.33 L27.42,40.00 L19.35,40.00 L11.29,43.33 L3.23,51.67 L2.42,56.67 L8.06,63.33 L9.68,73.33 L13.71,78.67 L20.16,85.67 L24.19,87.33 L30.16,87.33 L35.48,83.33 L41.13,87.33 L41.45,88.33 L39.52,100.00 L42.26,106.67 L46.77,105.33 L54.03,105.67 L56.45,108.33 L59.68,110.00 L65.32,106.00 L70.97,101.67 L75.00,96.00 L78.23,85.00 L78.87,76.67 L76.29,71.67 L74.52,63.33 L80.32,56.00 L77.42,55.00 L79.35,55.33 L78.23,50.00 L82.90,46.67 L88.71,40.00 L92.74,37.00 L93.55,35.00 L96.45,30.00 Z"/>
+        <!-- 黄河 -->
+        <path filter="url(#ink)" fill="none" stroke="url(#yellow)" stroke-width="1.3" opacity="0.88" d="M37.10,66.67 L41.94,63.33 L43.55,56.67 L48.39,56.67 L53.23,55.00 L56.45,53.33 L59.68,46.67 L61.29,43.33 L61.29,48.33 L64.52,53.33 L67.74,53.33 L72.58,54.00 L74.19,54.33"/>
+        <!-- 长江 -->
+        <path filter="url(#ink)" fill="none" stroke="url(#fen)" stroke-width="1.3" opacity="0.88" d="M30.65,70.00 L38.71,70.00 L43.55,76.67 L50.00,80.00 L53.23,83.33 L58.06,80.00 L61.29,80.00 L66.13,80.00 L69.35,81.00 L72.58,78.33 L74.19,75.00 L77.42,75.33"/>
+        <!-- 印章 -->
+        <g transform="translate(84,5)">
+          <rect x="0" y="0" width="9" height="9" rx="1.4" fill="#b5392f" opacity="0.85"/>
+          <text x="4.5" y="6.6" text-anchor="middle" font-family="serif" font-size="6" font-weight="700" fill="#fbf3e2">华</text>
+        </g>
+        <!-- 纸面颗粒 -->
+        <rect x="0" y="0" width="100" height="120" filter="url(#grain)"/>
+      </svg></div><div id="leafletMap" class="leaflet-host"></div>
+      <div class="sat-note" id="satNote" style="display:none">🛰️ 卫星影像 · 需联网加载（Esri World Imagery）</div></div>
+      </div>
+      <div class="legend">
+        <span>🔒 待解锁</span>
+        <span><b>🏯 已点亮</b> 点击查看讲解</span>
+        <span>角标：小 / 初 / 高 = 学段，★ = 彩蛋景点</span>
+        <span>🟩 山地　🟦 河流　🟨 盆地</span>
+      </div>
+      <div class="spot-detail" id="spotDetail">
+        <div class="dd" style="color:var(--sub)">🗺️ 点击地图上已点亮的中国景点，查看它的讲解。</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ============ 工具函数 ============ */
+const $ = s => document.querySelector(s);
+const randInt = (a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+const num = n => n<0?`(${n})`:`${n}`;
+const sup = {2:'²',3:'³'};
+const SUB={0:'₀',1:'₁',2:'₂',3:'₃',4:'₄',5:'₅',6:'₆',7:'₇',8:'₈',9:'₉'};
+function sub(n){return (''+n).split('').map(c=>SUB[c]||c).join('');}
+function factors(n){const r=[];n=Math.abs(n);for(let i=1;i<=n;i++) if(n%i===0) r.push(i); return r;}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=randInt(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* ============ 多项式显示 ============ */
+function polyDisplay(terms){
+  const ps=Object.keys(terms).map(Number).filter(p=>terms[p]!==0).sort((a,b)=>b-a);
+  if(ps.length===0) return '0';
+  let out='';
+  ps.forEach((p,i)=>{
+    const c=terms[p], abs=Math.abs(c);
+    let part;
+    if(p===0) part=''+abs;
+    else if(abs===1) part = (p===1?'x':('x'+(sup[p]||('^'+p))));
+    else part = (p===1? abs+'x' : abs+'x'+(sup[p]||('^'+p)));
+    if(i===0) out += (c<0?'-':'') + part;
+    else out += (c<0?' - ':' + ') + part;
+  });
+  return out;
+}
+
+/* ============ 各题型生成器 ============ */
+function genRational(diff){
+  const r = diff==='easy'?[1,9]:(diff==='mid'?[1,20]:[-15,15]);
+  const base=[
+    ()=>{const x=randInt(...r),y=randInt(1,9),z=randInt(1,9);return [`${num(x)} + ${y} × ${z}`, x+y*z];},
+    ()=>{const x=randInt(...r),y=randInt(1,9),z=randInt(1,9);return [`${num(x)} - ${y} × ${z}`, x-y*z];},
+    ()=>{const b=randInt(2,9),k=randInt(1,6),c=randInt(1,9);const a=b*k;return [`${a} × ${c} ÷ ${b}`, k*c];},
+    ()=>{const x=randInt(2,9),y=randInt(1,9);return [`${x}² + ${y}`, x*x+y];},
+    ()=>{const x=randInt(2,9),y=randInt(1,9);return [`${x}² - ${y}`, x*x-y];},
+  ];
+  let extra=[];
+  if(diff!=='easy'){
+    extra=[
+      ()=>{const x=randInt(1,12),y=randInt(1,12),z=randInt(1,12);return [`(${num(x)} + ${num(y)}) × ${z}`, (x+y)*z];},
+      ()=>{const x=randInt(1,9),y=randInt(1,9),z=randInt(1,9);return [`${x} × ${y} - ${z}²`, x*y-z*z];},
+      ()=>{const prod=randInt(6,81);const d=pick(factors(prod));const y=randInt(1,9);return [`${prod} ÷ ${d} - ${y}`, prod/d-y];},
+    ];
+  }
+  if(diff==='hard'){
+    extra.push(()=>{const x=randInt(1,9),y=randInt(1,9),z=randInt(1,9),w=randInt(1,9);return [`(${num(x)} - ${num(y)}) × (${z} + ${w})`, (x-y)*(z+w)];});
+  }
+  const f=pick(base.concat(extra));
+  const [d,v]=f();
+  return {q:`计算：${d}`, a:v, kind:'num', explain:`按运算顺序（先乘除、后加减，有括号先算括号内）逐步计算：<br>${d} = ${v}。`};
+}
+
+function genPoly(diff){
+  const maxPow = diff==='easy'?1:(diff==='mid'?2:3);
+  const nTerms = diff==='easy'?2:(diff==='mid'?3:4);
+  const cr = diff==='easy'?[1,5]:(diff==='mid'?[1,9]:[-9,9]);
+  const terms={};
+  let guard=0;
+  while(Object.keys(terms).filter(p=>terms[p]!==0).length<nTerms && guard<50){
+    guard++;
+    const p=randInt(0,maxPow); let c=randInt(cr[0],cr[1]); if(c===0)c=1;
+    terms[p]=(terms[p]||0)+c;
+  }
+  const x = pick(diff==='easy'?[2,3]:[2,3,-2,4,-3]);
+  let value=0; for(const p in terms) value += terms[p]*Math.pow(x,+p);
+  return {q:`已知 x = ${x}，求 ${polyDisplay(terms)} 的值`, a:Math.round(value), kind:'num',
+    explain:`把 x = ${x} 代入多项式，逐项乘方后乘以系数再相加：<br>${polyDisplay(terms)} ∣_{x=${x}} = ${Math.round(value)}。`};
+}
+
+function genFraction(diff){
+  const a=randInt(1,6);
+  const x=pick([2,3,4,5,-2,-3].filter(v=>v!==a && v!==0));
+  const t=pick([
+    ()=>({d:`(x² - ${a*a}) / (x - ${a})`, v:x+a}),
+    ()=>({d:`(x² - ${2*a}x + ${a*a}) / (x - ${a})`, v:x-a}),
+    ()=>({d:`(x² + ${a}x) / x`, v:x+a}),
+  ])();
+  return {q:`已知 x = ${x}，求 ${t.d} 的值`, a:t.v, kind:'num',
+    explain:`先对分母因式分解，再约去公因式，化简后代 x = ${x}：<br>${t.d} ∣_{x=${x}} = ${t.v}。`};
+}
+
+function genRoot(diff){
+  const sq=[1,4,9,16,25,36,49,64,81,100,121,144];
+  const a=pick(sq), b=pick(sq), op=pick(['+','-']);
+  let disp=`√${a} ${op} √${b}`;
+  let val=Math.sqrt(a)+(op==='+'?Math.sqrt(b):-Math.sqrt(b));
+  if(diff==='hard'){
+    const c=pick(sq), op2=pick(['+','-']);
+    if(Math.random()<0.4){ disp=`√${a} × √${b} ${op2} √${c}`; val=Math.sqrt(a*b)+(op2==='+'?Math.sqrt(c):-Math.sqrt(c)); }
+    else { disp=`√${a} ${op} √${b} ${op2} √${c}`; val=val+(op2==='+'?Math.sqrt(c):-Math.sqrt(c)); }
+  }
+  return {q:`计算：${disp}`, a:Math.round(val), kind:'num',
+    explain:`利用 √(a·b)=√a·√b，且只有同类二次根式才能直接相加减，逐步算出：<br>${disp} = ${Math.round(val)}。`};
+}
+
+function genLinear(diff){
+  const aMax = diff==='easy'?5:(diff==='mid'?9:12);
+  const a=randInt(2,aMax);
+  const x0=randInt(diff==='easy'?-5:diff==='mid'?-9:-12, diff==='easy'?5:9);
+  const b=randInt(diff==='easy'?-5:diff==='mid'?-9:diff==='hard'?-15:-9, diff==='easy'?5:9);
+  const c=a*x0+b;
+  let disp = (b===0)?`${a}x = ${c}`:`${a}x ${b>=0?'+':'-'} ${Math.abs(b)} = ${c}`;
+  return {q:`解方程：${disp}`, a:x0, kind:'num',
+    explain:`移项（注意变号）、合并同类项、再化 x 的系数为 1：<br>${disp} ⟹ ${a}x = ${c-b} ⟹ x = ${x0}。`};
+}
+
+function lineEq(a,b,c){ let s = (a===1?'x':(a===-1?'-x':a+'x')); if(b!==0) s+= b>0?` + ${b}y`:` - ${Math.abs(b)}y`; s+=` = ${c}`; return s; }
+function genSystem(diff){
+  const r=diff==='easy'?[1,3]:[1,5];
+  let a1,b1,a2,b2;
+  do{ a1=randInt(...r); b1=randInt(...r); a2=randInt(...r); b2=randInt(...r); }while(a1*b2===a2*b1);
+  const x0=randInt(-6,6), y0=randInt(-6,6);
+  const c1=a1*x0+b1*y0, c2=a2*x0+b2*y0;
+  return {q:`解方程组：\n${lineEq(a1,b1,c1)}\n${lineEq(a2,b2,c2)}`, a:[x0,y0], kind:'pair',
+    explain:`用加减消元法（或代入消元法）先消去一个未知数，解得：<br>x = ${x0}, y = ${y0}。`};
+}
+
+function genQuad(diff){
+  const r=diff==='easy'?[-4,4]:[-6,6];
+  const r1=randInt(...r), r2=randInt(...r);
+  const S=r1+r2, P=r1*r2, xc=-S;
+  let s='x²';
+  if(xc!==0) s+=` ${xc>0?'+':'-'} ${Math.abs(xc)}x`;
+  if(P!==0) s+=` ${P>0?'+':'-'} ${Math.abs(P)}`;
+  s+=' = 0';
+  return {q:`解方程：${s}`, a:[r1,r2], kind:'roots',
+    explain:`由根与系数关系：两根之和 = ${S}、两根之积 = ${P}，于是方程的两根为：<br>x₁ = ${r1}, x₂ = ${r2}。`};
+}
+
+/* ============ 小高（小学高年级）辅助与生成器 ============ */
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){const t=b;b=a%b;a=t;}return a||1;}
+function reduce(n,d){const g=gcd(n,d);let nn=n/g,dd=d/g;if(dd<0){nn=-nn;dd=-dd;}return [nn,dd];}
+function fracStr(f){return f[1]===1?`${f[0]}`:`${f[0]}/${f[1]}`;}
+const DENS_ALL=[2,3,4,5,6,8,10];
+function mkFrac(denMax){const pool=denMax<=4?[2,3,4]:DENS_ALL;const d=pick(pool);const n=randInt(1,d*(denMax<=4?2:3));return [n,d];}
+function fmtDec(x){return (Math.round(x*10)/10).toFixed(1);}
+
+function genDecimal(diff){
+  const r = diff==='easy'?[1,15]:(diff==='mid'?[1,30]:[1,50]);
+  const base=[
+    ()=>{const x=randInt(...r)/10,y=randInt(1,9),z=randInt(1,9);return [`${fmtDec(x)} + ${y} × ${z}`, x+y*z];},
+    ()=>{const x=randInt(...r)/10,y=randInt(1,9),z=randInt(1,9);return [`${fmtDec(x)} - ${y} × ${z}`, x-y*z];},
+    ()=>{const a=randInt(...r)/10,b=randInt(...r)/10,k=randInt(1,5);return [`(${fmtDec(a)} + ${fmtDec(b)}) × ${k}`,(a+b)*k];},
+    ()=>{const a=randInt(...r)/10,k=randInt(1,9);return [`${fmtDec(a)} × ${k}`, a*k];},
+  ];
+  let extra=[];
+  if(diff!=='easy'){
+    extra=[
+      ()=>{const a=pick([1,2,3,4,5,6,7,8,9])/10,d=pick([2,4,5]);return [`${fmtDec(a)} ÷ ${d}`, a/d];},
+      ()=>{const a=randInt(1,20)/10,b=randInt(1,9);return [`${fmtDec(a)} × ${b} - ${fmtDec(randInt(1,20)/10)}`, a*b - randInt(1,20)/10];},
+    ];
+  }
+  const f=pick(base.concat(extra));
+  const [d,v]=f();
+  return {q:`计算：${d}`, a:Math.round(v*1e6)/1e6, kind:'num',
+    explain:`按小数四则运算顺序（先乘除后加减、有括号先算括号内）计算：<br>${d} = ${Math.round(v*1e6)/1e6}。`};
+}
+function genFracAdd(diff){
+  const f1=mkFrac(diff==='easy'?4:8), f2=mkFrac(diff==='easy'?4:8);
+  const sub=Math.random()<0.45;
+  const n = sub ? f1[0]*f2[1]-f2[0]*f1[1] : f1[0]*f2[1]+f2[0]*f1[1];
+  const d = f1[1]*f2[1];
+  const [rn,rd]=reduce(n,d);
+  return {q:`计算：${fracStr(f1)} ${sub?'-':'+'} ${fracStr(f2)}`, a:rn/rd, frac:[rn,rd], kind:'frac',
+    explain:`先通分（公分母 ${d}），再${sub?'减':'加'}分子、能约分的约分：<br>${fracStr(f1)} ${sub?'−':'+'} ${fracStr(f2)} = ${fracStr([rn,rd])}${rd!==1?'（已约分）':''}。`};
+}
+function genFracMul(diff){
+  const f1=mkFrac(8), f2=mkFrac(8);
+  const div=Math.random()<0.5;
+  const n = div ? f1[0]*f2[1] : f1[0]*f2[0];
+  const d = div ? f1[1]*f2[0] : f1[1]*f2[1];
+  const [rn,rd]=reduce(n,d);
+  return {q:`计算：${fracStr(f1)} ${div?'÷':'×'} ${fracStr(f2)}`, a:rn/rd, frac:[rn,rd], kind:'frac',
+    explain: div
+      ? `除以一个分数等于乘它的倒数：${fracStr(f1)} ÷ ${fracStr(f2)} = ${fracStr(f1)} × ${fracStr([f2[1],f2[0]])} = ${fracStr([rn,rd])}${rd!==1?'（已约分）':''}。`
+      : `分子乘分子、分母乘分母：${fracStr(f1)} × ${fracStr(f2)} = ${fracStr([rn,rd])}${rd!==1?'（已约分）':''}。`};
+}
+function genSimplify(diff){
+  const t=pick([
+    ()=>{const a=randInt(2,9),b=randInt(2,9),c=randInt(2,9);return [`${a} × ( ${b} + ${c} )`, a*(b+c)];},
+    ()=>{const a=randInt(2,9),b=randInt(1,9),c=randInt(1,b);return [`${a} × ${b} - ${a} × ${c}`, a*(b-c)];},
+    ()=>{const a=pick([25,125,4,8]);const b=randInt(2,9),c=pick([4,8,25,125].filter(x=>x!==a));return [`${a} × ${b} × ${c}`, a*b*c];},
+    ()=>{const a=randInt(2,9);return [`${a} × 99`, a*99];},
+    ()=>{const a=randInt(10,90);return [`${a} × 101`, a*101];},
+  ]);
+  const [d,v]=t();
+  return {q:`简便计算：${d}`, a:v, kind:'num',
+    explain:`观察算式，运用运算律（乘法分配律或凑整）进行简便计算：<br>${d} = ${v}。`};
+}
+const CONV=[
+  {dec:0.5, fr:[1,2], pct:50},{dec:0.25, fr:[1,4], pct:25},{dec:0.75, fr:[3,4], pct:75},
+  {dec:0.2, fr:[1,5], pct:20},{dec:0.4, fr:[2,5], pct:40},{dec:0.6, fr:[3,5], pct:60},
+  {dec:0.8, fr:[4,5], pct:80},{dec:0.125, fr:[1,8], pct:12.5},{dec:0.375, fr:[3,8], pct:37.5},
+  {dec:0.1, fr:[1,10], pct:10},
+];
+function genConvert(diff){
+  const c=pick(CONV);
+  const dir=pick(['d2f','f2d','d2p','p2f']);
+  if(dir==='d2f') return {q:`把小数化成分数：${c.dec}`, a:c.fr[0]/c.fr[1], frac:c.fr.slice(), kind:'frac',
+    explain:`小数化分数：小数点后有几位，分母就是 10 的几次方，再约分：<br>${c.dec} = ${fracStr(c.fr)}${c.fr[1]!==1?'（约分后）':''}。`};
+  if(dir==='f2d') return {q:`把分数化成小数：${c.fr[0]}/${c.fr[1]}`, a:c.dec, kind:'num',
+    explain:`分数化小数：分子除以分母：<br>${c.fr[0]}/${c.fr[1]} = ${c.dec}。`};
+  if(dir==='d2p') return {q:`把小数化成百分数：${c.dec}（填数字，如 25 表示 25%）`, a:c.pct, kind:'num',
+    explain:`小数化百分数：小数点向右移两位，再加上百分号：<br>${c.dec} = ${c.pct}%。`};
+  return {q:`把百分数化成分数：${c.pct}%`, a:c.fr[0]/c.fr[1], frac:c.fr.slice(), kind:'frac',
+    explain:`百分数化分数：写成分母为 100 的分数，再约分：<br>${c.pct}% = ${fracStr(c.fr)}${c.fr[1]!==1?'（约分后）':''}。`};
+}
+function genPercent(diff){
+  const base = diff==='easy'?randInt(10,50):randInt(50,200);
+  const p = pick(diff==='easy'?[10,20,25,50]:[15,30,40,60,75,80,120,150]);
+  return {q:`计算：${base} 的 ${p}% 是多少`, a:base*p/100, kind:'num',
+    explain:`求一个数的百分之几：用这个数乘百分数（或先除以 100 再乘）：<br>${base} × ${p}% = ${base} × ${p/100} = ${base*p/100}。`};
+}
+function genSimpleEq(diff){
+  const aMax=diff==='easy'?5:9;
+  const a=randInt(2,aMax);
+  const x0=randInt(1, diff==='easy'?9:12);
+  const b=randInt(0, diff==='easy'?5:8);
+  const c=a*x0+b;
+  const disp = (b===0)?`${a}x = ${c}`:`${a}x ${b>=0?'+':'-'} ${Math.abs(b)} = ${c}`;
+  return {q:`解方程：${disp}`, a:x0, kind:'num',
+    explain:`把含 x 的项移到一边、常数项移到另一边，再化系数为 1：<br>${disp} ⟹ ${a}x = ${c-b} ⟹ x = ${x0}。`};
+}
+
+/* ============ 高中（Senior High）生成器 ============ */
+const TRIPLES=[[3,4,5],[5,12,13],[6,8,10],[8,15,17],[9,12,15],[7,24,25],[20,21,29]];
+
+function genExp(diff){
+  const aR=diff==='easy'?[2,4]:[2,5];
+  const base=[
+    ()=>{const a=randInt(...aR), m=randInt(1,4), n=randInt(1,4); return [`${a}^${m} × ${a}^${n}`, Math.pow(a,m+n)];},
+    ()=>{const a=randInt(...aR), m=randInt(2,5), n=randInt(1,4); return [`${a}^${m} ÷ ${a}^${n}`, Math.pow(a,m-n)];},
+    ()=>{const a=randInt(2,4), m=randInt(1,3), n=randInt(1,3); return [`(${a}^${m})^${n}`, Math.pow(a,m*n)];},
+    ()=>{const a=randInt(2,4), b=randInt(2,4), m=randInt(2,4); return [`${a}^${m} × ${b}^${m}`, Math.pow(a*b,m)];},
+  ];
+  let extra=[];
+  if(diff!=='easy'){
+    extra=[
+      ()=>{const a=randInt(2,5), m=randInt(1,3), n=randInt(1,3); return [`${a}^${m} × ${a}^${n} ÷ ${a}^${Math.min(m,n)}`, Math.pow(a,m+n-Math.min(m,n))];},
+      ()=>{const a=randInt(2,5), m=randInt(2,4); return [`${a}^${m} ÷ ${a}^${m-1} × ${a}`, Math.pow(a,2)];},
+    ];
+  }
+  if(diff==='hard'){
+    extra.push(()=>{const a=randInt(2,4), m=randInt(1,3); const d=Math.pow(a,m); return [`${a}^(-${m})`, 1/d, 'frac', [1,d]];});
+  }
+  const r=pick(base.concat(extra))();
+  const ex=`运用指数运算法则（同底数幂相乘除、幂的乘方、积的乘方）计算：<br>${r[0]} = ${r[1]}。`;
+  return r.length===4 ? {q:`计算：${r[0]}`, a:r[1], frac:r[3], kind:'frac', explain:ex} : {q:`计算：${r[0]}`, a:r[1], kind:'num', explain:ex};
+}
+
+function genLog(diff){
+  const aR=[2,3,4,5];
+  const base=[
+    ()=>{const a=pick(aR), n=randInt(1,4); return [`log${sub(a)}(${a}^${n})`, n];},
+    ()=>{const n=randInt(1,3); return [`lg(10^${n})`, n];},
+    ()=>{const n=randInt(1,3); return [`ln(e^${n})`, n];},
+  ];
+  let extra=[];
+  if(diff!=='easy'){
+    extra=[
+      ()=>{const a=pick(aR), m=randInt(1,3), n=randInt(1,3); return [`log${sub(a)}(${a}^${m}) + log${sub(a)}(${a}^${n})`, m+n];},
+      ()=>{const a=pick(aR), m=randInt(2,5), n=randInt(1,3); return [`log${sub(a)}(${a}^${m}) − log${sub(a)}(${a}^${n})`, m-n];},
+      ()=>{const a=pick(aR), m=randInt(1,3); return [`log${sub(a)}(${a}^${m}) × 2`, 2*m];},
+    ];
+  }
+  const [d,v]=pick(base.concat(extra))();
+  return {q:`计算：${d}`, a:v, kind:'num',
+    explain:`运用对数性质 logₐ(aⁿ)=n、lg(10ⁿ)=n、ln(eⁿ)=n 等：<br>${d} = ${v}。`};
+}
+
+function genArith(diff){
+  const a1=randInt(-5,10), d=randInt(1,6), n=randInt(2,8);
+  if(Math.random()<0.5){
+    const an=a1+(n-1)*d;
+    return {q:`等差数列 {aₙ} 中，a₁ = ${a1}, 公差 d = ${d}，求 a${sub(n)}`, a:an, kind:'num',
+      explain:`等差数列通项公式 aₙ = a₁ + (n−1)d：<br>a${sub(n)} = ${a1} + (${n}−1)×${d} = ${an}。`};
+  }
+  const ne=(n%2===0)?n:n+1;
+  const Sn=ne*(2*a1+(ne-1)*d)/2;
+  return {q:`等差数列 {aₙ} 中，a₁ = ${a1}, 公差 d = ${d}，求前 ${ne} 项和 S${sub(ne)}`, a:Sn, kind:'num',
+    explain:`等差数列前 n 项和 Sₙ = n(a₁ + aₙ)/2 = n[2a₁ + (n−1)d]/2：<br>S${sub(ne)} = ${ne}×(2×${a1} + (${ne}−1)×${d})/2 = ${Sn}。`};
+}
+
+function genGeo(diff){
+  const a1=randInt(1,5);
+  const q=pick(diff==='hard'?[2,3,-2,-3]:[2,3,4]);
+  const n=randInt(2,6);
+  if(Math.random()<0.5){
+    const an=a1*Math.pow(q,n-1);
+    return {q:`等比数列 {aₙ} 中，a₁ = ${a1}, 公比 q = ${q}，求 a${sub(n)}`, a:an, kind:'num',
+      explain:`等比数列通项公式 aₙ = a₁·q^(n−1)：<br>a${sub(n)} = ${a1}×${q}^(${n}−1) = ${an}。`};
+  }
+  const Sn=a1*(Math.pow(q,n)-1)/(q-1);
+  return {q:`等比数列 {aₙ} 中，a₁ = ${a1}, 公比 q = ${q}，求前 ${n} 项和 S${sub(n)}`, a:Sn, kind:'num',
+    explain:`等比数列前 n 项和 Sₙ = a₁(1−qⁿ)/(1−q)：<br>S${sub(n)} = ${a1}×(1−${q}^${n})/(1−${q}) = ${Sn}。`};
+}
+
+function genVecDot(diff){
+  const A=randInt(2,6), B=randInt(2,6);
+  const th=pick([{n:1,d:1,deg:'0°'},{n:1,d:2,deg:'60°'},{n:0,d:1,deg:'90°'},{n:-1,d:2,deg:'120°'},{n:-1,d:1,deg:'180°'}]);
+  const [nn,dd]=reduce(A*B*th.n, th.d);
+  return dd===1
+    ? {q:`已知 |a⃗| = ${A}, |b⃗| = ${B}, 夹角 θ = ${th.deg}，求 a⃗·b⃗`, a:nn, kind:'num',
+        explain:`数量积公式 a·b = |a||b|cosθ：<br>${A} × ${B} × cos(${th.deg}) = ${nn}。`}
+    : {q:`已知 |a⃗| = ${A}, |b⃗| = ${B}, 夹角 θ = ${th.deg}，求 a⃗·b⃗（可填分数，如 3/2）`, a:nn/dd, frac:[nn,dd], kind:'frac',
+        explain:`数量积公式 a·b = |a||b|cosθ：<br>${A} × ${B} × cos(${th.deg}) = ${nn/dd}。`};
+}
+
+function genVecAdd(diff){
+  const x1=randInt(-5,5), y1=randInt(-5,5), x2=randInt(-5,5), y2=randInt(-5,5);
+  if(diff==='hard' && Math.random()<0.5){
+    const k1=randInt(2,3), k2=randInt(1,3);
+    const rx=k1*x1-k2*x2, ry=k1*y1-k2*y2;
+    return {q:`已知向量 a⃗ = (${x1}, ${y1}), b⃗ = (${x2}, ${y2})，求 ${k1}a⃗ − ${k2}b⃗ 的坐标（格式：x, y）`, a:[rx,ry], kind:'pair',
+      explain:`向量数乘与加减：对应坐标分别运算：<br>${k1}a − ${k2}b = (${k1}×${x1} − ${k2}×${x2}, ${k1}×${y1} − ${k2}×${y2}) = (${rx}, ${ry})。`};
+  }
+  const minus=Math.random()<0.5;
+  const rx=minus?x1-x2:x1+x2, ry=minus?y1-y2:y1+y2;
+  return {q:`已知向量 a⃗ = (${x1}, ${y1}), b⃗ = (${x2}, ${y2})，求 a⃗${minus?' − ':' + '}b⃗ 的坐标（格式：x, y）`, a:[rx,ry], kind:'pair',
+    explain:`向量加减：对应坐标相加减：<br>a${minus?' − ':' + '}b = (${x1}${minus?' − ':' + '}${x2}, ${y1}${minus?' − ':' + '}${y2}) = (${rx}, ${ry})。`};
+}
+
+function genComplex(diff){
+  if(Math.random()<0.6){
+    const t=pick(TRIPLES); const [a,b,c]=t;
+    const sa=pick([b,-b]), sb=pick([a,-a]);
+    return {q:`已知复数 z = ${sa} ${sb>=0?'+':'−'} ${Math.abs(sb)}i，求 |z|`, a:c, kind:'num',
+      explain:`复数模长 |z| = √(实部² + 虚部²)：<br>|${sa} ${sb>=0?'+':'−'} ${Math.abs(sb)}i| = ${c}。`};
+  }
+  const a=randInt(1,9), b=randInt(1,9);
+  return {q:`已知复数 z = ${a} + ${b}i，求 z 的共轭复数的实部与虚部（格式：实部, 虚部）`, a:[a,-b], kind:'pair',
+    explain:`共轭复数：实部不变，虚部取相反数：<br>z = ${a} + ${b}i 的共轭为 ${a} ${(-b)>=0?'+':'−'} ${Math.abs(-b)}i，实部 ${a}、虚部 ${-b}。`};
+}
+
+function genTriangle(diff){
+  const base=[
+    ()=>{const t=pick(TRIPLES); const [a,b,c]=t; return [`在△ABC中，a = ${a}, b = ${b}, ∠C = 90°，求 c`, c];},
+    ()=>{const t=pick(TRIPLES); const [a,b,c]=t; return [`在△ABC中，a = ${a}, c = ${c}, ∠C = 90°，求 b`, b];},
+  ];
+  let extra=[];
+  if(diff!=='easy'){
+    extra=[
+      ()=>[`△ABC 为等边三角形，边长为 2，求 cosC（可填分数，如 1/2）`, 0.5, [1,2]],
+      ()=>[`在△ABC中，a = 3, b = 5, c = 7，求 cosC（可填分数，如 -1/2）`, -0.5, [-1,2]],
+    ];
+  }
+  const f=pick(base.concat(extra))();
+  const isLaw = f[0].includes('cosC');
+  const ex = isLaw
+    ? `利用余弦定理 cosC = (a² + b² − c²) / (2ab) 求解：<br>${f[0]} = ${f[1]}。`
+    : `利用勾股定理（直角三角形中，斜边的平方 = 两直角边的平方和）求解：<br>${f[0]} = ${f[1]}。`;
+  return f.length===3 ? {q:`计算：${f[0]}`, a:f[1], frac:f[2], kind:'frac', explain:ex} : {q:`计算：${f[0]}`, a:f[1], kind:'num', explain:ex};
+}
+
+/* ============ 学段与题型 ============ */
+const LEVELS={
+  chu:{name:'初中', types:{
+    rational:{label:'有理数混合运算', gen:genRational},
+    poly:{label:'整式化简求值', gen:genPoly},
+    frac:{label:'分式化简求值', gen:genFraction},
+    root:{label:'二次根式', gen:genRoot},
+    linear:{label:'一元一次方程', gen:genLinear},
+    system:{label:'二元一次方程组', gen:genSystem},
+    quad:{label:'一元二次方程', gen:genQuad},
+  }},
+  xiao:{name:'小学', types:{
+    decimal:{label:'小数四则运算', gen:genDecimal},
+    fracAdd:{label:'分数加减法', gen:genFracAdd},
+    fracMul:{label:'分数乘除法', gen:genFracMul},
+    simplify:{label:'简便运算（运算律）', gen:genSimplify},
+    convert:{label:'分数/小数/百分数互化', gen:genConvert},
+    percent:{label:'百分数计算', gen:genPercent},
+    simpleEq:{label:'简易方程', gen:genSimpleEq},
+  }},
+  gao:{name:'高中', types:{
+    exp:{label:'指数运算', gen:genExp},
+    log:{label:'对数运算', gen:genLog},
+    arith:{label:'等差数列', gen:genArith},
+    geo:{label:'等比数列', gen:genGeo},
+    vecdot:{label:'平面向量·数量积', gen:genVecDot},
+    vecadd:{label:'平面向量·坐标运算', gen:genVecAdd},
+    complex:{label:'复数运算', gen:genComplex},
+    triangle:{label:'解三角形', gen:genTriangle},
+  }},
+};
+let currentLevel='chu';
+function curTypes(){ return LEVELS[currentLevel].types; }
+const HINTS={
+  num:'请输入计算结果（整数或小数，如 5/6）',
+  frac:'请输入分数（如 2/5）或小数（如 0.4）',
+  pair:'格式：x=2, y=3 或 2, 3',
+  roots:'两个根用逗号分隔，如 2, 3'
+};
+
+/* ============ 山西游奖励机制 ============ */
+/* 每个题型对应一座“招牌景点”(有 key)；另有 ★ 彩蛋景点，靠持续练习解锁。
+   x/y 为地图百分比坐标（近似真实地理位置），desc 为点亮后的讲解。 */
+const SPOTS=[
+  {key:'rational',name:'故宫',city:'北京',emoji:'🏯',lv:'初',lat:39.9163,lng:116.3972,desc:'明清两代的皇家宫殿，世界上现存规模最大的木质宫殿建筑群，被誉为“殿宇之海”。'},
+  {key:'poly',name:'八达岭长城',city:'北京',emoji:'🏯',lv:'初',lat:40.3596,lng:116.0200,desc:'万里长城最具代表性的一段，依山势而建、气势雄伟，是中华文明不屈精神的象征。'},
+  {key:'frac',name:'秦始皇兵马俑',city:'西安',emoji:'🗿',lv:'初',lat:34.3853,lng:109.2734,desc:'世界第八大奇迹，数千陶俑军阵栩栩如生，再现两千年前秦军的磅礴气势。'},
+  {key:'root',name:'杭州西湖',city:'浙江',emoji:'🌊',lv:'初',lat:30.2459,lng:120.1450,desc:'三面云山一面城，断桥残雪、三潭印月，历代文人墨客留下无数诗篇。'},
+  {key:'linear',name:'上海外滩',city:'上海',emoji:'🏙️',lv:'初',lat:31.2397,lng:121.4900,desc:'黄浦江畔的万国建筑博览群，对岸陆家嘴摩天楼林立，是近现代中国的缩影。'},
+  {key:'system',name:'布达拉宫',city:'拉萨',emoji:'🏯',lv:'初',lat:29.6558,lng:91.1170,desc:'依山垒砌的宫堡式建筑群，藏式艺术的瑰宝，是西藏历史与信仰的神圣象征。'},
+  {key:'quad',name:'张家界',city:'湖南',emoji:'🏞️',lv:'初',lat:29.3170,lng:110.4790,desc:'石英砂岩峰林拔地而起、云雾缭绕，宛如仙境，是《阿凡达》悬浮山的灵感来源。'},
+  {key:'decimal',name:'厦门鼓浪屿',city:'福建',emoji:'🏝️',lv:'小',lat:24.4470,lng:118.0790,desc:'海上花园小岛，中西合璧的老别墅错落，琴声悠扬，素有“钢琴之岛”美誉。'},
+  {key:'fracAdd',name:'苏州周庄',city:'江苏',emoji:'🏘️',lv:'小',lat:31.1100,lng:120.8500,desc:'中国第一水乡，小桥流水、粉墙黛瓦，最能体现江南古镇的温婉灵动。'},
+  {key:'fracMul',name:'武汉黄鹤楼',city:'湖北',emoji:'🏯',lv:'小',lat:30.5460,lng:114.3040,desc:'江南三大名楼之首，“黄鹤一去不复返”的千古绝唱令其名扬天下。'},
+  {key:'simplify',name:'都江堰',city:'成都',emoji:'🏞️',lv:'小',lat:31.0044,lng:103.6150,desc:'战国时期李冰父子修筑的水利工程，两千年来润泽天府、至今仍在发挥作用。'},
+  {key:'convert',name:'北京颐和园',city:'北京',emoji:'🏯',lv:'小',lat:39.9999,lng:116.2755,desc:'皇家园林典范，昆明湖与万寿山相映，长廊画栋、移步换景，尽显园林之妙。'},
+  {key:'percent',name:'丽江古城',city:'云南',emoji:'🏘️',lv:'小',lat:26.8720,lng:100.2290,desc:'纳西族聚居的高原水乡古城，玉龙雪山为屏，小桥流水、古乐悠扬。'},
+  {key:'simpleEq',name:'泰山',city:'山东',emoji:'⛰️',lv:'小',lat:36.2520,lng:117.1000,desc:'五岳之首，历代帝王封禅之地，“会当凌绝顶，一览众山小”道尽雄浑。'},
+  {key:'exp',name:'九寨沟',city:'四川',emoji:'🏞️',lv:'高',lat:33.2000,lng:103.9000,desc:'童话世界般的高山湖泊与瀑布群，水色五彩斑斓、四季皆景，人间瑶池。'},
+  {key:'log',name:'桂林山水',city:'广西',emoji:'🏞️',lv:'高',lat:25.2736,lng:110.2900,desc:'“桂林山水甲天下”，漓江两岸峰峦叠翠、碧水如镜，是喀斯特地貌的极致。'},
+  {key:'arith',name:'黄山',city:'安徽',emoji:'⛰️',lv:'高',lat:30.1310,lng:118.1670,desc:'奇松、怪石、云海、温泉四绝闻名，“五岳归来不看山，黄山归来不看岳”。'},
+  {key:'geo',name:'峨眉山',city:'四川',emoji:'⛰️',lv:'高',lat:29.5170,lng:103.3360,desc:'佛教四大名山之一，金顶云海、普贤道场，山间猴群与古刹相映成趣。'},
+  {key:'vecdot',name:'敦煌莫高窟',city:'甘肃',emoji:'🛕',lv:'高',lat:40.0350,lng:94.8090,desc:'丝绸之路上的艺术宝库，壁画彩塑精美绝伦，见证东西方文明的交融。'},
+  {key:'vecadd',name:'北京天坛',city:'北京',emoji:'🏯',lv:'高',lat:39.8822,lng:116.4066,desc:'明清皇帝祭天祈谷之所，祈年殿造型奇绝，是中国古代建筑艺术的巅峰。'},
+  {key:'complex',name:'南京中山陵',city:'江苏',emoji:'🏛️',lv:'高',lat:32.0600,lng:118.8500,desc:'依紫金山而建的庄严陵寝，蓝瓦白墙、气势恢宏，缅怀革命先行者孙中山。'},
+  {key:'triangle',name:'武夷山',city:'福建',emoji:'⛰️',lv:'高',lat:27.7200,lng:118.0300,desc:'丹霞地貌与九曲溪相映，碧水丹山、茶香悠远，是世界文化与自然双遗产。'},
+  /* —— ★ 彩蛋景点：靠持续练习解锁 —— */
+  {key:null,name:'天安门广场',city:'北京',emoji:'🏛️',lv:'★',lat:39.9055,lng:116.3976,desc:'世界上最大的城市广场，人民英雄纪念碑与天安门城楼遥相呼应，是国家的象征。'},
+  {key:null,name:'承德避暑山庄',city:'河北',emoji:'🏯',lv:'★',lat:40.9890,lng:117.9980,desc:'清代皇家避暑行宫，山庄与外八庙融为一体，融南秀北雄于一园。'},
+  {key:null,name:'山海关',city:'河北',emoji:'🏰',lv:'★',lat:40.0000,lng:119.7500,desc:'明长城东端起点，“天下第一关”，北依燕山、南襟渤海，雄踞山海之间。'},
+  {key:null,name:'平遥古城',city:'山西',emoji:'🏘️',lv:'★',lat:37.1995,lng:112.1810,desc:'保存完整的明清县城，城墙、票号、民居俱全，是中国汉民族城市在明清的杰出范例。'},
+  {key:null,name:'云冈石窟',city:'大同',emoji:'🗿',lv:'★',lat:40.1089,lng:113.1336,desc:'北魏开凿的巨型石窟造像，与敦煌、龙门并称中国三大石窟。'},
+  {key:null,name:'壶口瀑布',city:'晋陕',emoji:'🌊',lv:'★',lat:36.1450,lng:110.4500,desc:'黄河收束倾泻、气势磅礴，是黄河上唯一的黄色大瀑布。'},
+  {key:null,name:'华山',city:'陕西',emoji:'⛰️',lv:'★',lat:34.4900,lng:110.0850,desc:'西岳华山，以“奇险天下第一山”著称，长空栈道令人心惊胆寒。'},
+  {key:null,name:'龙门石窟',city:'洛阳',emoji:'🗿',lv:'★',lat:34.5680,lng:112.4690,desc:'伊河两岸的石刻艺术宝库，卢舍那大佛雍容华贵，盛唐气象尽显。'},
+  {key:null,name:'少林寺',city:'河南',emoji:'🛕',lv:'★',lat:34.5120,lng:112.9360,desc:'禅宗祖庭、武术发源地，塔林与古柏掩映，素有“天下第一名刹”之誉。'},
+  {key:null,name:'武当山',city:'湖北',emoji:'⛰️',lv:'★',lat:32.4000,lng:111.0000,desc:'道教名山、武当功夫的发源地，金顶古建筑群凌空出世，仙气缭绕。'},
+  {key:null,name:'凤凰古城',city:'湖南',emoji:'🏘️',lv:'★',lat:27.9400,lng:109.6000,desc:'沱江穿城而过，吊脚楼临水而立，湘西风情浓郁、静谧如画。'},
+  {key:null,name:'庐山',city:'江西',emoji:'⛰️',lv:'★',lat:29.5300,lng:115.9700,desc:'匡庐奇秀甲天下，云海瀑布、别墅群立，“不识庐山真面目”传诵至今。'},
+  {key:null,name:'福建土楼',city:'福建',emoji:'🏯',lv:'★',lat:24.6000,lng:117.0000,desc:'客家环形夯土巨筑，天圆地方、聚族而居，被誉为“东方古城堡”。'},
+  {key:null,name:'日月潭',city:'台湾',emoji:'🌊',lv:'★',lat:23.8600,lng:121.0000,desc:'宝岛台湾最大的天然湖泊，山水相依、风光旖旎，是台湾八景之一。'},
+  {key:null,name:'云南石林',city:'云南',emoji:'🪨',lv:'★',lat:24.8200,lng:103.0000,desc:'喀斯特奇观，千仞石峰拔地如林，被誉为“天下第一奇观”。'},
+  {key:null,name:'西双版纳',city:'云南',emoji:'🌴',lv:'★',lat:21.9500,lng:100.8000,desc:'热带雨林秘境，孔雀大象、傣族竹楼，四季如夏、民族风情浓郁。'},
+  {key:null,name:'黄果树瀑布',city:'贵州',emoji:'🌊',lv:'★',lat:25.9900,lng:105.6100,desc:'亚洲第一大瀑布，水帘奔泻、声震山谷，犀牛潭上彩虹常现。'},
+  {key:null,name:'九华山',city:'安徽',emoji:'⛰️',lv:'★',lat:30.4800,lng:117.8000,desc:'佛教四大名山之一、地藏菩萨道场，香火鼎盛，99座山峰秀丽如莲。'},
+  {key:null,name:'青海湖',city:'青海',emoji:'🌊',lv:'★',lat:36.8900,lng:100.1800,desc:'中国最大的内陆咸水湖，碧波万顷、鸟岛翔集，七月油菜花海与雪山相映成趣。'},
+  {key:null,name:'大理古城',city:'云南',emoji:'🏘️',lv:'★',lat:25.6050,lng:100.2670,desc:'苍山洱海之间的白族古城，三坊一照壁、风花雪月，是慢生活的诗意典范。'},
+  {key:null,name:'天山天池',city:'新疆',emoji:'🌊',lv:'★',lat:43.8840,lng:88.1180,desc:'雪峰环抱的高山湖泊，传说中西王母的瑶池，湖水澄澈如镜、云杉倒映。'},
+  {key:null,name:'呼伦贝尔草原',city:'内蒙古',emoji:'🏞️',lv:'★',lat:49.2100,lng:119.7700,desc:'世界四大草原之一，水草丰美、牛羊成群，“天似穹庐，笼盖四野”的壮美画卷。'},
+  {key:null,name:'普陀山',city:'浙江',emoji:'⛰️',lv:'★',lat:30.0100,lng:122.3800,desc:'佛教四大名山之一、观音菩萨道场，海天佛国、金沙碧浪，梵音与潮声相和。'},
+  {key:null,name:'乐山大佛',city:'四川',emoji:'🗿',lv:'★',lat:29.5460,lng:103.7770,desc:'依崖凿造的弥勒坐佛，通高七十余米，“山是一尊佛，佛是一座山”。'},
+  {key:null,name:'三亚亚龙湾',city:'海南',emoji:'🏝️',lv:'★',lat:18.2200,lng:109.6200,desc:'碧海银沙、椰林婆娑，被誉为“天下第一湾”，冬日避寒的天堂。'},
+  {key:null,name:'滕王阁',city:'江西',emoji:'🏯',lv:'★',lat:28.6840,lng:115.8730,desc:'“落霞与孤鹜齐飞，秋水共长天一色”的江南名楼，临赣江而峙、气势恢宏。'},
+  {key:null,name:'蓬莱阁',city:'山东',emoji:'🏯',lv:'★',lat:37.8100,lng:120.9500,desc:'渤海之滨的“人间仙境”，海市蜃楼奇观令古人神往，八仙过海传说源此。'},
+  {key:null,name:'梵净山',city:'贵州',emoji:'⛰️',lv:'★',lat:27.9200,lng:108.6900,desc:'武陵山脉主峰，红云金顶、蘑菇石奇绝，是珍稀动植物的生态王国。'},
+];
+/* 经纬度 -> 地图百分比坐标（覆盖中国全境的经纬度范围），供离线底图打点 */
+SPOTS.forEach(s=>{ s.x=Math.min(99,Math.max(1,(s.lng-73)/(135-73)*100)); s.y=Math.min(99,Math.max(1,(54-s.lat)/(54-18)*100)); });
+const BONUS = SPOTS.filter(s=>!s.key);
+const REWARD_KEY='math_reward_v1';
+const SESSION_KEY='math_sessions_v1';
+function loadReward(){ try{ return new Set(JSON.parse(localStorage.getItem(REWARD_KEY)||'[]')); }catch(e){ return new Set(); } }
+function saveReward(set){ try{ localStorage.setItem(REWARD_KEY, JSON.stringify([...set])); }catch(e){} }
+function loadSessions(){ try{ return parseInt(localStorage.getItem(SESSION_KEY)||'0')||0; }catch(e){ return 0; } }
+function saveSessions(n){ try{ localStorage.setItem(SESSION_KEY, String(n)); }catch(e){} }
+function bonusLit(){ return Math.min(loadSessions(), BONUS.length); }   // 每完成一组练习解锁 1 座彩蛋
+function litCount(){ return loadReward().size + bonusLit(); }
+function refreshRewardBadge(){ const n=litCount(); $('#rlc').textContent = n>0?`(${n})`:''; }
+let sessionNewLit=0;                                   // 本次练习即时新点亮的招牌景点数
+function unlockType(key){                              // 答对即点亮该题对应招牌景点（即时反馈）
+  if(!key) return false;
+  const s=loadReward();
+  if(s.has(key)) return false;
+  s.add(key); saveReward(s); refreshRewardBadge();
+  if(satMap) renderRewardMap();                        // 若地图已打开则即时刷新
+  return true;
+}
+const CAT={'🏯':'arch','🗿':'arch','🏙️':'arch','🏘️':'arch','🛕':'arch','🏰':'arch','🏛️':'arch',
+           '⛰️':'mount','🏞️':'mount','🪨':'mount',
+           '🌊':'water','🏝️':'water',
+           '🌴':'tree'};
+const CAT_LABEL={arch:'古建 · 人文',mount:'名山 · 胜境',water:'江河 · 飞瀑',tree:'古木 · 村落'};
+function showSpot(s){
+  const cat=CAT[s.emoji]||'arch', catLabel=CAT_LABEL[cat]||'胜景';
+  const detail=$('#spotDetail');
+  detail.innerHTML=`<div class="spot-art cat-${cat}">
+       <div class="sil"></div><span class="ea">${s.emoji}</span>
+       <span class="cat">${catLabel}</span><span class="seal">${s.city}</span>
+       <img class="spot-real" alt="${s.name}" referrerpolicy="no-referrer"></div>
+     <div class="dh"><div class="e">${s.emoji}</div>
+     <div><div class="t">${s.name}</div><div class="c">${s.city}　·　${s.lv==='★'?'彩蛋景点':'学段：'+s.lv}</div></div></div>
+     <div class="dd">${s.desc}</div>`;
+  loadSpotPhoto(s, detail.querySelector('.spot-art'));
+}
+/* 景点真实照片（运行时按需加载）；优先国内可访问图源，SVG 水墨卡即时显示并作兜底 */
+/* 别名表：景点名 → 优先尝试的维基条目名（处理别名/消歧义，作锦上添花兜底） */
+const SPOT_IMG_QUERY={
+  '故宫':['故宫','北京故宫'], '八达岭长城':['八达岭长城','长城'], '秦始皇兵马俑':['秦始皇兵马俑','兵马俑'],
+  '杭州西湖':['西湖','杭州西湖'], '上海外滩':['外滩'], '布达拉宫':['布达拉宫'], '张家界':['张家界'],
+  '厦门鼓浪屿':['鼓浪屿'], '苏州周庄':['周庄'], '武汉黄鹤楼':['黄鹤楼'], '都江堰':['都江堰'],
+  '北京颐和园':['颐和园'], '丽江古城':['丽江古城','丽江'], '泰山':['泰山'], '九寨沟':['九寨沟'],
+  '桂林山水':['桂林','桂林山水'], '黄山':['黄山'], '峨眉山':['峨眉山'], '敦煌莫高窟':['莫高窟','敦煌莫高窟'],
+  '北京天坛':['天坛'], '南京中山陵':['中山陵','南京中山陵'], '武夷山':['武夷山'],
+  '天安门广场':['天安门广场','天安门'], '承德避暑山庄':['避暑山庄','承德避暑山庄'], '山海关':['山海关'],
+  '平遥古城':['平遥古城','平遥'], '云冈石窟':['云冈石窟'], '壶口瀑布':['壶口瀑布'], '华山':['华山'],
+  '龙门石窟':['龙门石窟'], '少林寺':['少林寺'], '武当山':['武当山'], '凤凰古城':['凤凰古城','凤凰县'],
+  '庐山':['庐山'], '福建土楼':['福建土楼','土楼'], '日月潭':['日月潭'],   '云南石林':['云南石林','石林'],
+  '西双版纳':['西双版纳'], '黄果树瀑布':['黄果树瀑布'], '九华山':['九华山'],
+  '青海湖':['青海湖'], '大理古城':['大理古城','大理'], '天山天池':['天池','天山天池'],
+  '呼伦贝尔草原':['呼伦贝尔','呼伦贝尔草原'], '普陀山':['普陀山'], '乐山大佛':['乐山大佛'],
+  '三亚亚龙湾':['亚龙湾'], '滕王阁':['滕王阁'], '蓬莱阁':['蓬莱阁'], '梵净山':['梵净山']
+};
+/* 英文关键词：供 LoremFlickr 按真实照片标签取图（Flickr 标签为英文，相关度更高） */
+/* 取图标签：Flickr 标签（连字符写法 + 同义词 OR 组合，逗号分隔）。
+   注意：LoremFlickr 以逗号为标签分隔符（OR 语义），切勿用空格——空格会导致标签失效、返回随机图。 */
+/* 取图标签：第一段=该景点在 Flickr 上最精确的专属标签（高度对版）；第二段=城市/省兜底标签（保证真实照不落空） */
+const SPOT_EN={
+  '故宫':'forbidden-city,beijing','八达岭长城':'great-wall,beijing','秦始皇兵马俑':'terracotta-army,xian',
+  '杭州西湖':'west-lake,hangzhou','上海外滩':'the-bund,shanghai','布达拉宫':'potala-palace,lhasa',
+  '张家界':'zhangjiajie,hunan','厦门鼓浪屿':'gulangyu,xiamen','苏州周庄':'zhouzhuang,suzhou',
+  '武汉黄鹤楼':'yellow-crane-tower,wuhan','都江堰':'dujiangyan,chengdu','北京颐和园':'summer-palace,beijing',
+  '丽江古城':'lijiang,yunnan','泰山':'mount-tai,shandong','九寨沟':'jiuzhaigou,sichuan',
+  '桂林山水':'guilin,guilin-landscape','黄山':'huangshan,yellow-mountain','峨眉山':'emeishan,mount-emei',
+  '敦煌莫高窟':'mogao-caves,dunhuang','北京天坛':'temple-of-heaven,beijing','南京中山陵':'sun-yat-sen-mausoleum,nanjing',
+  '武夷山':'wuyi-mountain,fujian','天安门广场':'tiananmen,beijing','承德避暑山庄':'chengde,hebei',
+  '山海关':'shanhaiguan,great-wall','平遥古城':'pingyao,shanxi','云冈石窟':'yungang-grottoes,datong',
+  '壶口瀑布':'hukou-waterfall,yellow-river','华山':'huashan,shaanxi','龙门石窟':'longmen-grottoes,luoyang',
+  '少林寺':'shaolin-temple,henan','武当山':'wudang-mountain,hubei','凤凰古城':'fenghuang,hunan',
+  '庐山':'lushan,jiangxi','福建土楼':'tulou,fujian','日月潭':'sun-moon-lake,taiwan',
+  '云南石林':'stone-forest,yunnan','西双版纳':'xishuangbanna,yunnan','黄果树瀑布':'huangguoshu,guizhou',
+  '九华山':'jiuhua-mountain,anhui','青海湖':'qinghai-lake,qinghai','大理古城':'dali,yunnan',
+  '天山天池':'tianchi,tianshan','呼伦贝尔草原':'hulunbuir,inner-mongolia','普陀山':'putuo,zhejiang',
+  '乐山大佛':'leshan,sichuan','三亚亚龙湾':'yalong-bay,sanya','滕王阁':'tengwang-pavilion,nanchang',
+  '蓬莱阁':'penglai-pavilion,shandong','梵净山':'fanjing,guizhou'
+};
+const _photoCache=new Map();
+function hashStr(str){ let h=0; for(let i=0;i<str.length;i++){ h=(h*31+str.charCodeAt(i))>>>0; } return h%997; }
+/* 维基百科/共享资源取图（若网络可达，作锦上添花）；搜索三路：中维→英维→共享资源 */
+function wikiThumb(lang, query){
+  const url='https://'+lang+'.wikipedia.org/w/api.php?action=query&generator=search'
+    +'&gsrsearch='+encodeURIComponent(query)+'&gsrlimit=4&prop=pageimages&piprop=thumbnail'
+    +'&pithumbsize=640&format=json&origin=*';
+  return fetch(url).then(r=>r.json()).then(j=>{
+    const pages=j&&j.query&&j.query.pages; if(!pages) return null;
+    for(const k in pages){ const t=pages[k].thumbnail; if(t&&t.source) return t.source; }
+    return null;
+  }).catch(()=>null);
+}
+function commonsThumb(query){
+  const url='https://commons.wikimedia.org/w/api.php?action=query&generator=search'
+    +'&gsrsearch='+encodeURIComponent('filetype:bitmap '+query)+'&gsrlimit=4&prop=imageinfo'
+    +'&iiprop=url&iiurlwidth=640&format=json&origin=*';
+  return fetch(url).then(r=>r.json()).then(j=>{
+    const pages=j&&j.query&&j.query.pages; if(!pages) return null;
+    for(const k in pages){ const ii=pages[k].imageinfo; if(ii&&ii[0]&&ii[0].thumburl) return ii[0].thumburl; }
+    return null;
+  }).catch(()=>null);
+}
+/* 维基百科“词条摘要”接口：直接返回该词条的主图（lead image），比搜索更精准对口 */
+function wikiSummary(lang, title){
+  const url='https://'+lang+'.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(title);
+  return fetch(url,{headers:{'accept':'application/json'}}).then(r=>r.ok?r.json():null).then(j=>{
+    if(!j) return null;
+    return (j.thumbnail&&j.thumbnail.source)||(j.originalimage&&j.originalimage.source)||null;
+  }).catch(()=>null);
+}
+function resolveImage(s){
+  const cands=[s.name].concat(SPOT_IMG_QUERY[s.name]||[]);
+  return (async()=>{
+    for(const q of cands){ let u=await wikiSummary('zh',q); if(u) return u; }   // 中维词条主图
+    for(const q of cands){ let u=await wikiThumb('zh',q); if(u) return u; }    // 中维搜索图
+    for(const q of cands){ let u=await wikiSummary('en',q); if(u) return u; }   // 英维词条主图
+    for(const q of cands){ let u=await wikiThumb('en',q); if(u) return u; }     // 英维搜索图
+    let c=await commonsThumb(s.name); if(c) return c;                           // 共享资源兜底
+    return null;
+  })();
+}
+/* 主流程：① 主源用“该景点最精确标签”即时显示 LoremFlickr 真实照（高度对版）
+           ② 若精确标签取图失败→用城市/省兜底标签再取真实照（保证不落空）
+           ③ 同时后台用维基精确配图升级（网络可达时替换为该景点官方真实照片）
+           ④ 仅当所有真实源都失败时，才保留水墨卡（极个别情况） */
+function withTimeout(p, ms){ return Promise.race([Promise.resolve(p), new Promise(r=>setTimeout(()=>r(null), ms))]); }
+function loadSpotPhoto(s, artEl){
+  if(!artEl) return;
+  const img=artEl.querySelector('.spot-real');
+  if(!img) return;
+  const cached=_photoCache.get(s.name);
+  if(cached===false) return;                                 // 已知全部失败，保留水墨卡
+  if(typeof cached==='string'){ img.src=cached;              // 已成功，直接复用缓存直链
+    img.onload=()=>{ img.style.opacity='1'; artEl.classList.add('has-photo'); }; return; }
+  const parts=((SPOT_EN[s.name])||s.name).split(',');         // 第一段=最精确专属标签，第二段=城市/省兜底标签
+  const primaryTag=parts[0].trim();
+  const broadTag=(parts[1]||parts[0]).trim();
+  const lock=hashStr(s.name);
+  const lorem='https://loremflickr.com/640/420/'+primaryTag+'?lock='+lock;        // ① 主源：精确标签（高度对版）
+  const loremBroad='https://loremflickr.com/640/420/'+broadTag+'?lock='+lock;     // ② 兜底：城市/省标签（保真实照不落空）
+  let wikiTried=false, broadTried=false;
+  const tryWiki=()=>{                                        // ③ 后台升级：维基精确配图
+    if(wikiTried) return; wikiTried=true;
+    withTimeout(resolveImage(s), 4500).then(u=>{
+      if(u && u!==img.src){
+        const t=new Image();
+        t.onload=()=>{ img.src=u; img.style.opacity='1'; artEl.classList.add('has-photo'); _photoCache.set(s.name,u); };
+        t.onerror=()=>{ _photoCache.set(s.name,false); };
+        t.src=u;
+      }
+      // 维基不可达时静默保留 LoremFlickr 真实照，不作失败处理
+    });
+  };
+  img.onload=()=>{ img.style.opacity='1'; artEl.classList.add('has-photo'); _photoCache.set(s.name, img.src); };
+  img.onerror=()=>{                                          // ② 多标签失败→单一标签再取真实照
+    if(!broadTried){ broadTried=true; img.src=loremBroad; }
+    else { _photoCache.set(s.name,false); }                  // ④ 真实源全失败才留水墨卡
+  };
+  img.src=lorem;                                             // ① 即时主题照片
+  tryWiki();                                                 // ③ 后台升级为维基精确配图
+}
+function applyPhoto(img,artEl,u){
+  img.onload=()=>{ img.style.opacity='1'; artEl.classList.add('has-photo'); };
+  img.onerror=()=>{};                                         // 加载失败则保留水墨卡
+  img.src=u;
+}
+function makeIcon(s, on){
+  const cls='sat-pin'+(on?'':' lock');
+  const inner=on?s.emoji:'🔒';
+  const label=`<span class="nm">${s.name}</span><span class="ct">${s.city}</span>`;
+  return L.divIcon({className:'', html:`<div class="${cls}">${inner}${label}</div>`, iconSize:[76,66], iconAnchor:[38,55]});
+}
+let satMap=null, satGroup=null, satFailed=false;
+function initSatMap(){
+  if(satMap || typeof L==='undefined' || satFailed) return;
+  // 世界卫星地图：不再锁定山西，允许自由平移/缩放浏览全球
+  const WORLD_BOUNDS=L.latLngBounds([-85,-180],[85,180]);
+  satMap=L.map('leafletMap',{
+    zoomControl:true, attributionControl:true,
+    worldCopyJump:true,
+    maxBounds:WORLD_BOUNDS, maxBoundsViscosity:0.6,
+    minZoom:2, maxZoom:18
+  }).setView([34.0,108.0], 3); // 初始视角落在东亚/中国上空，可自由拖动到全球
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    {maxZoom:18, minZoom:2, noWrap:false, attribution:'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics'}).addTo(satMap);
+  satGroup=L.layerGroup().addTo(satMap);
+  let errs=0;
+  satMap.on('tileerror', ()=>{ errs++; if(errs>6){ satFailed=true; const h=$('#leafletMap'); if(h)h.classList.remove('show'); const nf=$('#satNote'); if(nf)nf.style.display='none'; renderRewardMap(); } });
+}
+
+/* ============ 《山西印象》背景乐（Web Audio 实时合成 · 山西民歌风） ============ */
+const Music=(()=>{
+  let ctx=null, master=null, reverb=null, wet=null, timer=null, playing=false, step=0, noiseBuf=null;
+  const AC=window.AudioContext||window.webkitAudioContext;
+  // 以 G 为「徵」的徵调式（sol-la-do-re-mi），辅以苦音(降七 F)作色彩，显晋北民歌韵味
+  const N={
+    G2:98.00, A2:110.00, C3:130.81, D3:146.83, E3:164.81, F3:174.61, G3:196.00, A3:220.00, B3:246.94,
+    C4:261.63, D4:293.66, E4:329.63, F4:349.23, G4:392.00, A4:440.00, B4:493.88,
+    C5:523.25, D5:587.33, E5:659.25, F5:698.46, G5:783.99
+  };
+  // [主音, 时值(拍), 滑音前倚音?] 明快秧歌风 2/4 律动；空串主音为过门休止
+  const MEL=[
+    ['G4',1,'A4'],['A4',0.5],['B4',0.5,'A4'],['D5',1,'C5'],
+    ['C5',0.5,'B4'],['B4',0.5],['A4',1,'G4'],['G4',1],
+    ['A4',0.5],['G4',0.5,'A4'],['A4',1,'B4'],['B4',1],
+    ['D5',1,'C5'],['C5',0.5,'B4'],['B4',0.5],['A4',1],
+    ['G4',1],['G4',0.5,'A4'],['A4',0.5],['B4',1,'A4'],
+    ['D5',0.5,'C5'],['E5',0.5,'D5'],['D5',2],
+    ['B4',0.5],['A4',0.5,'B4'],['G4',1,'F4'],['F4',0.5],['G4',1.5],['',0.5]
+  ];
+  // 低音根/五度拨奏（每2拍一换）：宫-徵-羽-角北方民间进行
+  const BASS=[N.G2, N.D3, N.G2, N.A2, N.G2, N.E3, N.G2, N.D3];
+  const BPM=108, SPB=60/BPM;
+  function makeReverb(){
+    const len=Math.floor(ctx.sampleRate*2.2);
+    const buf=ctx.createBuffer(2,len,ctx.sampleRate);
+    for(let ch=0;ch<2;ch++){
+      const d=buf.getChannelData(ch);
+      for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6);
+    }
+    const c=ctx.createConvolver(); c.buffer=buf; return c;
+  }
+  function ensure(){
+    if(!AC) return false;
+    if(!ctx){
+      ctx=new AC();
+      master=ctx.createGain(); master.gain.value=0;
+      master.gain.linearRampToValueAtTime(0.82, ctx.currentTime+0.8); // 缓入
+      reverb=makeReverb();
+      wet=ctx.createGain(); wet.gain.value=0.32; // 混响湿度（拨弦需清晰，故略低）
+      master.connect(ctx.destination);
+      reverb.connect(wet).connect(ctx.destination);
+      noiseBuf=ctx.createBuffer(1, Math.floor(ctx.sampleRate*0.2), ctx.sampleRate);
+      const d=noiseBuf.getChannelData(0);
+      for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;   // 板鼓白噪声
+    }
+    return true;
+  }
+  // 拨弦（琵琶/月琴）：锯齿波经低通，快起快落，显颗粒感
+  function pluck(freq,t,dur,gain){
+    const o=ctx.createOscillator(), g=ctx.createGain(), f=ctx.createBiquadFilter();
+    o.type='sawtooth'; o.frequency.value=freq;
+    f.type='lowpass'; f.frequency.setValueAtTime(3200,t); f.frequency.exponentialRampToValueAtTime(900,t+dur);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(gain,t+0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(f); f.connect(g); g.connect(master); g.connect(reverb);
+    o.start(t); o.stop(t+dur+0.02);
+  }
+  // 柔和铺底（板胡/弦）：三角波+正弦微失谐，绵长
+  function pad(freq,t,dur,gain){
+    const g=ctx.createGain();
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.linearRampToValueAtTime(gain,t+0.08);
+    g.gain.setValueAtTime(gain,t+dur*0.6);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    [['triangle',0],['sine',3]].forEach(([ty,det])=>{
+      const o=ctx.createOscillator(); o.type=ty; o.frequency.value=freq; o.detune.value=det;
+      o.connect(g); o.start(t); o.stop(t+dur+0.02);
+    });
+    g.connect(master); g.connect(reverb);
+  }
+  // 板鼓：带通滤波白噪声短促一击，重拍更强
+  function drum(t,gain){
+    const src=ctx.createBufferSource(); src.buffer=noiseBuf;
+    const f=ctx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=170; f.Q.value=0.8;
+    const g=ctx.createGain();
+    g.gain.setValueAtTime(gain,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.13);
+    src.connect(f); f.connect(g); g.connect(master);
+    src.start(t); src.stop(t+0.2);
+  }
+  // 低音拨奏（大阮/三弦）：锯齿波经低通
+  function bass(freq,t,dur){
+    const o=ctx.createOscillator(), g=ctx.createGain(), f=ctx.createBiquadFilter();
+    o.type='sawtooth'; o.frequency.value=freq;
+    f.type='lowpass'; f.frequency.value=420;
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(0.10,t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(f); f.connect(g); g.connect(master); g.connect(reverb);
+    o.start(t); o.stop(t+dur+0.02);
+  }
+  function schedule(){
+    const item=MEL[step%MEL.length];
+    const i=step; step++;
+    const dur=item[1]*SPB;
+    const t0=ctx.currentTime+0.03;
+    if(item[0]){
+      const f=N[item[0]];
+      if(item[2]) pluck(N[item[2]], t0-0.06, 0.11, 0.05);   // 北方滑音前倚音
+      pluck(f,  t0, dur*0.95, 0.20);                       // 主旋律拨弦
+      pad(f,    t0, dur, 0.045);                           // 板胡/弦 柔和铺底
+      if(i%4===0) pluck(f*2, t0+0.02, 0.5, 0.04);          // 八度亮音点缀
+    }
+    drum(t0, (i%2===0)?0.16:0.09);                         // 板鼓节拍（重拍更强）
+    if(i%2===0) bass(BASS[(i/2)%BASS.length], t0, dur*1.6); // 每2拍拨低音根/五度
+    let gap=dur;
+    if(step%MEL.length===0) gap=dur+SPB*1.5;              // 段落间留白过门
+    timer=setTimeout(schedule, gap*1000);
+  }
+  function start(){
+    if(!ensure()) return;
+    if(ctx.state==='suspended') ctx.resume();
+    if(playing) return;
+    playing=true; step=0;
+    schedule();
+  }
+  function stop(){
+    playing=false;
+    if(timer) clearTimeout(timer); timer=null;
+  }
+  function toggle(){ playing?stop():start(); return playing; }
+  function isOn(){ return playing; }
+  return {start,stop,toggle,isOn};
+})();
+// 双击或右键景点：在线飞至该点并放大；离线则整体画布放大聚焦该点
+function zoomToSpot(s){
+  try{
+    const z=satMap.getZoom();
+    satMap.flyTo([s.lat, s.lng], Math.min(Math.max(z+2, 13), 18), {duration:0.8});
+  }catch(e){}
+}
+function zoomOfflineCanvas(s, on){
+  const c=$('#mapCanvas'); if(!c) return;
+  if(c.classList.contains('zoomed')){ c.classList.remove('zoomed'); c.style.transform=''; return; }
+  c.style.transformOrigin=s.x+'% '+s.y+'%';
+  c.classList.add('zoomed'); c.style.transform='scale(1.9)';
+  if(on) showSpot(s);
+}
+function renderRewardMap(){
+  const lit=loadReward();
+  const bl=bonusLit();
+  let bi=0;
+  const total=lit.size+bl;
+  $('#litCount').textContent=total;
+  $('#litTotal').textContent=`已点亮 / ${SPOTS.length} 个中国景点`;
+  $('#litBar').style.width=(total/SPOTS.length*100)+'%';
+  const canvas=$('#mapCanvas');
+  canvas.classList.remove('zoomed'); canvas.style.transform='';
+  [...canvas.querySelectorAll('.pin')].forEach(p=>p.remove());
+
+  // 在线：真实卫星地图（Leaflet + Esri 影像），用真实经纬度打点
+  if(typeof L!=='undefined' && !satFailed){
+    const host=$('#leafletMap'); if(host) host.classList.add('show');
+    const note=$('#satNote'); if(note) note.style.display='block';
+    initSatMap();
+    satGroup.clearLayers();
+    SPOTS.forEach(s=>{
+      let on;
+      if(s.key) on=lit.has(s.key);
+      else { on = bi<bl; bi++; }
+      const m=L.marker([s.lat, s.lng], {icon:makeIcon(s,on)});
+      m.bindTooltip(s.name+' · '+s.city,{direction:'top', opacity:0.95});
+      if(on){ m.on('click', ()=>showSpot(s)); }
+      else { m.on('click', ()=>{ $('#spotDetail').innerHTML=`<div class="dd" style="color:var(--sub)">🔒 ${s.name}（${s.city}）待解锁——完成对应题型或继续练习即可点亮。</div>`; }); }
+      m.on('dblclick', (e)=>{ L.DomEvent.stop(e); zoomToSpot(s); });   // 双击放大
+      m.on('contextmenu', (e)=>{ L.DomEvent.stop(e); zoomToSpot(s); }); // 右键放大
+      m.addTo(satGroup);
+    });
+    setTimeout(()=>{ try{ satMap.invalidateSize(); }catch(e){} }, 220);
+    refreshRewardBadge();
+    return;
+  }
+
+  // 离线回退：SVG 地形底图 + 百分比打点
+  const hf=$('#leafletMap'); if(hf) hf.classList.remove('show');
+  const nf=$('#satNote'); if(nf) nf.style.display='none';
+  SPOTS.forEach(s=>{
+    let on;
+    if(s.key) on=lit.has(s.key);
+    else { on = bi<bl; bi++; }
+    const pin=document.createElement('div');
+    pin.className='pin'+(on?' lit':'');
+    pin.style.left=s.x+'%'; pin.style.top=s.y+'%';
+    pin.innerHTML=`<div class="dot">${on?s.emoji:'🔒'}</div><div class="lab">${s.name}<span class="lc"> · ${s.city}</span></div>`;
+    if(on){ pin.addEventListener('click',()=>showSpot(s)); pin.title=s.name; }
+    pin.addEventListener('dblclick',(ev)=>{ ev.preventDefault(); zoomOfflineCanvas(s, on); });
+    pin.addEventListener('contextmenu',(ev)=>{ ev.preventDefault(); zoomOfflineCanvas(s, on); });
+    canvas.appendChild(pin);
+  });
+  refreshRewardBadge();
+}
+
+/* ============ 答案解析与判定 ============ */
+function parseNum(s){
+  s=(s||'').trim().replace(/[xX=]/g,'');
+  if(s==='') return null;
+  if(s.indexOf('/')>=0){
+    const p=s.split('/').map(x=>x.trim());
+    const a=Number(p[0]), b=Number(p[1]);
+    if(isNaN(a)||isNaN(b)||b===0) return null;
+    return a/b;
+  }
+  const v=Number(s);
+  return isNaN(v)?null:v;
+}
+function parseNums(s){
+  s=(s||'').replace(/[xXyY=]/g,'').replace(/[；;]/g,',');
+  return s.split(/[，,\s]+/).map(x=>x.trim()).filter(x=>x!=='')
+          .map(parseNum).filter(v=>v!==null);
+}
+function checkAnswer(p, input){
+  if(p.kind==='num'){
+    const v=parseNum(input); return v!==null && Math.abs(v-p.a)<1e-6;
+  }
+  if(p.kind==='frac'){
+    const s=(input||'').trim();
+    if(s.indexOf('/')>=0){
+      const parts=s.split('/').map(x=>x.trim());
+      const pn=Number(parts[0]), pd=Number(parts[1]);
+      if(isNaN(pn)||isNaN(pd)||pd===0) return false;
+      return pn*p.frac[1] === pd*p.frac[0];   // 交叉相乘精确判定
+    }
+    const v=parseNum(s); return v!==null && Math.abs(v-p.a)<1e-4;
+  }
+  const nums=parseNums(input);
+  if(nums.length!==2) return false;
+  if(p.kind==='pair') return Math.abs(nums[0]-p.a[0])<1e-6 && Math.abs(nums[1]-p.a[1])<1e-6;
+  if(p.kind==='roots'){
+    const s1=Math.abs(nums[0]-p.a[0])<1e-6 && Math.abs(nums[1]-p.a[1])<1e-6;
+    const s2=Math.abs(nums[0]-p.a[1])<1e-6 && Math.abs(nums[1]-p.a[0])<1e-6;
+    return s1||s2;
+  }
+  return false;
+}
+function formatCorrect(p){
+  if(p.kind==='num') return `${p.a}`;
+  if(p.kind==='frac') return p.frac[1]===1?`${p.frac[0]}`:`${p.frac[0]}/${p.frac[1]}`;
+  if(p.kind==='pair') return `x = ${p.a[0]}, y = ${p.a[1]}`;
+  return `x₁ = ${p.a[0]}, x₂ = ${p.a[1]}`;
+}
+
+/* ============ 错题本（localStorage） ============ */
+const WB_KEY='math_wrong_book_v1';
+function loadWB(){ try{ return JSON.parse(localStorage.getItem(WB_KEY)||'[]'); }catch(e){ return []; } }
+function saveWB(a){ try{ localStorage.setItem(WB_KEY, JSON.stringify(a)); }catch(e){} }
+function addWrong(p, userInput){
+  let wb=loadWB();
+  if(wb.some(w=>w.q===p.q)) return;
+  wb.unshift({q:p.q, your:userInput, correct:formatCorrect(p), type:p.typeLabel, ts:Date.now(), explain:p.explain||null});
+  saveWB(wb); refreshWBcount();
+}
+function removeWrong(q){ saveWB(loadWB().filter(w=>w.q!==q)); refreshWBcount(); }
+
+/* ============ 状态 ============ */
+let session=null;
+const selected=new Set();
+let diff='mid';
+
+/* ============ UI 初始化 ============ */
+function buildTypes(){
+  const types=curTypes();
+  selected.clear();
+  const box=$('#typeBox'); box.innerHTML='';
+  Object.keys(types).forEach(k=>{
+    selected.add(k);
+    const lab=document.createElement('label'); lab.className='on';
+    lab.innerHTML=`<input type="checkbox" checked value="${k}"> ${types[k].label}`;
+    lab.querySelector('input').addEventListener('change',e=>{
+      if(e.target.checked){selected.add(k);lab.classList.add('on');}
+      else{selected.delete(k);lab.classList.remove('on');}
+    });
+    box.appendChild(lab);
+  });
+}
+$('#diffBox').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON')return;
+  diff=e.target.dataset.d;
+  [...$('#diffBox').children].forEach(b=>b.classList.toggle('on', b===e.target));
+});
+$('#levelBox').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON')return;
+  currentLevel=e.target.dataset.l;
+  [...$('#levelBox').children].forEach(b=>b.classList.toggle('on', b===e.target));
+  buildTypes();
+});
+function updateMusicBtn(){
+  const b=$('#musicBtn'); if(!b) return;
+  if(Music.isOn()){ b.classList.add('playing'); b.textContent='🎵 播放中'; }
+  else { b.classList.remove('playing'); b.textContent='🎵 山西印象'; }
+}
+let musicUserOff=false;
+function showTab(name){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  const tab=document.querySelector(`.tab[data-tab="${name}"]`); if(tab) tab.classList.add('active');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  $('#'+name).classList.add('active');
+  if(name==='wrong') renderWB();
+  if(name==='reward'){ renderRewardMap(); if(!musicUserOff){ Music.start(); updateMusicBtn(); } }
+  else Music.stop(), updateMusicBtn();
+}
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>showTab(t.dataset.tab));
+});
+
+/* ============ 开始练习 ============ */
+$('#startBtn').addEventListener('click',()=>{
+  if(selected.size===0){ alert('请至少选择一种题型'); return; }
+  let n=parseInt($('#count').value)||10; n=Math.max(1,Math.min(50,n));
+  const keys=[...selected];
+  const problems=[];
+  for(let i=0;i<n;i++){
+    const k=pick(keys);
+    const p=curTypes()[k].gen(diff);
+    p.typeLabel=curTypes()[k].label; p.wbQ=p.q; p.typeKey=k;
+    problems.push(p);
+  }
+  session={problems, idx:0, correct:0, wrong:0, fromWrong:false, start:Date.now()}; sessionNewLit=0;
+  $('#cfgCard').classList.add('quiz-hide');
+  $('#sumCard').classList.add('quiz-hide');
+  $('#quizCard').classList.remove('quiz-hide');
+  $('#nextBtn').classList.remove('quiz-hide');
+  $('#endBtn').classList.add('quiz-hide');
+  renderQuiz();
+});
+
+function renderQuiz(){
+  const p=session.problems[session.idx];
+  $('#progText').textContent=`第 ${session.idx+1} / ${session.problems.length} 题`;
+  $('#progScore').textContent=`✅ ${session.correct}  ❌ ${session.wrong}`;
+  $('#progBar').style.width=`${(session.idx)/(session.problems.length)*100}%`;
+  $('#qBox').textContent=p.q;
+  $('#qHint').textContent=`题型：${p.typeLabel}　|　${HINTS[p.kind]}`;
+  const inp=$('#ansInput'); inp.value=''; inp.disabled=false; inp.focus();
+  $('#submitBtn').disabled=false;
+  $('#nextBtn').disabled=true;
+  $('#feedback').className='feedback';
+}
+
+$('#submitBtn').addEventListener('click',submit);
+$('#ansInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ if(!$('#nextBtn').disabled) next(); else submit(); }});
+$('#nextBtn').addEventListener('click',next);
+$('#endBtn').addEventListener('click',finishSession);
+
+function submit(){
+  const p=session.problems[session.idx];
+  const val=$('#ansInput').value;
+  const ok=checkAnswer(p, val);
+  const fb=$('#feedback');
+  if(ok){
+    fb.className='feedback ok';
+    fb.innerHTML=`✅ 回答正确！`;
+    session.correct++;
+    if(session.fromWrong) removeWrong(p.wbQ);
+    if(unlockType(p.typeKey)) sessionNewLit++;          // 答对即时点亮对应招牌景点
+  }else{
+    fb.className='feedback bad';
+    fb.innerHTML=`❌ 回答错误　正确答案：<b>${formatCorrect(p)}</b>` + (p.explain?`<div class="fb-explain">💡 ${p.explain}</div>`:'');
+    session.wrong++;
+    addWrong(p, val);
+  }
+  $('#ansInput').disabled=true;
+  $('#submitBtn').disabled=true;
+  $('#nextBtn').disabled=false;
+  $('#progScore').textContent=`✅ ${session.correct}  ❌ ${session.wrong}`;
+}
+function next(){
+  session.idx++;
+  if(session.idx>=session.problems.length) finishSession();
+  else renderQuiz();
+}
+function finishSession(){
+  $('#progBar').style.width='100%';
+  const total=session.problems.length;
+  const rate=Math.round(session.correct/total*100);
+  // 奖励：答对已在 submit 中即时点亮对应招牌景点（见 unlockType）；此处保留整组兜底，确保涉及的题型都已点亮
+  const doneTypes=[...new Set(session.problems.map(p=>p.typeKey))];
+  const before=loadReward();
+  const newly=doneTypes.filter(k=>!before.has(k));
+  if(newly.length){ const after=new Set(before); newly.forEach(k=>after.add(k)); saveReward(after); sessionNewLit+=newly.length; }
+  // 每完成一组练习，解锁一座 ★ 彩蛋景点
+  const sBefore=loadSessions();
+  const bonusNew=Math.min(sBefore+1,BONUS.length)-Math.min(sBefore,BONUS.length);
+  saveSessions(sBefore+1);
+  $('#quizCard').classList.add('quiz-hide');
+  $('#sumCard').classList.remove('quiz-hide');
+  $('#sumRate').textContent=rate+'%';
+  let txt=`共 ${total} 题，答对 ${session.correct} 题，答错 ${session.wrong} 题。答错的题已收入错题本，可反复重做。`;
+  if(sessionNewLit||bonusNew) txt+=` 🗺️ 本次点亮了 ${sessionNewLit+bonusNew} 座中国景点（含 ${bonusNew} 座彩蛋）！`;
+  $('#sumText').textContent=txt;
+  refreshRewardBadge();
+}
+
+/* 旧错题（早期未存讲解）按题型给出方法提示兜底 */
+function fallbackExplain(w){
+  const t=w.type||'';
+  if(t.includes('方程')) return '本题为解方程，注意移项要变号、合并同类项、化系数为 1，最后把解代回检验。';
+  if(t.includes('方程组')) return '本题为解方程组，可用代入消元法或加减消元法先消去一个未知数，再求另一个。';
+  if(t.includes('二次')&&t.includes('方程')) return '本题为一元二次方程，可用因式分解、配方法或求根公式 x = (−b±√(b²−4ac))/2a。';
+  if(t.includes('向量')) return '本题为向量运算，数量积 a·b=|a||b|cosθ，坐标运算对应分量相加减。';
+  if(t.includes('等差')) return '等差数列用通项 aₙ=a₁+(n−1)d、前 n 项和 Sₙ=n(a₁+aₙ)/2。';
+  if(t.includes('等比')) return '等比数列用通项 aₙ=a₁qⁿ⁻¹、前 n 项和 Sₙ=a₁(1−qⁿ)/(1−q)。';
+  if(t.includes('对数')) return '对数运算利用 logₐ(aⁿ)=n、lg(10ⁿ)=n、ln(eⁿ)=n 等性质。';
+  if(t.includes('指数')) return '指数运算利用同底数幂乘除、幂的乘方、积的乘方等法则。';
+  if(t.includes('复数')) return '复数模长 |z|=√(实部²+虚部²)，共轭复数虚部取反。';
+  if(t.includes('解三角形')) return '解三角形用勾股定理或正余弦定理。';
+  if(t.includes('分数')) return '分数运算先通分（加减）或分子分母分别相乘（乘除），结果要约分。';
+  if(t.includes('小数')) return '小数四则按运算顺序计算，注意小数点对齐。';
+  if(t.includes('百分')) return '百分数问题用“基数 × 百分数”计算，注意化小数或分数。';
+  if(t.includes('整式')||t.includes('分式')) return '代入求值先化简代数式（因式分解、约分），再代入数值计算。';
+  if(t.includes('二次根')) return '二次根式利用 √(ab)=√a·√b，同类根式才能加减。';
+  if(t.includes('简便')||t.includes('运算律')) return '简便运算先观察能否运用乘法分配律或凑整简化。';
+  if(t.includes('互化')) return '分数、小数、百分数互化：小数化分数看小数位数，百分数化分数分母为100。';
+  return '做题时看清运算顺序与符号，分步计算并检验，可减少出错。';
+}
+
+/* ============ 错题本界面 ============ */
+function refreshWBcount(){
+  const n=loadWB().length;
+  $('#wbc').textContent = n>0?`(${n})`:'';
+  $('#stTotal').textContent=n;
+  $('#stType').textContent=new Set(loadWB().map(w=>w.type)).size;
+}
+function renderWB(){
+  refreshWBcount();
+  const wb=loadWB();
+  const box=$('#wbBox');
+  if(wb.length===0){
+    box.innerHTML=`<div class="empty"><div class="em">📭</div><p>还没有错题，继续加油！</p></div>`;
+    return;
+  }
+  box.innerHTML='<div class="wb-list"></div>';
+  const list=box.querySelector('.wb-list');
+  wb.forEach(w=>{
+    const d=new Date(w.ts);
+    const item=document.createElement('div'); item.className='wb-item';
+    const ex = w.explain || fallbackExplain(w);
+    item.innerHTML=`<div class="t">${w.type}</div>
+      <div class="q">${w.q.replace(/\n/g,'<br>')}</div>
+      <div class="meta">你的答案：<b class="bad">${w.your||'(空)'}　</b> 正确答案：<b class="ok">${w.correct}</b>
+      <br>记录于 ${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</div>
+      <div class="explain"><span class="ex-label">💡 讲解</span>${ex}</div>`;
+    list.appendChild(item);
+  });
+}
+$('#clearBtn').addEventListener('click',()=>{
+  if(confirm('确定要清空错题本吗？此操作不可恢复。')){ saveWB([]); refreshWBcount(); renderWB(); }
+});
+$('#redoBtn').addEventListener('click',()=>{
+  const wb=loadWB();
+  if(wb.length===0){ alert('错题本是空的～'); return; }
+  const probs=shuffle(wb).map(w=>{
+    // 用存储的题目文本直接重建（保留原题），答案用存储的正确答案解析
+    let kind='num';
+    if(w.correct.indexOf('x₁')>=0) kind='roots';
+    else if(w.correct.indexOf('x =')>=0) kind='pair';
+    else if(w.correct.indexOf('/')>=0) kind='frac';
+    let a, frac=null;
+    if(kind==='pair'){ const m=w.correct.match(/x\s*=\s*(-?[\d.]+).*?y\s*=\s*(-?[\d.]+)/); a=[+m[1],+m[2]]; }
+    else if(kind==='roots'){ const m=w.correct.match(/x₁\s*=\s*(-?[\d.]+).*?x₂\s*=\s*(-?[\d.]+)/); a=[+m[1],+m[2]]; }
+    else if(kind==='frac'){ const m=w.correct.split('/'); a=+m[0]/+m[1]; frac=[+m[0],+m[1]]; }
+    else a=Number(w.correct);
+    return {q:w.q, a, frac, kind, typeLabel:w.type, wbQ:w.q, explain:w.explain};
+  });
+  session={problems:probs, idx:0, correct:0, wrong:0, fromWrong:true, start:Date.now()}; sessionNewLit=0;
+  $('#cfgCard').classList.add('quiz-hide');
+  $('#sumCard').classList.add('quiz-hide');
+  $('#quizCard').classList.remove('quiz-hide');
+  $('#nextBtn').classList.remove('quiz-hide');
+  $('#endBtn').classList.remove('quiz-hide');
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelector('.tab[data-tab="practice"]').classList.add('active');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  $('#practice').classList.add('active');
+  renderQuiz();
+});
+
+$('#againBtn').addEventListener('click',()=>{
+  $('#sumCard').classList.add('quiz-hide');
+  $('#cfgCard').classList.remove('quiz-hide');
+});
+$('#toWrongBtn').addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelector('.tab[data-tab="wrong"]').classList.add('active');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  $('#wrong').classList.add('active');
+  renderWB();
+});
+$('#toRewardBtn').addEventListener('click',()=>showTab('reward'));
+$('#musicBtn').addEventListener('click',()=>{
+  const on=Music.toggle();
+  musicUserOff=!on;   // 用户手动关掉后，切走再回来也不自动播放
+  updateMusicBtn();
+});
+
+$('#resetRewardBtn').addEventListener('click',()=>{
+  if(confirm('确定要重置已点亮的景点进度与练习计数吗？此操作不可恢复。')){ saveReward(new Set()); saveSessions(0); renderRewardMap(); }
+});
+
+/* 启动 */
+buildTypes();
+refreshWBcount();
+refreshRewardBadge();
+updateMusicBtn();
+</script>
+<script>
+/* 封面花瓣飘落 */
+(function(){
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var layer=document.createElement('div'); layer.className='petal-layer';
+  document.body.appendChild(layer);
+  var N=16;
+  for(var i=0;i<N;i++){
+    var p=document.createElement('div'); p.className='petal';
+    var sz=9+Math.random()*6;
+    p.style.width=sz+'px'; p.style.height=(sz*0.78)+'px';
+    p.style.left=(Math.random()*100)+'%';
+    var d=7+Math.random()*7, delay=-Math.random()*d;
+    p.style.animationDuration=d+'s'; p.style.animationDelay=delay+'s';
+    var leaf=document.createElement('span'); leaf.className='leaf';
+    var fd=2.4+Math.random()*2.4;
+    leaf.style.animationDuration=fd+'s'; leaf.style.animationDelay=(-Math.random()*fd)+'s';
+    p.appendChild(leaf); layer.appendChild(p);
+  }
+})();
+</script>
+
+</body>
+</html>

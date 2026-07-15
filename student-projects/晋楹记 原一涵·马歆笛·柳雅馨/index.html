@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>晋楹记 · 沉浸式古建学堂</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- 顶部导航：五个模块都在本页内切换，无独立页面跳转 -->
+  <nav id="topnav">
+    <span class="brand">晋楹记</span>
+    <button data-v="challenge" class="active">闯关区</button>
+    <button data-v="build">古建区</button>
+    <button data-v="museum">藏品馆</button>
+    <button data-v="community">社区</button>
+    <button data-v="profile">我的</button>
+    <button id="btn-settings" title="设置">⚙ 设置</button>
+  </nav>
+
+  <!-- 场景容器：当前模块的 3D 场景与覆盖层都渲染在这里 -->
+  <div id="view"></div>
+
+  <!-- 设置面板：背景音乐 / 音效 开关与音量，点空白处关闭 -->
+  <div id="settings-panel" class="modal-mask">
+    <div class="settings-box">
+      <div class="settings-title">设置</div>
+
+      <div class="settings-row">
+        <div class="settings-label">
+          <span>背景音乐 · 雅致茶音</span>
+          <button class="toggle" id="bgm-toggle">开</button>
+        </div>
+        <input type="range" id="bgm-vol" min="0" max="100" value="60" />
+        <div class="settings-val" id="bgm-vol-val">60%</div>
+      </div>
+
+      <div class="settings-row">
+        <div class="settings-label">
+          <span>游戏音效</span>
+          <button class="toggle" id="sfx-toggle">开</button>
+        </div>
+        <input type="range" id="sfx-vol" min="0" max="100" value="85" />
+        <div class="settings-val" id="sfx-vol-val">85%</div>
+      </div>
+
+      <div class="settings-tip">古筝五声循环曲，自然融入古建氛围；音乐与音效相互独立、互不影响清晰度。</div>
+
+      <div class="settings-row settings-danger">
+        <div class="settings-label"><span>游玩记录</span></div>
+        <button class="danger-btn" id="clear-save-btn">清空游玩记录</button>
+      </div>
+
+      <button class="settings-close" id="settings-close">关闭</button>
+    </div>
+  </div>
+
+  <!-- 本地离线引入：three.min.js（与 index.html 同目录即可，无需联网） -->
+  <script src="three.min.js"></script>
+  <!-- 共享数据（关卡 / 零件 / 建筑） -->
+  <script src="data.js"></script>
+  <!-- 单页控制器 + 五个 3D 场景 -->
+  <script src="app.js"></script>
+</body>
+</html>

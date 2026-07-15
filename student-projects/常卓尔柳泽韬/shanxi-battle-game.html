@@ -1,0 +1,2300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>山西历史战斗 · 集卡种树</title>
+<style>
+  :root{
+    --bg1:#fff7ec; --bg2:#ffe9d6; --ink:#3a2b1f; --red:#e23b3b; --green:#2f9e57;
+    --gold:#d9a441; --card:#fffdf8; --shadow:0 8px 24px rgba(120,80,40,.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;}
+  body{background:linear-gradient(160deg,var(--bg1),var(--bg2));color:var(--ink);min-height:100vh;}
+  .screen{display:none;min-height:100vh;padding:24px;}
+  .screen.active{display:block;}
+  .wrap{max-width:980px;margin:0 auto;}
+  h1{font-size:30px;letter-spacing:2px;margin-bottom:6px;}
+  h2{font-size:20px;margin:18px 0 10px;}
+  .sub{color:#8a6d52;font-size:14px;margin-bottom:18px;}
+
+  /* ---------- 主页 ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px;}
+  .stat{flex:1;min-width:160px;background:var(--card);border-radius:14px;padding:16px;box-shadow:var(--shadow);text-align:center;}
+  .stat .num{font-size:34px;font-weight:800;color:var(--red);}
+  .stat .lbl{font-size:13px;color:#8a6d52;margin-top:4px;}
+  .stat.g .num{color:var(--green);}
+  .stat.gold .num{color:var(--gold);}
+
+  .btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;}
+  button{cursor:pointer;border:none;border-radius:12px;padding:12px 20px;font-size:15px;font-weight:700;
+    background:var(--red);color:#fff;box-shadow:var(--shadow);transition:transform .08s,filter .15s;}
+  button:hover{filter:brightness(1.05);}
+  button:active{transform:translateY(2px);}
+  button.green{background:var(--green);}
+  button.gold{background:var(--gold);}
+  button.purple{background:linear-gradient(135deg,#9b59ff,#7b3fe4);}
+  button.ghost{background:#fff;color:var(--ink);border:1.5px solid #e6cdb0;box-shadow:none;}
+  button:disabled{background:#d8c9b6;cursor:not-allowed;box-shadow:none;}
+
+  .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-top:8px;}
+  .card{background:var(--card);border-radius:14px;padding:14px;box-shadow:var(--shadow);cursor:pointer;
+    border:2px solid transparent;transition:transform .1s,border-color .15s;position:relative;overflow:hidden;}
+  .card:hover{transform:translateY(-3px);border-color:var(--gold);}
+  .card.locked{opacity:.55;filter:grayscale(.6);cursor:default;}
+  .card .emoji{font-size:30px;line-height:0;}
+  .card .emoji svg,.m-emoji svg{display:block;margin:0 auto;}
+  .card .ct{font-weight:800;margin:6px 0 4px;font-size:15px;}
+  .card .cd{font-size:12px;color:#8a6d52;line-height:1.5;}
+  .card .badge{position:absolute;top:8px;right:8px;background:var(--red);color:#fff;border-radius:20px;
+    font-size:11px;padding:2px 8px;font-weight:700;}
+
+  .exchange{background:var(--card);border-radius:14px;padding:16px;box-shadow:var(--shadow);margin-top:10px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+
+  /* ---------- 战斗 ---------- */
+  #battle .wrap{max-width:1080px;}
+  .battle-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+  .hud{display:flex;gap:18px;align-items:center;flex-wrap:wrap;}
+  .hud .item{background:var(--card);border-radius:12px;padding:8px 14px;box-shadow:var(--shadow);font-weight:700;}
+  .hud .item small{color:#8a6d52;font-weight:500;margin-right:4px;}
+  #hpbar{width:160px;height:14px;background:#eadbc8;border-radius:8px;overflow:hidden;display:inline-block;vertical-align:middle;}
+  #hpfill{height:100%;width:100%;background:linear-gradient(90deg,#ff6b6b,#e23b3b);transition:width .15s;}
+  .canvas-box{position:relative;background:#dfeecb;border-radius:16px;overflow:hidden;box-shadow:var(--shadow);}
+  canvas{display:block;width:100%;height:auto;background:linear-gradient(180deg,#eaf6dc,#cfe8b4);}
+  .hint{font-size:13px;color:#7a6248;margin-top:10px;line-height:1.7;background:#fff8ee;border-radius:12px;padding:12px 14px;}
+  .key{display:inline-block;background:#3a2b1f;color:#fff;border-radius:6px;padding:1px 8px;font-size:12px;font-weight:700;margin:0 2px;}
+  #toast{position:fixed;left:50%;top:18%;transform:translateX(-50%);background:rgba(58,43,31,.92);color:#fff;
+    padding:12px 22px;border-radius:30px;font-weight:700;opacity:0;transition:opacity .3s,top .3s;pointer-events:none;z-index:50;font-size:15px;}
+  #toast.show{opacity:1;top:14%;}
+
+  /* ---------- 花园 ---------- */
+  #garden .wrap{max-width:1080px;}
+  .garden-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+  .garden-hud{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+  .garden-hud .item{background:var(--card);border-radius:12px;padding:8px 14px;box-shadow:var(--shadow);font-weight:700;}
+  .picker{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0;}
+  .picker select{padding:8px 10px;border-radius:10px;border:1.5px solid #e6cdb0;font-size:14px;background:#fff;}
+  .garden-canvas-box{background:#bfe3a0;border-radius:16px;overflow:hidden;box-shadow:var(--shadow);}
+  .env-bar{height:16px;background:#eadbc8;border-radius:10px;overflow:hidden;width:220px;display:inline-block;vertical-align:middle;}
+  .env-fill{height:100%;width:0;background:linear-gradient(90deg,#7ed957,#2f9e57);transition:width .4s;}
+
+  /* ---------- 森林优化站 ---------- */
+  .plant-panel{background:rgba(255,255,255,.66);border:1.6px dashed #9fd17a;border-radius:14px;padding:12px 14px;margin:8px 0;}
+  .pp-head{display:flex;justify-content:space-between;align-items:center;font-weight:800;color:#3a6b2a;}
+  .pp-cost{font-size:14px;color:#6b4f33;font-weight:600;}
+  .pp-cost b{color:#e23b3b;font-size:17px;}
+  .pp-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0 4px;}
+  .pp-tip{font-size:13px;color:#8a6d52;}
+  .plant-grid{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+  .plant-btn{padding:8px 12px;border-radius:12px;border:1.6px solid #9fd17a;background:#eafbe0;font-weight:700;color:#2f6b2a;cursor:pointer;font-size:14px;}
+  .plant-btn:hover{background:#d6f3c4;}
+  .plant-btn.locked{background:#eee;border-color:#ddd;color:#aaa;cursor:not-allowed;}
+  .plant-btn.sel{outline:3px solid #2f9e57;outline-offset:1px;}
+
+  /* ---------- 弹窗 ---------- */
+  .modal{position:fixed;inset:0;background:rgba(40,28,18,.55);display:none;align-items:center;justify-content:center;z-index:60;padding:20px;}
+  .modal.show{display:flex;}
+  .modal-box{background:var(--card);border-radius:18px;max-width:520px;width:100%;padding:26px;box-shadow:var(--shadow);max-height:86vh;overflow:auto;}
+  .modal-box h3{font-size:22px;margin-bottom:6px;}
+  .modal-box .m-emoji{font-size:42px;}
+  .modal-box p{line-height:1.9;margin-top:12px;font-size:15px;color:#4a3829;}
+  .modal-box .close{margin-top:18px;text-align:right;}
+  .lvtag{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;color:#fff;vertical-align:middle;margin-left:4px;}
+  .lv5{background:linear-gradient(135deg,#e23b3b,#ff7a45);}
+  .lv4{background:linear-gradient(135deg,#2f8fde,#36c5c0);}
+  .modal-box .loc{font-size:14px;color:#8a6d52;margin:4px 0 14px;font-weight:600;}
+  .modal-box .sec{margin-top:16px;background:rgba(255,255,255,.5);border-left:4px solid var(--accent);border-radius:8px;padding:10px 14px;}
+  .modal-box .sec b{color:var(--accent);font-size:15px;}
+  .modal-box .sec p{margin-top:6px;color:#4a3829;}
+  .modal-box .ans{margin-top:10px;font-size:14px;color:#2f8fde;cursor:pointer;}
+  .modal-box .ans summary{outline:none;font-weight:700;}
+  .modal-box .ans p{margin-top:8px;color:#c0392b;font-weight:600;}
+  .footer-note{text-align:center;color:#a98c6f;font-size:12px;margin-top:26px;}
+  /* 武器库 */
+  .weapon-bar{background:linear-gradient(135deg,#232838,#2c3245);border:1px solid #3a4156;border-radius:16px;padding:16px 18px;margin-top:6px;}
+  .weapon-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;color:#e9edf6;}
+  .weapon-head .ttl{font-size:18px;font-weight:800;}
+  .souls{background:#1a1d2a;border:1px solid #3a4156;border-radius:20px;padding:6px 14px;font-size:14px;color:#c9b6ff;font-weight:700;}
+  .weapons{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+  .wcard{background:#1a1d2a;border:1px solid #353c52;border-radius:12px;padding:12px;text-align:center;cursor:pointer;transition:.15s;position:relative;}
+  .wcard:hover{border-color:#5b6bff;transform:translateY(-2px);}
+  .wcard.equipped{border-color:#ffd34d;box-shadow:0 0 0 2px rgba(255,211,77,.4);}
+  .wcard .wico{width:48px;height:48px;margin:0 auto 6px;}
+  .wcard .wn{font-weight:800;color:#f3f6fc;font-size:15px;}
+  .wcard .wlv{display:inline-block;font-size:11px;font-weight:700;background:#3a4156;color:#ffd34d;border-radius:10px;padding:1px 8px;margin-top:3px;}
+  .wcard .wdesc{font-size:11px;color:#9aa3bd;margin:6px 0;}
+  .wcard .weff{font-size:11px;color:#7fe0b0;min-height:14px;}
+  .wcard .wkey{position:absolute;top:6px;left:8px;font-size:11px;color:#7c87a8;background:#2a2f42;border-radius:6px;padding:1px 6px;}
+  .wcard .wact{margin-top:8px;}
+  .wbtn{width:100%;border:none;border-radius:8px;padding:6px;font-size:12px;font-weight:700;cursor:pointer;color:#1a1d2a;}
+  .wbtn.up{background:linear-gradient(135deg,#ffd34d,#ff9a5a);}
+  .wbtn.max{background:#3a4156;color:#9aa3bd;cursor:default;}
+  .wbtn.eq{background:linear-gradient(135deg,#7fe0b0,#4ab0e0);}
+  .w-hint{margin-top:12px;font-size:12px;color:#9aa3bd;text-align:center;}
+
+  /* ---------- 每日签到 + 历史人物 ---------- */
+  .blue{background:linear-gradient(135deg,#3aa0ff,#2f6fe0);}
+  .m-close{position:absolute;top:14px;right:16px;width:30px;height:30px;border:none;border-radius:50%;background:#efe6d6;color:#7a5a3a;font-size:16px;font-weight:800;cursor:pointer;}
+  .m-close:hover{background:#e0d2ba;}
+  .ck-sub{font-size:14px;color:#5a4632;margin:14px 0 16px;line-height:1.7;}
+  .ck-sub b{color:#c0392b;}
+  .ck-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+  .ck-cell{background:#f6efe2;border:2px solid #e3d4b8;border-radius:12px;padding:10px 4px;text-align:center;position:relative;min-width:0;}
+  .ck-cell.today{border-color:#ffb43b;box-shadow:0 0 0 2px rgba(255,180,59,.4);background:#fff7e6;}
+  .ck-cell.done{opacity:.72;background:#eef6ec;border-color:#bfe0b5;}
+  .ck-day{font-size:12px;font-weight:700;color:#8a6d52;}
+  .ck-rew{font-size:12px;font-weight:800;color:#c0392b;margin-top:4px;line-height:1.3;}
+  .ck-ok{font-size:10px;color:#2f9e57;font-weight:700;margin-top:3px;}
+  .ck-btn{width:100%;margin-top:18px;border:none;border-radius:10px;padding:12px;font-size:15px;font-weight:800;color:#3a2b1f;background:linear-gradient(135deg,#ffd34d,#ff9b3b);cursor:pointer;}
+  .ck-btn.done{background:#cdd6cf;color:#8a938c;cursor:default;}
+  .fig-hint{font-size:13px;color:#8a6d52;margin:8px 0 14px;}
+  .figs{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;}
+  .fcard{background:linear-gradient(135deg,#fff8ec,#fbeede);border:2px solid #ecd9b6;border-radius:14px;padding:12px 8px;text-align:center;cursor:pointer;transition:.15s;position:relative;}
+  .fcard:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(180,140,90,.25);}
+  .fcard.sel{border-color:#e23b3b;box-shadow:0 0 0 2px rgba(226,59,59,.35);background:linear-gradient(135deg,#fff1e8,#ffe6da);}
+  .fport{width:56px;height:56px;margin:0 auto 6px;}
+  .fn{font-weight:800;font-size:15px;color:#5a3d22;}
+  .ft{font-size:11px;color:#b07b3a;margin-top:2px;font-weight:700;}
+  .fb{font-size:11px;color:#8a6d52;margin-top:2px;}
+  .fsel{margin-top:6px;font-size:12px;font-weight:800;color:#e23b3b;}
+  .fpick{margin-top:6px;font-size:12px;color:#a98c6f;}
+
+  /* ---------- 战前部署：场景 + 天气 ---------- */
+  .battle-setup{background:linear-gradient(135deg,#1d2b4a,#2c3e6b);border-radius:16px;padding:18px 20px;margin-top:12px;box-shadow:var(--shadow);color:#eaf0ff;}
+  .setup-row{display:flex;align-items:center;gap:12px;margin:12px 0;flex-wrap:wrap;}
+  .setup-label{font-weight:800;min-width:60px;font-size:15px;letter-spacing:1px;}
+  .chips{display:flex;gap:10px;flex-wrap:wrap;}
+  .chip{background:rgba(255,255,255,.08);border:2px solid transparent;color:#dfe7ff;border-radius:12px;padding:9px 15px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;}
+  .chip:hover{background:rgba(255,255,255,.18);}
+  .chip.sel{background:linear-gradient(135deg,#ffd34d,#ff9b3b);color:#3a2b1f;border-color:#fff3cf;box-shadow:0 4px 14px rgba(0,0,0,.3);}
+  .setup-actions{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;}
+  .setup-actions .green{font-size:16px;padding:11px 22px;}
+</style>
+</head>
+<body>
+
+<!-- ============ 主页 ============ -->
+<div id="home" class="screen active">
+  <div class="wrap">
+    <h1>🗡️ 山西历史战斗 · 集卡种树</h1>
+    <div class="sub">打倒敌人，夺取历史卡片；集卡换拼图，拼图换大树，把绿色种回三晋大地的小花园。</div>
+
+    <div class="stats">
+      <div class="stat"><div class="num" id="homeCards">0</div><div class="lbl">已解锁历史卡片（已解锁 / 共 26）</div></div>
+      <div class="stat gold"><div class="num" id="homePieces">0</div><div class="lbl">大树拼图（块）</div></div>
+      <div class="stat g"><div class="num" id="homeTrees">0</div><div class="lbl">大树库存（棵）</div></div>
+    </div>
+
+    <div class="btns">
+      <button id="btnBattle">⚔️ 进入战斗</button>
+      <button class="green" id="btnGarden">🌳 前往小花园</button>
+      <button class="blue" id="btnCheckin">🎁 每日签到</button>
+      <button class="gold" id="btnExchange" disabled>🌲 用5块拼图换1棵大树</button>
+      <button class="purple" id="btnRestore">🛠 一键恢复进度</button>
+      <button class="ghost" id="btnReset">♻️ 重置进度</button>
+    </div>
+
+    <h2>📜 我的历史卡片收藏</h2>
+    <div class="cards-grid" id="homeCardsGrid"></div>
+
+    <h2 style="margin-top:30px;">⚔️ 武器库</h2>
+    <div class="weapon-bar">
+      <div class="weapon-head">
+        <span class="ttl">我的武器</span>
+        <span class="souls">🔮 战魂：<span id="wSouls">0</span></span>
+      </div>
+      <div class="weapons" id="weaponList"></div>
+      <div class="w-hint">点击武器设为「出战」（战斗开始默认用它）· 点「升级」消耗战魂提升等级与特效 · 战斗中按数字键 1~6 随时切换武器</div>
+    </div>
+
+    <h2 style="margin-top:30px;">🏯 山西历史人物 · 选择你的主角</h2>
+    <div class="fig-hint">点开任意一位山西历史名人，即可把他/她设为这一局战斗的主角皮肤，随时可换。</div>
+    <div class="figs" id="figureList"></div>
+
+    <div class="footer-note">进度自动保存在本机浏览器中 · 山西，表里山河，历史悠久。</div>
+  </div>
+</div>
+
+<!-- ============ 每日签到弹窗 ============ -->
+<div id="checkinModal" class="modal">
+  <div class="modal-box">
+    <button class="m-close" id="checkinClose">✕</button>
+    <h3>🎁 每日签到</h3>
+    <div id="checkinBody"></div>
+  </div>
+</div>
+
+<!-- ============ 战斗 ============ -->
+<div id="battle" class="screen">
+  <div class="wrap">
+    <div class="battle-top">
+      <h1>⚔️ 战斗现场</h1>
+      <button class="ghost" id="btnQuit">← 撤退回主页</button>
+    </div>
+    <!-- 战前部署：场景 + 天气 双选栏 -->
+    <div class="battle-setup" id="battleSetup">
+      <div class="setup-row">
+        <span class="setup-label">🗺️ 场景</span>
+        <div class="chips" id="sceneChips">
+          <button class="chip sel" data-scene="city">🏙️ 城市</button>
+          <button class="chip" data-scene="sea">🌊 大海</button>
+          <button class="chip" data-scene="forest">🌲 森林</button>
+          <button class="chip" data-scene="space">🚀 宇宙</button>
+        </div>
+      </div>
+      <div class="setup-row">
+        <span class="setup-label">🌤️ 天气</span>
+        <div class="chips" id="weatherChips">
+          <button class="chip sel" data-weather="sunny">☀️ 晴天</button>
+          <button class="chip" data-weather="wind">💨 大风</button>
+          <button class="chip" data-weather="rain">🌧️ 大雨</button>
+          <button class="chip" data-weather="snow">❄️ 大雪</button>
+        </div>
+      </div>
+      <div class="setup-actions">
+        <button class="green" id="btnStartBattle">⚔️ 开始战斗</button>
+        <button class="ghost" id="btnSetupHome">← 返回主页</button>
+      </div>
+    </div>
+
+    <div class="hud" id="battleHud" style="display:none;">
+      <div class="item"><small>生命</small><span id="hpbar"><span id="hpfill"></span></span></div>
+      <div class="item"><small>本局卡片</small><span id="runCards">0</span>/5</div>
+      <div class="item"><small>拼图</small><span id="hudPieces">0</span></div>
+      <div class="item"><small>库存大树</small><span id="hudTrees">0</span></div>
+      <div class="item"><small>武器</small><span id="hudWeapon">枪 Lv1</span></div>
+    </div>
+
+    <div class="canvas-box" id="battleCanvasBox" style="display:none;margin-top:12px;">
+      <canvas id="game" width="1040" height="560"></canvas>
+    </div>
+
+    <div class="hint">
+      🎮 移动：<span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> 或 方向键 &nbsp;|&nbsp;
+      🖱️ <b>按住左键（或空格）</b> = 朝鼠标方向发射弹药 &nbsp;|&nbsp; <b>Shift</b> = 翻滚躲避 &nbsp;|&nbsp;
+      <b>单击右键</b> = 捡起附近卡片 &nbsp;|&nbsp; <b>Q</b> = 放下手中卡片 &nbsp;|&nbsp; <b>数字键 1~6</b> = 切换武器<br>
+      💡 把鼠标移到敌人身上，按住左键就能直接射出弹药打倒它！对手是人机，会朝你射击，可借场地掩体走位躲避。敌人被击倒会掉落山西历史卡片，靠近后单击右键捡起。集齐 <b>5 张</b> 本局结束，自动回主页并换得 <b>1 块大树拼图</b>。
+    </div>
+  </div>
+</div>
+
+<!-- ============ 小花园 ============ -->
+<div id="garden" class="screen">
+  <div class="wrap">
+    <div class="garden-top">
+      <h1>🌳 我的小花园</h1>
+      <button class="ghost" id="btnGardenHome">← 回主页</button>
+    </div>
+    <div class="garden-hud">
+      <div class="item"><small>大树库存</small><span id="gTrees">0</span> 棵</div>
+      <div class="item"><small>环境评分</small><span id="gEnv">0</span></div>
+      <div class="env-bar"><span class="env-fill" id="envFill"></span></div>
+    </div>
+
+    <div class="picker">
+      <span>放置工具：</span>
+      <button class="green" id="placeTree">🌲 放大树（消耗库存）</button>
+      <span>或放置历史卡片做装饰：</span>
+      <select id="cardPicker"></select>
+      <button class="gold" id="placeCard">📜 放卡片</button>
+      <span style="color:#8a6d52;font-size:13px;">（左键放置 · 右键拾回）</span>
+    </div>
+
+    <div class="plant-panel">
+      <div class="pp-head">
+        <span>🌿 植物苗圃（全部已解锁）</span>
+        <span class="pp-cost">种植额度：<b id="gPlantQuota">0</b> 株 · 持有大树拼图：<b id="gPuzzle">0</b> 块</span>
+      </div>
+      <div class="pp-row">
+        <button class="green" id="btnOptimize">🚀 森林优化（消耗 5 拼图）</button>
+        <span class="pp-tip">把已种的大树全部优化成松树（植物已全部解锁，随时可种）。每集齐 5 块大树拼图，可额外获得 <b>${PLANTS_PER_MILESTONE}</b> 株自由种植额度。</span>
+      </div>
+      <div class="plant-grid" id="plantGrid"></div>
+    </div>
+
+    <div class="garden-canvas-box">
+      <canvas id="gardenCanvas" width="1040" height="520"></canvas>
+    </div>
+    <div class="hint">
+      🌱 把从主页兑换来的<b>大树</b>种进花园，再摆上<b>历史卡片</b>做文化装饰，环境评分会越来越高，小花园就越来越美啦！
+    </div>
+  </div>
+</div>
+
+<!-- 弹窗 -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="m-emoji" id="mEmoji">📜</div>
+    <h3 id="mTitle"></h3>
+    <p id="mText"></p>
+    <div class="close"><button class="ghost" id="mClose">关闭</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ===================== 数据 ===================== */
+const CARDS = [
+  /* ===== 5A 级景区（12 个） ===== */
+  {id:'yungang', emoji:'🪨', title:'云冈石窟', level:'5A', city:'大同',
+   story:'北魏文成帝复兴佛教，命高僧昙曜开凿“昙曜五窟”。现存主要洞窟45个、造像5.9万余尊，融汇印度、西域与中原艺术，是北魏佛教雕刻的巅峰，2001年列入世界文化遗产。',
+   fact:'第20窟露天大佛高13.7米，是云冈的标志。石窟开凿时北魏都城就在大同（平城），所以云冈是地地道道的“京城佛教艺术”。',
+   question:'云冈石窟开凿于哪个朝代？',
+   answer:'北魏（由文成帝时期高僧昙曜主持开凿）。'},
+  {id:'wutai', emoji:'⛰️', title:'五台山', level:'5A', city:'忻州',
+   story:'文殊菩萨道场，中国佛教四大名山之首。自东汉起建寺，现存唐、宋、金、明、清寺庙数十座。显通寺铜殿、塔院寺大白塔闻名遐迩，2009年列入世界文化遗产。',
+   fact:'五台山是地球同纬度唯一有多年生亚高山草甸的温带地区，最高峰北台叶斗峰海拔3061米，号称“华北屋脊”。',
+   question:'五台山是哪一尊菩萨的道场？',
+   answer:'文殊菩萨。'},
+  {id:'huangcheng', emoji:'🏯', title:'皇城相府', level:'5A', city:'晋城',
+   story:'清代文渊阁大学士、《康熙字典》总纂官陈廷敬的故居，是一座集明清两代城堡式官宦宅邸，康熙帝曾两次下榻于此。',
+   fact:'“中道庄”城门上嵌有“德积一门九进士，恩荣三世六翰林”匾额，陈氏家族在明清两代共有41人走入仕途。',
+   question:'皇城相府是哪位清代名臣的故居？',
+   answer:'陈廷敬（《康熙字典》总纂官）。'},
+  {id:'mianshan', emoji:'🌿', title:'绵山', level:'5A', city:'晋中·介休',
+   story:'春秋时介子推“割股奉君”后隐居绵山，晋文公焚山逼其出仕，介子推抱树而死，寒食节由此而来。',
+   fact:'绵山是中国寒食清明节的发源地，山上有中国最大的抱腹岩，可容纳万人，岩下寺庙悬于绝壁。',
+   question:'绵山与哪个传统节日直接相关？',
+   answer:'寒食节（及清明节）。'},
+  {id:'pingyao', emoji:'🏯', title:'平遥古城', level:'5A', city:'晋中',
+   story:'西周始建，明洪武三年重筑城墙，是中国保存最完整的明清县城。清道光年间诞生中国第一家票号“日昇昌”。1997年列入世界文化遗产。',
+   fact:'平遥城墙周长约6.4公里，原有垛口3000个、敌楼72座，象征孔子“三千弟子、七十二贤人”。',
+   question:'中国第一家票号“日昇昌”诞生于哪座古城？',
+   answer:'平遥古城（清代道光年间）。'},
+  {id:'yanmen', emoji:'🚪', title:'雁门关', level:'5A', city:'忻州·代县',
+   story:'长城最重要关隘之一，“天下九塞，雁门为首”。自古为中原与北方游牧民族交锋前沿，杨家将镇守雁门的传说流传至今。',
+   fact:'雁门关地势“双关夹峙，其形如门，飞雁出于其间”因而得名；李牧、蒙恬、卫青、霍去病、薛仁贵等名将都曾在此征战。',
+   question:'“天下九塞，雁门为首”说的是哪座关隘？',
+   answer:'雁门关。'},
+  {id:'hukou', emoji:'🌊', title:'黄河壶口瀑布', level:'5A', city:'临汾·吉县',
+   story:'晋陕交界的黄河中游，世界最大的黄色瀑布。河床骤窄，“千里黄河一壶收”。李白“黄河之水天上来”正咏此壮景。',
+   fact:'壶口是中国唯一一处随季节移动的瀑布——枯水期在陕西一侧，丰水期在山西一侧，故有“河东河西”之争。',
+   question:'黄河壶口瀑布位于哪两省交界？',
+   answer:'山西省与陕西省（晋陕交界）。'},
+  {id:'yunqiu', emoji:'🏔️', title:'云丘山', level:'5A', city:'临汾·乡宁',
+   story:'上古尧舜时期就被认为是昆仑丘（昆仑山）所在，是道教全真教龙门派圣地，塔尔坡古村有2500多年历史。',
+   fact:'云丘山有罕见的“万年冰洞”，盛夏洞中仍冰笋、冰柱林立，且与附近的“千年火山”仅相隔数百米，冰火两重天。',
+   question:'云丘山以哪种罕见的自然奇观闻名？',
+   answer:'万年冰洞（盛夏仍结冰的天然冰洞）。'},
+  {id:'baquanxia', emoji:'🏞️', title:'太行山大峡谷八泉峡', level:'5A', city:'长治·壶关',
+   story:'太行山精华段，峡谷幽深、飞瀑流泉，因八股泉水同出一地而得名。可乘缆车、游船、观光电梯览太行雄姿。',
+   fact:'八泉峡的“天空之城”观光电梯建在绝壁之上，电梯+索道+电梯三位一体，垂直高差300余米，是太行山少见的立体观光线路。',
+   question:'八泉峡因何得名？',
+   answer:'因峡谷中有八股泉水同出一地而得名。'},
+  {id:'dahuaishu', emoji:'🌳', title:'洪洞大槐树', level:'5A', city:'临汾·洪洞',
+   story:'明代洪武至永乐年间，朝廷在洪洞大槐树下设局移民，百万民众由此迁往18省，是海内外华人“寻根祭祖”的圣地。',
+   fact:'传说移民被官兵反绑双手，上厕所要喊“解手”，所以北方方言把上厕所叫“解手”；又说小脚趾甲分两瓣是移民后裔特征。',
+   question:'明代大移民以哪棵大树为集合出发地？',
+   answer:'洪洞大槐树。'},
+  {id:'qiaojia', emoji:'💰', title:'乔家大院', level:'5A', city:'晋中·祁县',
+   story:'清代晋商乔致庸的宅邸，院套院、屋连屋，建筑面积8700余平方米，因电影《大红灯笼高高挂》和电视剧《乔家大院》闻名。',
+   fact:'乔家大院正门悬挂的“福种琅嬛”匾，是慈禧太后西逃途经时赏赐的；全院遍布“双喜”砖雕、百寿图照壁等吉祥纹样。',
+   question:'乔家大院是哪位晋商代表人物所建？',
+   answer:'乔致庸（清代祁县晋商）。'},
+  {id:'jin祠', emoji:'🛕', title:'晋祠天龙山', level:'5A', city:'太原',
+   story:'晋祠为纪念周成王之弟叔虞而建，是千年皇家祠庙；难老泉、侍女像、周柏并称“晋祠三绝”。天龙山有东魏至隋唐石窟。',
+   fact:'晋祠圣母殿43尊宋代彩塑侍女像被誉为“东方维纳斯”；2021年天龙山第8窟佛首流失海外近百年后回归，登上央视春晚。',
+   question:'晋祠“三绝”指的是什么？',
+   answer:'难老泉、宋代彩塑侍女像、周柏（齐年柏）。'},
+
+  /* ===== 4A 级景区（代表性 14 个） ===== */
+  {id:'yingxian', emoji:'🗼', title:'应县木塔', level:'4A', city:'朔州·应县',
+   story:'佛宫寺释迦塔，辽清宁二年（1056年）建，高67.31米，是世界现存最高、最古老的纯木结构楼阁式塔，全塔无一根铁钉，以榫卯咬合。',
+   fact:'木塔历经千年40余次地震、200多发炮击仍不倒；二层供奉的释迦牟尼像内曾发现佛经、舍利等辽代秘藏。',
+   question:'应县木塔建于哪个朝代？',
+   answer:'辽代（清宁二年，公元1056年）。'},
+  {id:'xiezhou', emoji:'⚔️', title:'解州关帝庙', level:'4A', city:'运城·解州',
+   story:'全国规模最大、保存最完整的关帝庙，始建隋代，为纪念三国名将关羽（山西运城人）而建，是“武庙之冠”。',
+   fact:'关羽是运城解州人，解州关帝庙被称为“关庙之祖”；庙内“气肃千秋”木坊、春秋楼可观《春秋》夜读塑像。',
+   question:'解州关帝庙纪念的是哪位三国名将？',
+   answer:'关羽（关云长，山西运城人）。'},
+  {id:'guanque', emoji:'🏯', title:'鹳雀楼', level:'4A', city:'运城·永济',
+   story:'始建于北周，因时有鹳雀栖于其上得名。唐代文人登楼题咏，王之涣“欲穷千里目，更上一层楼”使其名传千古。',
+   fact:'原楼在元代毁于战火，今楼1997年重建于黄河岸畔，高73.9米，是四大名楼中唯一位于黄河边的楼阁。',
+   question:'“欲穷千里目，更上一层楼”出自哪座楼？',
+   answer:'鹳雀楼（王之涣《登鹳雀楼》）。'},
+  {id:'yongle', emoji:'🎨', title:'永乐宫', level:'4A', city:'运城·芮城',
+   story:'元代道教全真派宫观，为纪念吕洞宾而建，原址永乐镇，因修建三门峡水库于1959年整体搬迁至芮城。',
+   fact:'永乐宫壁画《朝元图》面积达960平方米，绘近300位神仙，被誉为“东方画廊”；搬迁时连墙皮一起切割编号迁移。',
+   question:'永乐宫以什么艺术闻名于世？',
+   answer:'元代壁画（尤其是《朝元图》）。'},
+  {id:'xuankong', emoji:'🏯', title:'悬空寺', level:'4A', city:'大同·浑源',
+   story:'建于北魏后期，悬挂于恒山金龙峡西壁峭壁之上，以“奇、悬、巧”著称，是佛道儒三教合一的空中寺院。',
+   fact:'悬空寺距谷底约50米，仅靠27根横梁插入岩壁支撑；2010年被《时代周刊》评为“全球十大奇险建筑”。',
+   question:'悬空寺建在山西哪座名山？',
+   answer:'北岳恒山（金龙峡西壁）。'},
+  {id:'huayan', emoji:'🛕', title:'华严寺', level:'4A', city:'大同',
+   story:'辽金时期佛教华严宗重要寺庙，始建于辽，坐西朝东（契丹崇拜太阳），薄伽教藏殿内辽代彩塑精美。',
+   fact:'华严寺大雄宝殿是我国现存最大的单体木结构佛殿，殿顶鸱吻高4.5米；薄伽教藏殿“合掌露齿菩萨”被誉为“东方维纳斯”。',
+   question:'华严寺的哪尊菩萨彩塑被称为“东方维纳斯”？',
+   answer:'薄伽教藏殿的“合掌露齿菩萨”。'},
+  {id:'hengshan', emoji:'⛰️', title:'北岳恒山', level:'4A', city:'大同·浑源',
+   story:'五岳之北岳，山势雄伟，主峰天峰岭海拔2016米；是道教发祥地之一，亦以悬空寺闻名天下。',
+   fact:'历史上北岳恒山曾在河北曲阳（祭祀地），清顺治年间才正式改祀山西浑源的天峰岭为北岳。',
+   question:'五岳中的“北岳”是哪座山？',
+   answer:'恒山（山西浑源）。'},
+  {id:'zangshan', emoji:'🏞️', title:'藏山', level:'4A', city:'阳泉·盂县',
+   story:'因“赵氏孤儿”典故闻名——春秋时程婴携赵氏孤儿赵武藏于山中十五年，得名“藏山”，是忠义文化的象征。',
+   fact:'藏山原名“盂山”，为纪念程婴藏孤之义举改名；山中有“藏孤洞”“报恩祠”，故事被改编为元杂剧《赵氏孤儿》流传世界。',
+   question:'藏山与哪个著名历史典故有关？',
+   answer:'“赵氏孤儿”（程婴救孤）。'},
+  {id:'niangziguan', emoji:'🚪', title:'娘子关', level:'4A', city:'阳泉·平定',
+   story:'万里长城第九关，地处太行山中段，是晋冀咽喉。相传唐太宗之妹平阳昭公主曾率娘子军驻守，故得名。',
+   fact:'娘子关有“水上长城”奇观——温河与绵河在此交汇，关下泉水喷涌形成“娘子关瀑布”，是北方罕见的水乡关隘。',
+   question:'娘子关因哪位历史人物率军驻守而得名？',
+   answer:'平阳昭公主（唐太宗之妹，率娘子军驻守）。'},
+  {id:'wangjia', emoji:'🏯', title:'王家大院', level:'4A', city:'晋中·灵石',
+   story:'清代灵石王氏家族历经明清300余年修建的民居群，“王家归来不看院”，面积达25万平方米，是晋商大院之最。',
+   fact:'俗语说“王家大院一座城，乔家大院一幢楼”；其砖、木、石“三雕”艺术题材多达数万种。',
+   question:'被称为“王家归来不看院”的是哪座晋商大院？',
+   answer:'王家大院（晋中灵石）。'},
+  {id:'qikou', emoji:'🏚️', title:'碛口古镇', level:'4A', city:'吕梁·临县',
+   story:'明清至民国黄河水运商贸重镇，“九曲黄河第一镇”，西接陕甘、东连晋中，是“晋商驼道”与黄河漕运交汇点。',
+   fact:'碛口因黄河“大同碛”险滩而得名，货船到此必须卸货改旱路，造就古镇繁华；镇旁李家山村被吴冠中誉为“汉墓般的窑洞”。',
+   question:'被誉为“九曲黄河第一镇”的是哪座古镇？',
+   answer:'碛口古镇（吕梁临县）。'},
+  {id:'lunya', emoji:'🏔️', title:'芦芽山', level:'4A', city:'忻州·宁武',
+   story:'管涔山主峰，海拔2739米，森林密布、高山草甸广袤，是汾河源头，也是华北罕见的生态秘境。',
+   fact:'芦芽山有“万年冰洞”和“悬空村”——村民房屋建在百米悬崖之上，街道即崖边木栈道。',
+   question:'汾河的源头位于哪座山？',
+   answer:'芦芽山（管涔山，忻州宁武）。'},
+  {id:'jinguo', emoji:'🏛️', title:'晋国博物馆', level:'4A', city:'临汾·曲沃',
+   story:'依托“曲村—天马遗址”晋侯墓地而建，是山西第一座遗址类专题博物馆，展示西周至春秋晋国历史。',
+   fact:'馆内展出9组19座晋侯及夫人墓葬，出土的大量青铜器和玉器印证了《史记·晋世家》的记载，破解了“叔虞封唐”之谜。',
+   question:'晋国博物馆依托哪一处晋国早期遗址修建？',
+   answer:'曲村—天马遗址（晋侯墓地）。'},
+  {id:'xiaoxitian', emoji:'🛕', title:'小西天', level:'4A', city:'临汾·隰县',
+   story:'明代佛寺，以“悬塑艺术”闻名，大雄宝殿内满堂彩塑悬于壁面，堪称“中国悬塑艺术博物馆”。',
+   fact:'小西天大雄宝殿仅169平方米，却布满近2000尊悬塑彩塑，最大的3米、最小的仅拇指大，层层叠叠如西方极乐世界。',
+   question:'以“满堂悬塑”著称、被誉为“中国悬塑艺术博物馆”的是哪座寺？',
+   answer:'小西天（临汾隰县）。'}
+];
+const CARD_BY_ID = Object.fromEntries(CARDS.map(c=>[c.id,c]));
+
+/* ===================== 景点风格化 SVG 图标 ===================== */
+// 每个景点 -> [图标类型, 主色]
+const CARD_ICON={
+  yungang:['grotto','#c98a3b'],   wutai:['pagodaMountain','#c0392b'],
+  huangcheng:['fortress','#a67c3d'], mianshan:['mountain','#3f7d4f'],
+  pingyao:['cityWall','#9a6a34'],  yanmen:['pass','#8a7358'],
+  hukou:['waterfall','#d9a441'],   yunqiu:['mountain','#4a90d9'],
+  baquanxia:['canyon','#3f8f8a'],  dahuaishu:['tree','#4a8f3f'],
+  qiaojia:['courtyard','#c0392b'], 'jin祠':['shrine','#2f8fde'],
+  yingxian:['pagoda','#b5651d'],   xiezhou:['temple','#c0392b'],
+  guanque:['tower','#b5651d'],     yongle:['temple','#7e57c2'],
+  xuankong:['cliffTemple','#a0522d'], huayan:['temple','#c98a3b'],
+  hengshan:['mountain','#6b7a8f'], zangshan:['mountain','#5f8f5f'],
+  niangziguan:['pass','#3f8f8a'],  wangjia:['courtyard','#9a6a34'],
+  qikou:['riverTown','#c98a3b'],   lunya:['mountain','#3f7d4f'],
+  jinguo:['bronze','#6b8e6b'],     xiaoxitian:['temple','#d4a017']
+};
+const ICON_DRAW={
+  grotto:c=>`<path d="M14 52 V32 a18 18 0 0 1 36 0 V52 Z" fill="#e0cba8"/>
+    <path d="M20 52 V34 a12 12 0 0 1 24 0 V52 Z" fill="#f5ecd8"/>
+    <circle cx="32" cy="30" r="5.5" fill="${c}"/>
+    <path d="M23 52 V42 a9 9 0 0 1 18 0 V52 Z" fill="${c}"/>
+    <line x1="12" y1="52" x2="52" y2="52"/>`,
+  pagoda:c=>`<rect x="27" y="12" width="10" height="40" fill="#d9b382"/>
+    <rect x="30" y="6" width="4" height="8" fill="${c}"/>
+    <polygon points="20,22 44,22 40,16 24,16" fill="${c}"/>
+    <polygon points="18,31 46,31 42,25 22,25" fill="${c}"/>
+    <polygon points="16,40 48,40 44,34 20,34" fill="${c}"/>
+    <polygon points="14,50 50,50 46,43 18,43" fill="${c}"/>`,
+  pagodaMountain:c=>`<polygon points="6,52 24,22 42,52" fill="#8fae7a"/>
+    <polygon points="18,30 24,22 30,30" fill="#fff" stroke="none"/>
+    <rect x="43" y="30" width="6" height="16" fill="#d9b382"/>
+    <polygon points="39,32 53,32 49,27 43,27" fill="${c}"/>
+    <polygon points="40,27 52,27 46,21" fill="${c}"/>
+    <line x1="6" y1="52" x2="56" y2="52"/>`,
+  mountain:c=>`<polygon points="4,52 24,16 44,52" fill="${c}"/>
+    <polygon points="28,52 46,24 60,52" fill="${c}" fill-opacity="0.68"/>
+    <polygon points="18,30 24,16 30,30" fill="#fff" stroke="none"/>
+    <line x1="4" y1="52" x2="60" y2="52"/>`,
+  waterfall:c=>`<path d="M12 12 H24 V52 H12 Z" fill="${c}"/>
+    <path d="M40 12 H52 V52 H40 Z" fill="${c}"/>
+    <rect x="24" y="12" width="16" height="34" fill="#eaf4ff"/>
+    <line x1="28" y1="15" x2="28" y2="44" stroke="#bcd8f0"/>
+    <line x1="32" y1="15" x2="32" y2="44" stroke="#bcd8f0"/>
+    <line x1="36" y1="15" x2="36" y2="44" stroke="#bcd8f0"/>
+    <ellipse cx="32" cy="48" rx="12" ry="4" fill="#dcebfa"/>`,
+  courtyard:c=>`<polygon points="10,30 54,30 46,17 18,17" fill="${c}"/>
+    <rect x="14" y="30" width="36" height="4" fill="#8a5a2b"/>
+    <rect x="16" y="34" width="32" height="18" fill="#f2e4cf"/>
+    <line x1="24" y1="34" x2="24" y2="38"/>
+    <ellipse cx="24" cy="42" rx="4" ry="5" fill="#e23b3b"/>
+    <line x1="40" y1="34" x2="40" y2="38"/>
+    <ellipse cx="40" cy="42" rx="4" ry="5" fill="#e23b3b"/>
+    <rect x="30" y="41" width="4" height="11" fill="#8a5a2b"/>`,
+  cityWall:c=>`<rect x="8" y="34" width="48" height="18" fill="#cbb48f"/>
+    <rect x="8" y="30" width="6" height="4" fill="#cbb48f"/>
+    <rect x="18" y="30" width="6" height="4" fill="#cbb48f"/>
+    <rect x="40" y="30" width="6" height="4" fill="#cbb48f"/>
+    <rect x="50" y="30" width="6" height="4" fill="#cbb48f"/>
+    <polygon points="20,34 44,34 40,21 24,21" fill="${c}"/>
+    <rect x="26" y="26" width="12" height="8" fill="#f2e4cf"/>
+    <path d="M28 52 V44 a4 4 0 0 1 8 0 V52 Z" fill="#5b3a24"/>`,
+  pass:c=>`<polygon points="0,52 16,24 30,52" fill="#8fae7a"/>
+    <polygon points="34,52 48,24 64,52" fill="#8fae7a"/>
+    <rect x="22" y="30" width="20" height="22" fill="${c}"/>
+    <polygon points="19,30 45,30 41,23 23,23" fill="#8a5a2b"/>
+    <path d="M28 52 V42 a4 4 0 0 1 8 0 V52 Z" fill="#3a2519"/>`,
+  temple:c=>`<polygon points="8,30 56,30 48,16 16,16" fill="${c}"/>
+    <path d="M8 30 Q3 27 6 23" fill="none"/>
+    <path d="M56 30 Q61 27 58 23" fill="none"/>
+    <rect x="14" y="30" width="36" height="4" fill="#8a5a2b"/>
+    <rect x="16" y="34" width="32" height="16" fill="#f2e4cf"/>
+    <rect x="20" y="35" width="4" height="15" fill="#b5651d"/>
+    <rect x="40" y="35" width="4" height="15" fill="#b5651d"/>
+    <rect x="29" y="40" width="6" height="10" fill="#8a5a2b"/>
+    <rect x="10" y="50" width="44" height="3" fill="#cbb48f"/>`,
+  tower:c=>`<rect x="18" y="42" width="28" height="10" fill="#f2e4cf"/>
+    <polygon points="14,42 50,42 46,36 18,36" fill="${c}"/>
+    <rect x="22" y="30" width="20" height="8" fill="#f2e4cf"/>
+    <polygon points="18,30 46,30 42,24 22,24" fill="${c}"/>
+    <rect x="26" y="18" width="12" height="7" fill="#f2e4cf"/>
+    <polygon points="22,18 42,18 38,13 26,13" fill="${c}"/>
+    <rect x="30" y="8" width="4" height="5" fill="${c}"/>
+    <line x1="14" y1="52" x2="50" y2="52"/>`,
+  tree:c=>`<rect x="29" y="34" width="6" height="18" fill="#8a5a2b"/>
+    <circle cx="32" cy="24" r="14" fill="${c}"/>
+    <circle cx="21" cy="30" r="8" fill="${c}"/>
+    <circle cx="43" cy="30" r="8" fill="${c}"/>
+    <line x1="16" y1="52" x2="48" y2="52"/>`,
+  bronze:c=>`<path d="M18 26 H46 V34 a14 11 0 0 1 -28 0 Z" fill="${c}"/>
+    <path d="M20 20 a4 4 0 0 1 4 4" fill="none"/>
+    <path d="M44 20 a4 4 0 0 0 -4 4" fill="none"/>
+    <line x1="22" y1="44" x2="20" y2="52"/>
+    <line x1="32" y1="46" x2="32" y2="52"/>
+    <line x1="42" y1="44" x2="44" y2="52"/>`,
+  cliffTemple:c=>`<rect x="8" y="6" width="12" height="46" fill="#a9825e"/>
+    <polygon points="20,28 46,28 42,20 24,20" fill="${c}"/>
+    <rect x="23" y="28" width="20" height="12" fill="#f2e4cf"/>
+    <line x1="27" y1="40" x2="25" y2="52"/>
+    <line x1="39" y1="40" x2="41" y2="52"/>`,
+  canyon:c=>`<polygon points="4,10 26,10 18,52 12,52" fill="${c}"/>
+    <polygon points="38,10 60,10 52,52 46,52" fill="${c}" fill-opacity="0.72"/>
+    <path d="M24 12 Q31 30 29 52 L35 52 Q33 28 40 12 Z" fill="#cfe3f5"/>
+    <path d="M26 22 Q32 26 38 22" fill="none" stroke="#9cc3e6"/>`,
+  fortress:c=>`<rect x="10" y="34" width="44" height="18" fill="#cbb48f"/>
+    <rect x="12" y="30" width="5" height="4" fill="#cbb48f"/>
+    <rect x="47" y="30" width="5" height="4" fill="#cbb48f"/>
+    <rect x="26" y="14" width="14" height="38" fill="${c}"/>
+    <rect x="29" y="20" width="3" height="5" fill="#3a2519" stroke="none"/>
+    <rect x="34" y="20" width="3" height="5" fill="#3a2519" stroke="none"/>
+    <rect x="29" y="29" width="3" height="5" fill="#3a2519" stroke="none"/>
+    <rect x="34" y="29" width="3" height="5" fill="#3a2519" stroke="none"/>
+    <rect x="30" y="42" width="6" height="10" fill="#5b3a24"/>`,
+  shrine:c=>`<polygon points="12,28 52,28 44,15 20,15" fill="${c}"/>
+    <rect x="18" y="28" width="28" height="13" fill="#f2e4cf"/>
+    <rect x="30" y="32" width="6" height="9" fill="#8a5a2b"/>
+    <path d="M12 46 q6 -4 12 0 t12 0 t12 0" fill="none" stroke="#4a90d9"/>
+    <path d="M12 51 q6 -4 12 0 t12 0 t12 0" fill="none" stroke="#7fb3e8"/>`,
+  riverTown:c=>`<rect x="8" y="26" width="48" height="18" fill="#e0cba8"/>
+    <rect x="6" y="23" width="52" height="4" fill="${c}"/>
+    <path d="M14 44 V35 a5 5 0 0 1 10 0 V44 Z" fill="#8a5a2b"/>
+    <path d="M27 44 V35 a5 5 0 0 1 10 0 V44 Z" fill="#8a5a2b"/>
+    <path d="M40 44 V35 a5 5 0 0 1 10 0 V44 Z" fill="#8a5a2b"/>
+    <path d="M8 49 q6 -3 12 0 t12 0 t12 0 t12 0" fill="none" stroke="#4a90d9"/>`
+};
+function svgIcon(id,size){
+  size=size||54;
+  const conf=CARD_ICON[id]||['temple','#c0392b'];
+  const inner=(ICON_DRAW[conf[0]]||ICON_DRAW.temple)(conf[1]);
+  return `<svg viewBox="0 0 64 64" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">`+
+    `<rect x="2" y="2" width="60" height="60" rx="14" fill="#fdf7ee" stroke="#e6d5bd" stroke-width="1.5"/>`+
+    `<g stroke="#5b3a24" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round">${inner}</g></svg>`;
+}
+function lockIcon(size){
+  size=size||54;
+  return `<svg viewBox="0 0 64 64" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">`+
+    `<rect x="2" y="2" width="60" height="60" rx="14" fill="#efe7db" stroke="#ddd0bb" stroke-width="1.5"/>`+
+    `<text x="32" y="43" font-size="30" font-weight="700" text-anchor="middle" fill="#bcab90">?</text></svg>`;
+}
+
+/* ===================== 状态（localStorage） ===================== */
+const SAVE_KEY = 'shanxi_battle_save_v1';
+const defaultState = ()=>({
+  collection:{},      // cardId -> count
+  puzzlePieces:0,
+  puzzleEarned:0,      // 累计获得的大树拼图（用于发放种植额度，不随消耗减少）
+  plantQuota:0,        // 可自由种植的植物株数（每集齐 5 块拼图 +PLANTS_PER_MILESTONE）
+  plantQuotaBase:0,    // 已结算的 5 拼图里程碑数
+  treeInventory:0,
+  garden:{trees:[], cards:[], plants:[], unlocked:[
+    'pine','poplar','sunflower','flower','cypress','peony','rose','bird','swallow','insect'
+  ]},
+  // trees:[{x,y}]  cards:[{x,y,cardId}]  plants:[{x,y,kind}]  unlocked:[kind]
+  weaponSouls:0,      // 战魂：武器升级货币
+  weaponLevel:{gun:1,sword:1,axe:1,knife:1,staff:1,bow:1,rocket:1,ion:1,fist:1,cruise:1,hammer:1,bolt:1}, // 各武器等级 1~3
+  equippedWeapon:'gun', // 本场出战武器
+  skin:'gold',          // 当前主角皮肤（山西历史人物 id）
+  checkinLast:'',       // 上次签到日期 YYYY-MM-DD
+  checkinStreak:0,      // 连续签到天数
+  checkinTotal:0        // 累计签到天数
+});
+const ALL_PLANT_KINDS=['pine','poplar','sunflower','flower','cypress','peony','rose','bird','swallow','insect'];
+const PLANTS_PER_MILESTONE=3; // 每集齐 5 块大树拼图可种植的植物株数（1 棵以上）
+// 根据累计获得的拼图，结算种植额度（每满 5 块 +PLANTS_PER_MILESTONE 株）
+// 注意：必须接受目标 state，因为 load() 在 `let state` 初始化期间调用本函数，
+// 若直接引用模块级 state 会触发 TDZ（ReferenceError），被 load 的 try/catch 捕获后误返回默认值，清空存档。
+function grantPlantQuota(s){
+  s = s || state;
+  const ms=Math.floor(s.puzzleEarned/5);
+  while(s.plantQuotaBase<ms){ s.plantQuotaBase++; s.plantQuota+=PLANTS_PER_MILESTONE; }
+}
+let state = load();
+function load(){
+  function read(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
+  let s=read(SAVE_KEY);
+  if(!s) s=read(SAVE_KEY+'_bak');   // 主存档损坏时回退到备份
+  if(s){
+    try{
+      const st=Object.assign(defaultState(),s);
+      st.garden=Object.assign(defaultState().garden, s.garden||{});
+      st.weaponLevel=Object.assign(defaultState().weaponLevel, s.weaponLevel||{});
+      // 迁移：解锁全部植物；补齐种植额度字段
+      ALL_PLANT_KINDS.forEach(k=>{ if(!st.garden.unlocked.includes(k)) st.garden.unlocked.push(k); });
+      if(typeof st.puzzleEarned!=='number') st.puzzleEarned=st.puzzlePieces||0;
+      if(typeof st.plantQuota!=='number') st.plantQuota=0;
+      if(typeof st.plantQuotaBase!=='number') st.plantQuotaBase=0;
+      grantPlantQuota(st);
+      return st;
+    }catch(e){}
+  }
+  return defaultState();
+}
+function save(){
+  try{
+    const json=JSON.stringify(state);
+    localStorage.setItem(SAVE_KEY, json);
+    localStorage.setItem(SAVE_KEY+'_bak', json);  // 双写备份，防止主存档异常导致整档丢失
+  }catch(e){}
+}
+// 一键恢复进度（数据丢失后的补救）：补齐全部卡片、武器满级、战魂、拼图/大树、并还原花园
+function restoreProgress(){
+  // 1) 全部历史卡片
+  CARDS.forEach(c=>{ state.collection[c.id]=(state.collection[c.id]||0)+1; });
+  // 2) 全部武器升满级
+  WEAPONS.forEach(w=>{ state.weaponLevel[w.id]=3; });
+  // 3) 战魂（慷慨补足，足够自由升级所有武器多轮）
+  state.weaponSouls=Math.max(state.weaponSouls,300);
+  // 4) 大树拼图 / 大树库存 + 重算种植额度
+  state.puzzleEarned=Math.max(state.puzzleEarned,20);
+  state.puzzlePieces=Math.max(state.puzzlePieces,20);
+  state.treeInventory=Math.max(state.treeInventory,10);
+  state.plantQuotaBase=0; state.plantQuota=0; grantPlantQuota(state);
+  // 5) 花园：先种一排树（若空）
+  if(state.garden.trees.length===0){
+    const n=12, x0=120, x1=920, step=(x1-x0)/(n-1);
+    for(let i=0;i<n;i++) state.garden.trees.push({x:x0+step*i, y:470+(i%2?8:0)});
+  }
+  // 6) 每种植物的示例各摆一株（若空）
+  if(state.garden.plants.length===0){
+    const n=ALL_PLANT_KINDS.length, x0=100, x1=940, step=(x1-x0)/(n-1);
+    ALL_PLANT_KINDS.forEach((k,idx)=>{
+      const isSky=(k==='bird'||k==='swallow');
+      state.garden.plants.push({x:x0+step*idx, y:isSky?80:488, kind:k});
+    });
+  }
+  // 7) 花园里摆几张历史卡片展示（若空）
+  if(state.garden.cards.length===0){
+    const picks=CARDS.slice(0,5).map(c=>c.id);
+    const x0=200, step=150;
+    picks.forEach((id,i)=> state.garden.cards.push({x:x0+step*i, y:380, cardId:id}));
+  }
+  save(); renderHome(); renderGarden(); updateEnv();
+  toast('✅ 进度已恢复：全部卡片、武器满级、战魂与花园已还原');
+}
+function totalCards(){ return Object.values(state.collection).reduce((a,b)=>a+b,0); }
+
+/* ===================== 武器库 ===================== */
+const WEAPONS = [
+  {id:'gun',   name:'烈焰激光枪', key:'1', element:'fire', color:'#ff8a1e',
+   desc:'火焰弹流，橙红拖尾灼烧。',
+   base:{dmg:1, fireRate:0.18, speed:560, r:5, proj:'bullet'}},
+  {id:'sword', name:'炎光剑', key:'2', element:'fire', color:'#ff8a1e',
+   desc:'弧形火焰剑气，可穿透敌人。',
+   base:{dmg:2, fireRate:0.32, speed:680, r:7, proj:'slash'}},
+  {id:'axe',   name:'寒流飞斧', key:'3', element:'water', color:'#39c5ff',
+   desc:'水流飞斧，蓝色寒光命中爆炸。',
+   base:{dmg:3, fireRate:0.5, speed:520, r:9, proj:'axe'}},
+  {id:'knife', name:'爆焰飞刀', key:'4', element:'fire', color:'#ff8a1e',
+   desc:'极速火焰连射，单发低伤。',
+   base:{dmg:1, fireRate:0.1, speed:720, r:4, proj:'knife'}},
+  {id:'staff', name:'紫晶法杖', key:'5', element:'purple', color:'#c66bff',
+   desc:'紫色魔能弹，升级后爆裂。',
+   base:{dmg:2, fireRate:0.4, speed:480, r:8, proj:'fire'}},
+  {id:'bow',   name:'等离子神弓', key:'6', element:'energy', color:'#7ef0ff',
+   desc:'等离子箭矢，升级后穿透。',
+   base:{dmg:2, fireRate:0.28, speed:760, r:5, proj:'arrow'}},
+  {id:'rocket',name:'激流火箭炮', key:'7', element:'water', color:'#39c5ff',
+   desc:'溅射水弹，命中爆开大片水流。',
+   base:{dmg:4, fireRate:0.7, speed:430, r:11, proj:'rocket'}},
+  {id:'ion',   name:'水火离子炮', key:'8', element:'ion', color:'#ff7a3c',
+   desc:'水火交融离子弹，蓝橙双色爆裂。',
+   base:{dmg:3, fireRate:0.45, speed:500, r:10, proj:'ion'}},
+  {id:'fist',  name:'撼地重拳', key:'9', element:'earth', color:'#c08a3e',
+   desc:'抛出大地之拳，撞击炸开土石。',
+   base:{dmg:3, fireRate:0.5, speed:560, r:10, proj:'fist'}},
+  {id:'cruise',name:'烈焰巡飞弹', key:'0', element:'fire', color:'#ff8a1e',
+   desc:'火焰巡飞弹，拖着烈焰贯穿敌阵，升级后炸裂。',
+   base:{dmg:2, fireRate:0.34, speed:620, r:8, proj:'cruise'}},
+  {id:'hammer',name:'雷霆之锤', key:'-', element:'earth', color:'#c08a3e',
+   desc:'抛掷雷霆战锤，落地迸发大地冲击波。',
+   base:{dmg:4, fireRate:0.6, speed:520, r:11, proj:'hammer'}},
+  {id:'bolt',  name:'雷电手杖', key:'=', element:'electric', color:'#5ad1ff',
+   desc:'释放连锁雷电，可穿透多名敌人。',
+   base:{dmg:2, fireRate:0.4, speed:580, r:7, proj:'bolt'}}
+];
+const WEAPON_BY_ID = Object.fromEntries(WEAPONS.map(w=>[w.id,w]));
+// 元素 → 特效配色（核心/中间色/外发光/拖尾 RGB）
+const ELEMENTS = {
+  fire:  {name:'火焰', core:'#fff4d6', mid:'#ff8a1e', glow:'#ff3b1f', trail:'255,138,30'},
+  water: {name:'水流', core:'#eafdff', mid:'#39c5ff', glow:'#1e6fff', trail:'57,197,255'},
+  purple:{name:'魔能', core:'#ffeaff', mid:'#c66bff', glow:'#9b3bff', trail:'198,107,255'},
+  energy:{name:'等离子', core:'#f0ffff', mid:'#7ef0ff', glow:'#22d6ff', trail:'126,240,255'},
+  earth: {name:'大地', core:'#fff1d0', mid:'#c08a3e', glow:'#8a5a1e', trail:'192,138,62'},
+  ion:   {name:'水火', core:'#fff0e0', mid:'#ff7a3c', glow:'#3aa0ff', trail:'255,122,60'},
+  electric:{name:'雷电', core:'#f6fbff', mid:'#5ad1ff', glow:'#2e6bff', trail:'120,200,255'}
+};
+const WEAPON_UP_COST = {2:6, 3:12};  // 升到 2 级 / 3 级消耗的战魂
+
+// 根据等级算实际属性与特效
+function weaponStats(id, lvl){
+  const w=WEAPON_BY_ID[id], b=w.base;
+  const s={dmg:b.dmg, fireRate:b.fireRate, speed:b.speed, r:b.r, proj:b.proj, color:w.color, element:w.element, pierce:0, explode:0, spread:1};
+  if(lvl>=2){
+    s.dmg+=1; s.fireRate*=0.9;
+    if(b.proj==='slash'||b.proj==='arrow') s.pierce=1;
+    if(b.proj==='fire'||b.proj==='cruise') s.explode=55;
+    if(b.proj==='axe'||b.proj==='rocket'||b.proj==='ion'||b.proj==='fist'||b.proj==='hammer') s.explode=50;
+    if(b.proj==='bolt') s.pierce=1;
+  }
+  if(lvl>=3){
+    s.dmg+=1; s.fireRate*=0.85;
+    if(b.proj==='slash'||b.proj==='arrow') s.pierce=2;
+    if(b.proj==='knife') s.spread=3;
+    if(b.proj==='bullet') s.pierce=1;
+    if(b.proj==='fire'||b.proj==='cruise') s.explode=80;
+    if(b.proj==='axe'||b.proj==='rocket'||b.proj==='ion'||b.proj==='fist'||b.proj==='hammer') s.explode=80;
+    if(b.proj==='bolt') s.pierce=2;
+  }
+  return s;
+}
+function weaponIcon(id,size){
+  size=size||48;
+  const W={
+    gun:`<rect x="6" y="30" width="32" height="10" rx="3" fill="#3a3f52" stroke="#5a6172"/><rect x="6" y="30" width="32" height="3" fill="#cfd4da"/><rect x="36" y="23" width="14" height="9" rx="2" fill="#2b2f3d"/><rect x="48" y="25" width="9" height="5" fill="#ff8a1e"/><circle cx="18" cy="35" r="4" fill="#ff8a1e"/><circle cx="18" cy="35" r="2" fill="#fff4d6"/>`,
+    sword:`<rect x="29" y="34" width="6" height="16" rx="2" fill="#3a3f52"/><rect x="24" y="48" width="16" height="5" rx="2" fill="#cfd4da"/><rect x="31" y="14" width="2" height="22" fill="#ff8a1e"/><polygon points="32,6 37,16 27,16" fill="#ff8a1e"/><polygon points="32,10 34,15 30,15" fill="#fff4d6"/>`,
+    axe:`<rect x="30" y="12" width="4" height="40" fill="#3a3f52"/><path d="M32 14 q18 2 16 18 q-2 14 -16 16 q5 -18 0 -34 z" fill="#39c5ff" stroke="#bfe9ff"/><circle cx="32" cy="12" r="3" fill="#cfd4da"/>`,
+    knife:`<polygon points="32,8 37,32 27,32" fill="#ff8a1e" stroke="#ff3b1f"/><polygon points="32,12 34,30 30,30" fill="#fff4d6"/><rect x="28" y="32" width="8" height="14" rx="2" fill="#3a3f52"/><rect x="26" y="44" width="12" height="4" rx="2" fill="#cfd4da"/>`,
+    staff:`<rect x="30" y="18" width="4" height="38" fill="#3a3f52"/><circle cx="32" cy="14" r="10" fill="#c66bff"/><circle cx="32" cy="14" r="5" fill="#ffeaff"/><circle cx="32" cy="14" r="10" fill="none" stroke="#9b3bff" stroke-width="2"/>`,
+    bow:`<path d="M42 8 q-22 24 0 48" fill="none" stroke="#3a3f52" stroke-width="6"/><path d="M42 8 q-14 24 0 48" fill="none" stroke="#7ef0ff" stroke-width="2"/><line x1="42" y1="8" x2="42" y2="56" stroke="#7ef0ff" stroke-width="2"/><polygon points="44,12 48,20 40,20" fill="#7ef0ff"/>`,
+    rocket:`<rect x="10" y="26" width="34" height="12" rx="4" fill="#3a3f52" stroke="#5a6172"/><rect x="10" y="26" width="34" height="3" fill="#cfd4da"/><rect x="40" y="24" width="10" height="16" rx="3" fill="#2b2f3d"/><polygon points="50,24 60,32 50,40" fill="#39c5ff" stroke="#bfe9ff"/><circle cx="20" cy="32" r="3" fill="#39c5ff"/>`,
+    ion:`<rect x="10" y="27" width="32" height="11" rx="3" fill="#3a3f52" stroke="#5a6172"/><circle cx="26" cy="32" r="6" fill="#39c5ff"/><circle cx="26" cy="32" r="3" fill="#bfe9ff"/><circle cx="40" cy="32" r="6" fill="#ff8a1e"/><circle cx="40" cy="32" r="3" fill="#fff4d6"/><rect x="42" y="29" width="14" height="6" rx="2" fill="#2b2f3d"/>`,
+    fist:`<rect x="16" y="22" width="30" height="22" rx="6" fill="#3a3f52" stroke="#5a6172"/><rect x="16" y="22" width="30" height="4" fill="#cfd4da"/><rect x="20" y="30" width="22" height="6" rx="2" fill="#2b2f3d"/><circle cx="24" cy="44" r="4" fill="#c08a3e"/><circle cx="33" cy="44" r="4" fill="#c08a3e"/><circle cx="42" cy="44" r="4" fill="#c08a3e"/><circle cx="24" cy="44" r="1.6" fill="#fff1d0"/>`,
+    cruise:`<rect x="22" y="26" width="22" height="11" rx="5" fill="#3a3f52" stroke="#5a6172"/><rect x="22" y="26" width="22" height="3" fill="#cfd4da"/><polygon points="14,28 22,25 22,39 14,36" fill="#2b2f3d"/><polygon points="50,28 44,25 44,39 50,36" fill="#2b2f3d"/><circle cx="33" cy="31" r="4" fill="#ff8a1e"/><circle cx="33" cy="31" r="2" fill="#fff4d6"/><polygon points="44,31 52,28 52,34" fill="#ff8a1e"/>`,
+    hammer:`<rect x="31" y="14" width="5" height="26" rx="2" fill="#3a3f52"/><rect x="31" y="14" width="5" height="3" fill="#cfd4da"/><rect x="18" y="8" width="28" height="16" rx="4" fill="#2b2f3d" stroke="#5a6172"/><rect x="18" y="8" width="28" height="4" fill="#cfd4da"/><circle cx="24" cy="16" r="2.4" fill="#c08a3e"/><circle cx="38" cy="16" r="2.4" fill="#c08a3e"/><polygon points="46,12 54,16 46,20" fill="#c08a3e"/>`,
+    bolt:`<rect x="30" y="16" width="4" height="38" fill="#3a3f52"/><path d="M34 8 l-9 18 h7 l-6 18 14 -22 h-7 z" fill="#5ad1ff" stroke="#bfeaff"/><circle cx="32" cy="14" r="4" fill="#f6fbff"/><circle cx="32" cy="14" r="1.8" fill="#fff"/>`
+  };
+  const inner=W[id]||W.gun;
+  return `<svg viewBox="0 0 64 64" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">`+
+    `<rect x="2" y="2" width="60" height="60" rx="14" fill="#1f2330" stroke="#3a3f52" stroke-width="1.5"/>`+
+    `<g stroke="#2b2f3d" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">${inner}</g></svg>`;
+}
+
+/* ===================== 山西历史人物（主角皮肤） ===================== */
+// pal: armor 主甲 / armorD 暗 / armorL 亮 / trim 银饰 / trimD 银暗 / accent 宝石红 / face 肤色
+// feat: hat 帽型(helm/warrior/general/official/dao/phoenix) / beard 胡子色(null 无)
+const FIGURES = [
+  {id:'gold', name:'黄金战神', birth:'默认', era:'', title:'初始战甲',
+   blurb:'身披厚重金甲、手持元素激光枪的科技骑士，故事的起点。',
+   pal:{armor:'#f2c14e',armorD:'#9c6b08',armorL:'#ffe7a8',trim:'#d2d7dd',trimD:'#7e858f',accent:'#d23b3b',face:'#ffd9b0'},
+   feat:{hat:'helm',beard:null}},
+  {id:'guanyu', name:'关羽', birth:'运城', era:'三国', title:'武圣',
+   blurb:'过五关斩六将，青龙偃月刀下威震华夏，忠义千秋。',
+   pal:{armor:'#2e8b57',armorD:'#1c5e3a',armorL:'#5fce8f',trim:'#c9a227',trimD:'#8a6d1a',accent:'#c0392b',face:'#d96a4a'},
+   feat:{hat:'warrior',beard:'#1a1a1a'}},
+  {id:'direnjie', name:'狄仁杰', birth:'太原', era:'唐', title:'神探名相',
+   blurb:'断案如神、匡扶社稷的一代名相，太原狄氏之光。',
+   pal:{armor:'#34495e',armorD:'#1f2d3d',armorL:'#5d7a99',trim:'#cfd4da',trimD:'#7e858f',accent:'#c0392b',face:'#f0c9a0'},
+   feat:{hat:'official',beard:'#c9c9c9'}},
+  {id:'yuchi', name:'尉迟恭', birth:'朔州', era:'唐', title:'门神猛将',
+   blurb:'朔州铁匠出身，黑面虬髯，与秦琼同为中华门神。',
+   pal:{armor:'#33333b',armorD:'#15151a',armorL:'#4f4f5b',trim:'#c9a227',trimD:'#8a6d1a',accent:'#c0392b',face:'#3a3a3a'},
+   feat:{hat:'general',beard:'#161616'}},
+  {id:'xue', name:'薛仁贵', birth:'河津', era:'唐', title:'白袍神将',
+   blurb:'三箭定天山，白袍银甲，寒窑走出的一代名将。',
+   pal:{armor:'#f2f2f2',armorD:'#c8c8c8',armorL:'#ffffff',trim:'#c9a227',trimD:'#8a6d1a',accent:'#c0392b',face:'#f0c9a0'},
+   feat:{hat:'general',beard:null}},
+  {id:'wuzetian', name:'武则天', birth:'文水', era:'唐', title:'一代女皇',
+   blurb:'从并州文水走出的唯一女皇帝，凤冠霞帔，威加海内。',
+   pal:{armor:'#d4af37',armorD:'#8a6d1a',armorL:'#ffe9a8',trim:'#c0392b',trimD:'#8a2b22',accent:'#e74c3c',face:'#f7d3b0'},
+   feat:{hat:'phoenix',beard:null}},
+  {id:'lvdongbin', name:'吕洞宾', birth:'芮城', era:'唐', title:'八仙之一',
+   blurb:'芮城纯阳子，剑斩红尘，道教全真北五祖之一。',
+   pal:{armor:'#2e6f95',armorD:'#1c4660',armorL:'#5aa6c9',trim:'#e8e8e8',trimD:'#b8b8b8',accent:'#c0392b',face:'#f0c9a0'},
+   feat:{hat:'dao',beard:'#2a2a2a'}},
+  {id:'simaguang', name:'司马光', birth:'夏县', era:'宋', title:'史学大家',
+   blurb:'夏县涑水先生，一部《资治通鉴》纵论千年兴衰。',
+   pal:{armor:'#6b7280',armorD:'#3f4651',armorL:'#9aa3af',trim:'#cfd4da',trimD:'#7e858f',accent:'#2e6f95',face:'#f0c9a0'},
+   feat:{hat:'official',beard:'#b0b0b0'}},
+  {id:'weiqing', name:'卫青', birth:'临汾', era:'西汉', title:'抗匈名将',
+   blurb:'临汾出身，七战七捷直捣龙城，封狼居胥之先声。',
+   pal:{armor:'#4a5a3a',armorD:'#2c3622',armorL:'#6f8553',trim:'#c9a227',trimD:'#8a6d1a',accent:'#c0392b',face:'#e8b890'},
+   feat:{hat:'general',beard:'#2a2a2a'}},
+  {id:'huoqubing', name:'霍去病', birth:'临汾', era:'西汉', title:'少年战神',
+   blurb:'十七岁出征，封狼居胥，匈奴未灭何以家为。',
+   pal:{armor:'#b0b6c0',armorD:'#6f7681',armorL:'#e6eaf0',trim:'#c9a227',trimD:'#8a6d1a',accent:'#7b3ff2',face:'#f2cda2'},
+   feat:{hat:'general',beard:null}},
+  {id:'wangbo', name:'王勃', birth:'河津', era:'唐', title:'初唐四杰',
+   blurb:'河津神童，一篇《滕王阁序》落霞与孤鹜齐飞。',
+   pal:{armor:'#5b6b8a',armorD:'#36415a',armorL:'#8794ad',trim:'#cfd4da',trimD:'#7e858f',accent:'#2e6f95',face:'#f0c9a0'},
+   feat:{hat:'official',beard:null}}
+];
+const FIGURES_BY_ID = Object.fromEntries(FIGURES.map(f=>[f.id,f]));
+
+// SVG 头像（主页人物栏 / 战斗选角预览）
+function figureIcon(f,size){
+  size=size||64;
+  const P=f.pal, F=f.feat;
+  let hat='';
+  if(F.hat==='helm'){
+    hat=`<path d="M16 26 a16 14 0 0 1 32 0 z" fill="${P.armor}" stroke="${P.armorD}" stroke-width="1.5"/>`+
+        `<path d="M16 26 a16 14 0 0 1 32 0" fill="none" stroke="${P.armorL}" stroke-width="1"/>`+
+        `<rect x="30" y="8" width="4" height="12" rx="2" fill="${P.accent}"/>`+
+        `<ellipse cx="32" cy="9" rx="5" ry="4" fill="${P.accent}"/>`+
+        `<rect x="18" y="24" width="5" height="9" rx="2" fill="${P.armorD}"/>`+
+        `<rect x="41" y="24" width="5" height="9" rx="2" fill="${P.armorD}"/>`;
+  }else if(F.hat==='warrior'){
+    hat=`<path d="M14 24 q18 -12 36 0 l0 5 q-18 -10 -36 0 z" fill="#2e8b57" stroke="#1c5e3a" stroke-width="1.5"/>`+
+        `<circle cx="32" cy="20" r="3.5" fill="${P.accent}"/>`+
+        `<path d="M32 16 q4 -6 0 -10" stroke="#2e8b57" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  }else if(F.hat==='general'){
+    hat=`<path d="M17 26 a15 13 0 0 1 30 0 z" fill="${P.armor}" stroke="${P.armorD}" stroke-width="1.5"/>`+
+        `<rect x="29" y="10" width="6" height="18" rx="3" fill="${P.accent}"/>`+
+        `<circle cx="32" cy="9" r="3" fill="${P.accent}"/>`+
+        `<rect x="19" y="24" width="5" height="9" rx="2" fill="${P.trim}"/>`+
+        `<rect x="40" y="24" width="5" height="9" rx="2" fill="${P.trim}"/>`;
+  }else if(F.hat==='official'){
+    hat=`<path d="M18 26 q14 -16 28 0 z" fill="#2b2b2b" stroke="#000" stroke-width="1.2"/>`+
+        `<rect x="8" y="24" width="10" height="4" rx="2" fill="#2b2b2b"/>`+
+        `<rect x="46" y="24" width="10" height="4" rx="2" fill="#2b2b2b"/>`+
+        `<ellipse cx="32" cy="14" rx="9" ry="5" fill="#3a3a3a"/>`;
+  }else if(F.hat==='dao'){
+    hat=`<path d="M16 26 l6 -12 l8 4 l8 -4 l6 12 z" fill="${P.armor}" stroke="${P.armorD}" stroke-width="1.5"/>`+
+        `<circle cx="32" cy="9" r="4" fill="${P.armor}" stroke="${P.armorD}" stroke-width="1.5"/>`+
+        `<circle cx="32" cy="9" r="1.6" fill="${P.armorL}"/>`;
+  }else if(F.hat==='phoenix'){
+    hat=`<path d="M14 28 q18 -22 36 0 q-10 -6 -18 0 q-8 -6 -18 0 z" fill="${P.armor}" stroke="${P.armorD}" stroke-width="1.5"/>`+
+        `<circle cx="32" cy="13" r="4" fill="${P.trim}"/>`+
+        `<path d="M28 13 q4 -10 8 0" stroke="${P.accent}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`+
+        `<circle cx="24" cy="22" r="2.4" fill="${P.accent}"/><circle cx="40" cy="22" r="2.4" fill="${P.accent}"/>`;
+  }
+  const beard = F.beard ? `<path d="M22 40 q10 16 20 0 q-3 12 -10 13 q-7 -1 -10 -13 z" fill="${F.beard}"/>` : '';
+  return `<svg viewBox="0 0 64 64" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">`+
+    `<defs><radialGradient id="bg${f.id}" cx="50%" cy="38%" r="70%">`+
+    `<stop offset="0%" stop-color="#fbf3e4"/><stop offset="100%" stop-color="#e8d9bf"/></radialGradient></defs>`+
+    `<rect x="2" y="2" width="60" height="60" rx="14" fill="url(#bg${f.id})" stroke="#d9c39a" stroke-width="1.5"/>`+
+    `<path d="M10 60 q22 -22 44 0 z" fill="${P.armor}" stroke="${P.armorD}" stroke-width="1.5"/>`+
+    `<rect x="24" y="44" width="16" height="8" rx="3" fill="${P.trim}"/>`+
+    `<ellipse cx="32" cy="38" rx="11" ry="12" fill="${F.face}" stroke="rgba(0,0,0,.12)" stroke-width="1"/>`+
+    beard+
+    `<circle cx="27" cy="36" r="1.8" fill="#2a2a2a"/><circle cx="37" cy="36" r="1.8" fill="#2a2a2a"/>`+
+    `<path d="M28 44 q4 3 8 0" stroke="rgba(0,0,0,.35)" stroke-width="1.6" fill="none" stroke-linecap="round"/>`+
+    hat+
+    `</svg>`;
+}
+
+/* ===================== 通用 UI ===================== */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='home') renderHome();
+  else if(id==='garden'){ renderGarden(); startGardenLoop(); }
+  else stopGardenLoop();
+  if(id==='battle'){ if(battle) battle.running=false; cancelAnimationFrame(rafId); showBattleSetup(); }
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),1800);
+}
+function openCard(cardId){
+  const c=CARD_BY_ID[cardId];
+  document.getElementById('mEmoji').innerHTML=svgIcon(c.id,72);
+  document.getElementById('mTitle').textContent=c.title;
+  const lv=c.level==='5A'?'lv5':'lv4';
+  document.getElementById('mText').innerHTML=
+    `<div class="lvtag ${lv}">${c.level}</div>`+
+    `<div class="loc">📍 ${c.city}</div>`+
+    `<div class="sec"><b>📖 历史故事</b><p>${c.story}</p></div>`+
+    `<div class="sec"><b>❄️ 冷知识</b><p>${c.fact}</p></div>`+
+    `<div class="sec"><b>❓ 小问题</b><p>${c.question}</p>`+
+    `<details class="ans"><summary>查看答案</summary><p>${c.answer}</p></details></div>`;
+  document.getElementById('modal').classList.add('show');
+}
+document.getElementById('mClose').onclick=()=>document.getElementById('modal').classList.remove('show');
+document.getElementById('modal').onclick=e=>{ if(e.target.id==='modal') e.currentTarget.classList.remove('show'); };
+
+/* ===================== 主页 ===================== */
+function renderHome(){
+  const tc=totalCards();
+  const unlocked=Object.keys(state.collection).filter(k=>state.collection[k]>0).length;
+  document.getElementById('homeCards').textContent=`${unlocked} / ${CARDS.length}`;
+  document.getElementById('homePieces').textContent=state.puzzlePieces;
+  document.getElementById('homeTrees').textContent=state.treeInventory;
+  const btn=document.getElementById('btnExchange');
+  btn.disabled = state.puzzlePieces<5;
+  btn.textContent = state.puzzlePieces>=5 ? '🌲 用5块拼图换1棵大树（可换）' : `🌲 用5块拼图换1棵大树（还差${5-state.puzzlePieces}）`;
+
+  const grid=document.getElementById('homeCardsGrid');
+  grid.innerHTML='';
+  CARDS.forEach(c=>{
+    const cnt=state.collection[c.id]||0;
+    const div=document.createElement('div');
+    div.className='card'+(cnt?'':' locked');
+    const lv=c.level==='5A'?'lv5':'lv4';
+    div.innerHTML=`<div class="emoji">${cnt?svgIcon(c.id,56):lockIcon(56)}</div>
+      <div class="ct">${cnt?c.title:'？？？'}</div>
+      <div class="cd">${cnt?`<span class="lvtag ${lv}">${c.level}</span> · ${c.city} · 点击查看`:'尚未获得这张卡片'}</div>
+      ${cnt?`<div class="badge">×${cnt}</div>`:''}`;
+    if(cnt) div.onclick=()=>openCard(c.id);
+    grid.appendChild(div);
+  });
+  renderWeapons();
+  // 每日签到按钮状态
+  const ck=document.getElementById('btnCheckin');
+  ck.textContent = canCheckin() ? `🎁 每日签到（连签${state.checkinStreak}天）` : `🎁 每日签到（今日已签）`;
+  renderFigures();
+}
+function renderWeapons(){
+  document.getElementById('wSouls').textContent=state.weaponSouls;
+  const list=document.getElementById('weaponList');
+  list.innerHTML='';
+  WEAPONS.forEach(w=>{
+    const lvl=state.weaponLevel[w.id];
+    const s=weaponStats(w.id,lvl);
+    const eff=[];
+    if(s.pierce>0) eff.push('穿透×'+s.pierce);
+    if(s.explode>0) eff.push('爆裂');
+    if(s.spread>1) eff.push('散射×'+s.spread);
+    if(lvl<3 && eff.length===0) eff.push('无额外特效');
+    const maxed=lvl>=3, eq=state.equippedWeapon===w.id;
+    const div=document.createElement('div');
+    div.className='wcard'+(eq?' equipped':'');
+    div.innerHTML=`<div class="wkey">${w.key}</div>
+      <div class="wico">${weaponIcon(w.id,48)}</div>
+      <div class="wn">${w.name}</div>
+      <div class="wlv">Lv.${lvl}</div>
+      <div class="welem" style="color:${ELEMENTS[w.element].glow}">${ELEMENTS[w.element].name}特效</div>
+      <div class="wdesc">${w.desc}</div>
+      <div class="weff">${eff.join(' · ')}</div>
+      <div class="wact">
+        ${eq?'<button class="wbtn eq" disabled>✓ 出战中</button>'
+            :`<button class="wbtn eq" data-eq="${w.id}">设为出战</button>`}
+        ${maxed?'<button class="wbtn max" style="margin-top:6px;" disabled>已满级</button>'
+            :`<button class="wbtn up" data-up="${w.id}" style="margin-top:6px;">升级（耗${WEAPON_UP_COST[lvl+1]}战魂）</button>`}
+      </div>`;
+    list.appendChild(div);
+  });
+  list.querySelectorAll('[data-eq]').forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    state.equippedWeapon=b.dataset.eq; save(); renderWeapons();
+    toast('🗡️ 已设为出战：'+WEAPON_BY_ID[b.dataset.eq].name);
+  });
+  list.querySelectorAll('[data-up]').forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    const id=b.dataset.up, lvl=state.weaponLevel[id], cost=WEAPON_UP_COST[lvl+1];
+    if(state.weaponSouls<cost){ toast('🔮 战魂不足，去战斗获取更多'); return; }
+    state.weaponSouls-=cost; state.weaponLevel[id]=lvl+1; save(); renderWeapons();
+    toast('⬆️ '+WEAPON_BY_ID[id].name+' 升到 Lv.'+(lvl+1)+'！');
+  });
+}
+/* ===================== 每日签到 ===================== */
+function todayKey(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function isYesterday(key){
+  const d=new Date(); d.setDate(d.getDate()-1);
+  const y=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  return key===y;
+}
+const CHECKIN_REWARDS=[4,6,8,10,12,15,20];   // 第1~7天奖励战魂
+const CHECKIN_BONUS =[0,0,0,0,0,0,1];         // 第7天额外送 1 块大树拼图
+function canCheckin(){ return state.checkinLast!==todayKey(); }
+function openCheckin(){
+  const t=todayKey(), can=canCheckin();
+  const done = can ? (isYesterday(state.checkinLast)?state.checkinStreak:0) : state.checkinStreak;
+  const nextIdx = done % 7;
+  let cells='';
+  for(let i=0;i<7;i++){
+    const r=CHECKIN_REWARDS[i], b=CHECKIN_BONUS[i]?(' +🌲'):'';
+    const cls = i<nextIdx ? 'done' : (i===nextIdx && can ? 'today' : (i===nextIdx ? 'today claimed' : ''));
+    cells+=`<div class="ck-cell ${cls}">
+      <div class="ck-day">第${i+1}天</div>
+      <div class="ck-rew">🔮${r}${b}</div>
+      ${i<nextIdx?'<div class="ck-ok">✓已签</div>':(i===nextIdx&&!can?'<div class="ck-ok">✓今日已签</div>':'')}
+    </div>`;
+  }
+  const btn = can
+    ? `<button class="ck-btn" id="ckClaim">🎁 领取今日奖励（连签第${done+1}天）</button>`
+    : `<button class="ck-btn done" disabled>✅ 今日已签到，明日再来</button>`;
+  document.getElementById('checkinBody').innerHTML=
+    `<div class="ck-sub">连续签到 7 天，第 7 天额外赠送 🌲 大树拼图 1 块！当前连签 <b>${state.checkinStreak}</b> 天，累计 <b>${state.checkinTotal}</b> 天。</div>`+
+    `<div class="ck-grid">${cells}</div>`+btn;
+  document.getElementById('checkinModal').classList.add('show');
+  const cb=document.getElementById('ckClaim');
+  if(cb) cb.onclick=()=>{
+    if(!canCheckin()) return;
+    const cur = isYesterday(state.checkinLast) ? state.checkinStreak : 0;
+    const idx = cur % 7;
+    state.weaponSouls += CHECKIN_REWARDS[idx];
+    if(CHECKIN_BONUS[idx]){ state.puzzlePieces += CHECKIN_BONUS[idx]; state.puzzleEarned += CHECKIN_BONUS[idx]; grantPlantQuota(); }
+    state.checkinStreak = cur + 1;
+    state.checkinLast = todayKey();
+    state.checkinTotal += 1;
+    save();
+    toast('🎁 签到成功！+' + CHECKIN_REWARDS[idx] + (CHECKIN_BONUS[idx] ? ' 战魂 +🌲1 拼图' : ' 战魂'));
+    openCheckin(); renderHome();
+  };
+}
+document.getElementById('checkinClose').onclick=()=>document.getElementById('checkinModal').classList.remove('show');
+document.getElementById('checkinModal').onclick=e=>{ if(e.target.id==='checkinModal') e.currentTarget.classList.remove('show'); };
+
+/* ===================== 山西历史人物（主角皮肤） ===================== */
+function renderFigures(){
+  const list=document.getElementById('figureList');
+  list.innerHTML='';
+  FIGURES.forEach(f=>{
+    const sel = state.skin===f.id;
+    const div=document.createElement('div');
+    div.className='fcard'+(sel?' sel':'');
+    div.innerHTML=`<div class="fport">${figureIcon(f,56)}</div>
+      <div class="fn">${f.name}</div>
+      <div class="ft">${f.era?f.era+'·':''}${f.title}</div>
+      <div class="fb">📍 ${f.birth}</div>
+      ${sel?'<div class="fsel">★ 本局主角</div>':'<div class="fpick">点击选用</div>'}`;
+    div.onclick=()=>{
+      state.skin=f.id; save(); renderFigures();
+      toast('🏯 已选择「'+f.name+'」作为这一局的主角');
+    };
+    list.appendChild(div);
+  });
+}
+
+document.getElementById('btnBattle').onclick=()=>{ showScreen('battle'); };
+document.getElementById('btnCheckin').onclick=()=>{ openCheckin(); };
+document.getElementById('btnGarden').onclick=()=>showScreen('garden');
+document.getElementById('btnExchange').onclick=()=>{
+  if(state.puzzlePieces<5) return;
+  state.puzzlePieces-=5; state.treeInventory++; save();
+  toast('🌲 兑换成功！获得 1 棵大树，去小花园种下吧');
+  renderHome();
+};
+document.getElementById('btnReset').onclick=()=>{
+  if(confirm('确定要清空所有进度吗？此操作不可恢复。')){
+    state=defaultState(); save(); renderHome(); toast('进度已重置');
+  }
+};
+document.getElementById('btnRestore').onclick=()=>{
+  if(confirm('确定要恢复进度吗？这会补齐全部卡片、武器满级、战魂并还原花园（已有进度会叠加，不会减少）。')){
+    restoreProgress();
+  }
+};
+
+/* ===================== 战斗 ===================== */
+const canvas=document.getElementById('game');
+const ctx=canvas.getContext('2d');
+let battle=null, rafId=null, lastT=0;
+
+let selScene='city', selWeather='sunny';
+function startBattle(scene,weather){
+  document.getElementById('battleSetup').style.display='none';
+  document.getElementById('battleHud').style.display='flex';
+  document.getElementById('battleCanvasBox').style.display='block';
+  battle={
+    player:{x:canvas.width/2,y:canvas.height/2,r:24,hp:100,maxhp:100,
+            facing:0,dodgeT:0,invy:0},
+    enemies:[], drops:[], bullets:[], enemyBullets:[], fx:[], runCards:[], keys:{},
+    obstacles:makeObstacles(), scene:scene||selScene, weather:weather||selWeather,
+    weapon:state.equippedWeapon,
+    spawnT:0, mouse:{x:canvas.width/2,y:canvas.height/2},
+    running:true, firing:false, fireCd:0
+  };
+  updateBattleHUD();
+  lastT=performance.now();
+  cancelAnimationFrame(rafId);
+  rafId=requestAnimationFrame(loop);
+}
+function showBattleSetup(){
+  document.getElementById('battleSetup').style.display='block';
+  document.getElementById('battleHud').style.display='none';
+  document.getElementById('battleCanvasBox').style.display='none';
+}
+
+function rand(a,b){return a+Math.random()*(b-a);}
+function dist(ax,ay,bx,by){return Math.hypot(ax-bx,ay-by);}
+
+const BOT_COLORS=['#4a90d9','#7e57c2','#26a69a','#5c6bc0','#ec407a'];
+function shade(hex,amt){
+  hex=hex.replace('#','');
+  let r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16);
+  r=Math.max(0,Math.min(255,r+amt));g=Math.max(0,Math.min(255,g+amt));b=Math.max(0,Math.min(255,b+amt));
+  return `rgb(${r},${g},${b})`;
+}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function makeObstacles(){
+  return [
+    {x:170,y:110,w:110,h:90},{x:760,y:110,w:110,h:90},
+    {x:170,y:360,w:110,h:90},{x:760,y:360,w:110,h:90},
+    {x:480,y:50,w:90,h:70},{x:480,y:440,w:90,h:70},
+    {x:60,y:250,w:60,h:60},{x:920,y:250,w:60,h:60}
+  ];
+}
+function inObstacle(x,y){
+  for(const ob of battle.obstacles){ if(x>ob.x&&x<ob.x+ob.w&&y>ob.y&&y<ob.y+ob.h) return true; }
+  return false;
+}
+function resolveObstacles(o){
+  for(const ob of battle.obstacles){
+    const cx=Math.max(ob.x,Math.min(o.x,ob.x+ob.w));
+    const cy=Math.max(ob.y,Math.min(o.y,ob.y+ob.h));
+    let dx=o.x-cx,dy=o.y-cy; const d2=dx*dx+dy*dy;
+    if(d2<o.r*o.r){ const d=Math.sqrt(d2)||0.0001; const push=o.r-d; o.x+=dx/d*push; o.y+=dy/d*push; }
+  }
+  o.x=Math.max(o.r,Math.min(canvas.width-o.r,o.x));
+  o.y=Math.max(o.r,Math.min(canvas.height-o.r,o.y));
+}
+function drawFighter(x,y,r,color,facing,isBot,hitFlash){
+  ctx.save(); ctx.translate(x,y);
+  if(hitFlash){ ctx.globalAlpha=0.7; }
+  if(isBot){
+    // ===== 人机：机械战士（更精致）=====
+    ctx.fillStyle=shade(color,-50);
+    roundRect(-r*0.52,r*0.2,r*0.4,r*0.92,r*0.14); ctx.fill();
+    roundRect(r*0.12,r*0.2,r*0.4,r*0.92,r*0.14); ctx.fill();
+    ctx.fillStyle=shade(color,35);
+    ctx.beginPath(); ctx.arc(-r*0.32,r*0.64,r*0.12,0,6.28); ctx.fill();
+    ctx.beginPath(); ctx.arc(r*0.32,r*0.64,r*0.12,0,6.28); ctx.fill();
+    const bg=ctx.createLinearGradient(0,-r*0.55,0,r*0.4);
+    bg.addColorStop(0,shade(color,30)); bg.addColorStop(1,shade(color,-35));
+    ctx.fillStyle=bg; roundRect(-r*0.58,-r*0.58,r*1.16,r*1.0,r*0.24); ctx.fill();
+    ctx.strokeStyle=shade(color,-60); ctx.lineWidth=2.5; ctx.stroke();
+    ctx.strokeStyle=shade(color,-45); ctx.lineWidth=1.5;
+    ctx.beginPath();
+    ctx.moveTo(-r*0.32,-r*0.5); ctx.lineTo(-r*0.32,r*0.12);
+    ctx.moveTo(r*0.32,-r*0.5); ctx.lineTo(r*0.32,r*0.12);
+    ctx.moveTo(-r*0.58,-r*0.05); ctx.lineTo(r*0.58,-r*0.05); ctx.stroke();
+    ctx.save(); ctx.shadowColor='#ff5a5a'; ctx.shadowBlur=12;
+    ctx.fillStyle='#ff5a5a'; ctx.beginPath(); ctx.arc(0,-r*0.2,r*0.13,0,6.28); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle=shade(color,18); roundRect(-r*0.4,-r*1.18,r*0.8,r*0.72,r*0.18); ctx.fill();
+    ctx.strokeStyle=shade(color,-55); ctx.lineWidth=2; ctx.stroke();
+    ctx.save(); ctx.shadowColor='#ff3030'; ctx.shadowBlur=10;
+    ctx.fillStyle='#ff3b3b'; roundRect(-r*0.32,-r*1.02,r*0.64,r*0.2,r*0.08); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle='#ffd6d6'; ctx.fillRect(-r*0.28,-r*0.99,r*0.56,r*0.05);
+    ctx.strokeStyle=shade(color,-30); ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(r*0.18,-r*1.18); ctx.lineTo(r*0.32,-r*1.62); ctx.stroke();
+    ctx.fillStyle='#ff4d4d'; ctx.beginPath(); ctx.arc(r*0.32,-r*1.64,r*0.1,0,6.28); ctx.fill();
+    // 持枪手臂
+    ctx.rotate(facing);
+    ctx.fillStyle=shade(color,-20); roundRect(0,-r*0.18,r*0.95,r*0.36,r*0.12); ctx.fill();
+    ctx.strokeStyle=shade(color,-50); ctx.lineWidth=1.5; ctx.stroke();
+    ctx.fillStyle='#2f2f3a'; roundRect(r*0.7,-r*0.13,r*0.62,r*0.26,r*0.06); ctx.fill();
+    ctx.fillStyle='#5a5a66'; ctx.fillRect(r*1.06,-r*0.1,r*0.16,r*0.2);
+    ctx.fillStyle='#888'; ctx.fillRect(r*0.86,-r*0.16,r*0.08,r*0.32);
+  }else{
+    // ===== 玩家：山西历史主角皮肤 =====
+    const sk=(state.skin && FIGURES_BY_ID[state.skin]) ? FIGURES_BY_ID[state.skin] : FIGURES_BY_ID['gold'];
+    const P=sk.pal, F=sk.feat;
+    // --- 腿甲（主甲/银饰/宝石 三色 + 膝甲 + 高光）---
+    [-1,1].forEach(s=>{
+      const lx=s*r*0.34;
+      ctx.fillStyle=P.armor; roundRect(lx-r*0.2,r*0.18,r*0.4,r*0.46,r*0.14); ctx.fill();
+      ctx.strokeStyle=P.armorD; ctx.lineWidth=2; ctx.stroke();
+      ctx.strokeStyle=P.armorL; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(lx-r*0.13,r*0.22); ctx.lineTo(lx-r*0.13,r*0.6); ctx.stroke();
+      ctx.fillStyle=P.trim; ctx.beginPath(); ctx.arc(lx,r*0.66,r*0.16,0,6.28); ctx.fill();
+      ctx.strokeStyle=P.trimD; ctx.lineWidth=1.5; ctx.stroke();
+      ctx.fillStyle=P.trim; roundRect(lx-r*0.17,r*0.8,r*0.34,r*0.34,r*0.1); ctx.fill();
+      ctx.strokeStyle=P.trimD; ctx.stroke();
+      ctx.fillStyle=P.accent; roundRect(lx-r*0.2,r*1.12,r*0.4,r*0.22,r*0.06); ctx.fill();
+      ctx.fillStyle=P.armor; ctx.fillRect(lx-r*0.2,r*1.12,r*0.4,2.5);
+    });
+    // --- 肩甲 ---
+    [-1,1].forEach(s=>{
+      const px=s*r*0.62;
+      ctx.fillStyle=P.armor; ctx.beginPath(); ctx.arc(px,-r*0.42,r*0.3,0,6.28); ctx.fill();
+      ctx.strokeStyle=P.armorD; ctx.lineWidth=2; ctx.stroke();
+      ctx.strokeStyle=P.armorL; ctx.lineWidth=1; ctx.beginPath(); ctx.arc(px,-r*0.42,r*0.2,0,6.28); ctx.stroke();
+    });
+    // 胸甲（渐变高光 + 银中缝 + 盾纹 + 宝石）
+    const cg=ctx.createLinearGradient(0,-r*0.5,0,r*0.3);
+    cg.addColorStop(0,P.armorL); cg.addColorStop(0.5,P.armor); cg.addColorStop(1,P.armorD);
+    ctx.fillStyle=cg; roundRect(-r*0.6,-r*0.52,r*1.2,r*0.92,r*0.3); ctx.fill();
+    ctx.strokeStyle=P.armorD; ctx.lineWidth=2.5; ctx.stroke();
+    ctx.fillStyle=P.trim; ctx.fillRect(-r*0.05,-r*0.48,r*0.1,r*0.86);
+    ctx.strokeStyle=P.armorD; ctx.lineWidth=1.5; ctx.beginPath();
+    ctx.moveTo(0,-r*0.4); ctx.lineTo(r*0.22,-r*0.28); ctx.lineTo(r*0.16,-r*0.02); ctx.lineTo(0,r*0.08);
+    ctx.lineTo(-r*0.16,-r*0.02); ctx.lineTo(-r*0.22,-r*0.28); ctx.closePath(); ctx.stroke();
+    ctx.save(); ctx.shadowColor=P.accent; ctx.shadowBlur=12;
+    ctx.fillStyle=P.accent; ctx.beginPath(); ctx.arc(0,-r*0.14,r*0.14,0,6.28); ctx.fill(); ctx.restore();
+    ctx.fillStyle=P.armorL; ctx.beginPath(); ctx.arc(-r*0.03,-r*0.18,r*0.05,0,6.28); ctx.fill();
+    ctx.fillStyle=P.accent; roundRect(-r*0.42,r*0.34,r*0.84,r*0.2,r*0.06); ctx.fill();
+    ctx.fillStyle=P.armor; ctx.fillRect(-r*0.42,r*0.34,r*0.84,2.5);
+    ctx.fillStyle=P.trim; roundRect(-r*0.22,-r*0.62,r*0.44,r*0.14,r*0.06); ctx.fill();
+    // --- 头部（脸 + 胡子 + 帽子/头盔）---
+    drawHead(P,F,r);
+    // --- 持武器手臂（朝 facing）+ 元素能量枪口 ---
+    const wId=(typeof battle!=='undefined' && battle && battle.weapon)?battle.weapon:state.equippedWeapon;
+    const wEl=ELEMENTS[WEAPON_BY_ID[wId].element]||ELEMENTS.fire;
+    ctx.rotate(facing);
+    ctx.fillStyle=P.accent; ctx.beginPath(); ctx.arc(0,-r*0.1,r*0.22,0,6.28); ctx.fill();
+    ctx.fillStyle=P.armor; roundRect(0,-r*0.18,r*0.5,r*0.36,r*0.12); ctx.fill();
+    ctx.strokeStyle=P.armorD; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.fillStyle=P.trim; ctx.beginPath(); ctx.arc(r*0.5,0,r*0.12,0,6.28); ctx.fill();
+    ctx.fillStyle=P.trim; roundRect(r*0.5,-r*0.15,r*0.46,r*0.3,r*0.1); ctx.fill(); ctx.strokeStyle=P.trimD; ctx.stroke();
+    ctx.fillStyle=P.accent; roundRect(r*0.92,-r*0.15,r*0.5,r*0.3,r*0.06); ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.3)'; ctx.lineWidth=1; ctx.stroke();
+    ctx.fillStyle=P.armorL; ctx.fillRect(r*1.04,-r*0.16,r*0.06,r*0.32); ctx.fillRect(r*1.2,-r*0.16,r*0.06,r*0.32);
+    ctx.fillStyle=P.armorL; ctx.fillRect(r*1.4,-r*0.1,r*0.16,r*0.2);
+    // 元素能量核心（枪口发光，按武器元素着色）
+    ctx.save(); ctx.shadowColor=wEl.glow; ctx.shadowBlur=14;
+    ctx.fillStyle=wEl.mid; ctx.fillRect(r*1.42,-r*0.08,r*0.1,r*0.16); ctx.restore();
+    ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.shadowColor=wEl.glow; ctx.shadowBlur=10;
+    ctx.fillStyle=wEl.core; ctx.beginPath(); ctx.arc(r*1.47,0,r*0.09,0,6.28); ctx.fill(); ctx.restore();
+    ctx.strokeStyle=hexA(wEl.glow,0.22); ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(r*1.56,0); ctx.lineTo(r*2.8,0); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// 玩家头部：脸 + 胡子 + 帽子/头盔（盖在头顶、露出面容，便于辨认人物）
+function drawHead(P,F,r){
+  // 脸
+  ctx.fillStyle=F.face;
+  ctx.beginPath(); ctx.ellipse(0,-r*0.74,r*0.32,r*0.38,0,0,6.28); ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.12)'; ctx.lineWidth=1; ctx.stroke();
+  // 眼睛
+  ctx.fillStyle='#222';
+  ctx.beginPath(); ctx.arc(-r*0.12,-r*0.78,r*0.045,0,6.28); ctx.arc(r*0.12,-r*0.78,r*0.045,0,6.28); ctx.fill();
+  // 嘴
+  ctx.strokeStyle='rgba(0,0,0,.32)'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(0,-r*0.6,r*0.07,0.2,Math.PI-0.2); ctx.stroke();
+  // 胡子
+  if(F.beard){
+    ctx.fillStyle=F.beard;
+    ctx.beginPath();
+    ctx.moveTo(-r*0.26,-r*0.58);
+    ctx.quadraticCurveTo(0,-r*0.34,r*0.26,-r*0.58);
+    ctx.quadraticCurveTo(r*0.2,-r*0.18,0,-r*0.16);
+    ctx.quadraticCurveTo(-r*0.2,-r*0.18,-r*0.26,-r*0.58);
+    ctx.closePath(); ctx.fill();
+  }
+  // 帽子 / 头盔
+  if(F.hat==='helm'){
+    ctx.fillStyle=P.armor;
+    ctx.beginPath();
+    ctx.moveTo(-r*0.38,-r*0.8);
+    ctx.quadraticCurveTo(-r*0.42,-r*1.22,0,-r*1.24);
+    ctx.quadraticCurveTo(r*0.42,-r*1.22,r*0.38,-r*0.8);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle=P.armorD; ctx.lineWidth=2; ctx.stroke();
+    ctx.strokeStyle=P.armorL; ctx.lineWidth=1; ctx.beginPath(); ctx.arc(0,-r*1.0,r*0.28,Math.PI*1.1,Math.PI*1.9); ctx.stroke();
+    ctx.fillStyle=P.accent; ctx.beginPath(); ctx.ellipse(0,-r*1.3,r*0.07,r*0.2,0,0,6.28); ctx.fill();
+    ctx.save(); ctx.shadowColor=P.accent; ctx.shadowBlur=10; ctx.fillStyle=P.accent; ctx.fillRect(-r*0.04,-r*0.88,r*0.08,r*0.07); ctx.restore();
+  }else if(F.hat==='warrior'){
+    ctx.fillStyle='#2e8b57';
+    ctx.beginPath();
+    ctx.moveTo(-r*0.36,-r*0.78);
+    ctx.quadraticCurveTo(0,-r*1.06,r*0.36,-r*0.78);
+    ctx.lineTo(r*0.3,-r*0.7); ctx.quadraticCurveTo(0,-r*0.96,-r*0.3,-r*0.7);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle='#1c5e3a'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.fillStyle=P.accent; ctx.beginPath(); ctx.arc(0,-r*0.92,r*0.06,0,6.28); ctx.fill();
+  }else if(F.hat==='general'){
+    ctx.fillStyle=P.armor;
+    ctx.beginPath();
+    ctx.moveTo(-r*0.38,-r*0.8);
+    ctx.quadraticCurveTo(-r*0.42,-r*1.18,0,-r*1.2);
+    ctx.quadraticCurveTo(r*0.42,-r*1.18,r*0.38,-r*0.8);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle=P.armorD; ctx.lineWidth=2; ctx.stroke();
+    ctx.fillStyle=P.accent; roundRect(-r*0.05,-r*1.22,r*0.1,r*0.42,r*0.04); ctx.fill();
+    ctx.beginPath(); ctx.arc(0,-r*1.24,r*0.06,0,6.28); ctx.fill();
+    ctx.fillStyle=P.trim; ctx.fillRect(-r*0.42,-r*0.78,r*0.1,r*0.2); ctx.fillRect(r*0.32,-r*0.78,r*0.1,r*0.2);
+  }else if(F.hat==='official'){
+    ctx.fillStyle='#2b2b2b';
+    ctx.beginPath();
+    ctx.moveTo(-r*0.34,-r*0.74);
+    ctx.quadraticCurveTo(0,-r*1.15,r*0.34,-r*0.74);
+    ctx.lineTo(r*0.3,-r*0.68); ctx.quadraticCurveTo(0,-r*0.98,-r*0.3,-r*0.68);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#2b2b2b'; ctx.fillRect(-r*0.56,-r*0.78,r*0.22,r*0.06); ctx.fillRect(r*0.34,-r*0.78,r*0.22,r*0.06);
+    ctx.fillStyle='#3a3a3a'; ctx.beginPath(); ctx.ellipse(0,-r*0.86,r*0.16,r*0.09,0,0,6.28); ctx.fill();
+  }else if(F.hat==='dao'){
+    ctx.fillStyle=P.armor;
+    ctx.beginPath();
+    ctx.moveTo(-r*0.36,-r*0.76);
+    ctx.lineTo(-r*0.2,-r*1.12);
+    ctx.lineTo(0,-r*0.92);
+    ctx.lineTo(r*0.2,-r*1.12);
+    ctx.lineTo(r*0.36,-r*0.76);
+    ctx.lineTo(r*0.28,-r*0.68);
+    ctx.quadraticCurveTo(0,-r*0.96,-r*0.28,-r*0.68);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle=P.armorD; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.fillStyle=P.armor; ctx.beginPath(); ctx.arc(0,-r*1.14,r*0.07,0,6.28); ctx.fill();
+  }else if(F.hat==='phoenix'){
+    ctx.fillStyle=P.armor;
+    ctx.beginPath();
+    ctx.moveTo(-r*0.4,-r*0.78);
+    ctx.quadraticCurveTo(0,-r*1.22,r*0.4,-r*0.78);
+    ctx.lineTo(r*0.34,-r*0.7);
+    ctx.quadraticCurveTo(0,-r*1.0,-r*0.34,-r*0.7);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle=P.armorD; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.fillStyle=P.accent; ctx.beginPath(); ctx.arc(0,-r*0.9,r*0.07,0,6.28); ctx.fill();
+    ctx.fillStyle=P.trim; ctx.beginPath(); ctx.arc(0,-r*1.06,r*0.06,0,6.28); ctx.fill();
+    ctx.beginPath(); ctx.arc(-r*0.18,-r*0.82,r*0.04,0,6.28); ctx.arc(r*0.18,-r*0.82,r*0.04,0,6.28); ctx.fill();
+  }
+}
+
+function spawnEnemy(){
+  const side=Math.floor(rand(0,4));
+  let x,y;
+  if(side===0){x=rand(0,canvas.width);y=-20;}
+  else if(side===1){x=canvas.width+20;y=rand(0,canvas.height);}
+  else if(side===2){x=rand(0,canvas.width);y=canvas.height+20;}
+  else{x=-20;y=rand(0,canvas.height);}
+  const card=CARDS[Math.floor(rand(0,CARDS.length))];
+  battle.enemies.push({x,y,r:22,hp:3,maxhp:3,speed:rand(78,102),
+    color:BOT_COLORS[Math.floor(rand(0,BOT_COLORS.length))], cardId:card.id,
+    hitT:0, atkCd:0, shootCd:rand(1.2,2.4), bot:true});
+}
+
+function loop(now){
+  if(!battle||!battle.running) return;
+  const dt=Math.min(0.05,(now-lastT)/1000); lastT=now;
+  update(dt); render();
+  rafId=requestAnimationFrame(loop);
+}
+
+function update(dt){
+  const p=battle.player;
+  // 移动
+  let mx=0,my=0;
+  if(battle.keys['arrowleft']||battle.keys['a'])mx-=1;
+  if(battle.keys['arrowright']||battle.keys['d'])mx+=1;
+  if(battle.keys['arrowup']||battle.keys['w'])my-=1;
+  if(battle.keys['arrowdown']||battle.keys['s'])my+=1;
+  const len=Math.hypot(mx,my)||1; mx/=len; my/=len;
+  const speed=battle.weather==='snow'?170:200;
+  let nx=p.x+mx*speed*dt, ny=p.y+my*speed*dt;
+  p.x=Math.max(p.r,Math.min(canvas.width-p.r,nx));
+  p.y=Math.max(p.r,Math.min(canvas.height-p.r,ny));
+  if(mx||my) p.facing=Math.atan2(my,mx);
+
+  // 翻滚状态计时
+  if(p.dodgeT>0)p.dodgeT-=dt;
+  if(p.invy>0)p.invy-=dt;
+
+  // 翻滚位移
+  if(p.dodgeT>0){
+    const ds=260;
+    p.x=Math.max(p.r,Math.min(canvas.width-p.r,p.x+Math.cos(p.facing)*ds*dt));
+    p.y=Math.max(p.r,Math.min(canvas.height-p.r,p.y+Math.sin(p.facing)*ds*dt));
+  }
+  resolveObstacles(p);
+
+  // 刷怪
+  battle.spawnT-=dt;
+  if(battle.spawnT<=0 && battle.enemies.length<6){
+    spawnEnemy(); battle.spawnT=rand(1.4,2.2);
+  }
+
+  // 敌人（人机）
+  for(const e of battle.enemies){
+    const ang=Math.atan2(p.y-e.y,p.x-e.x);
+    e.x+=Math.cos(ang)*e.speed*dt;
+    e.y+=Math.sin(ang)*e.speed*dt;
+    resolveObstacles(e);
+    if(e.hitT>0)e.hitT-=dt;
+    if(e.atkCd>0)e.atkCd-=dt;
+    if(e.shootCd>0)e.shootCd-=dt;
+    else if(dist(e.x,e.y,p.x,p.y)<480){
+      const a=Math.atan2(p.y-e.y,p.x-e.x);
+      const sp=300;
+      battle.enemyBullets.push({x:e.x+Math.cos(a)*(e.r+6),y:e.y+Math.sin(a)*(e.r+6),vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:5,life:2.6});
+      e.shootCd=rand(1.8,2.8);
+    }
+    // 接触伤害
+    if(dist(e.x,e.y,p.x,p.y)<e.r+p.r+2 && e.atkCd<=0 && p.invy<=0){
+      p.hp-=12; e.atkCd=0.8;
+      // 击退
+      const a=Math.atan2(e.y-p.y,e.x-p.x);
+      p.x+=Math.cos(a)*18; p.y+=Math.sin(a)*18;
+      if(p.hp<=0){ p.hp=0; updateBattleHUD(); endBattle(false); return; }
+    }
+  }
+
+  // 发射弹药
+  if(battle.fireCd>0) battle.fireCd-=dt;
+  if(battle.muzzle){ battle.muzzle.t-=dt; if(battle.muzzle.t<=0) battle.muzzle=null; }
+  if((battle.firing || battle.keys[' ']) && battle.fireCd<=0){
+    fireBullet();
+  }
+  // 子弹移动与命中（支持伤害/穿透/爆炸）
+  for(const b of battle.bullets){
+    b.x+=b.vx*dt; b.y+=b.vy*dt; b.life-=dt;
+    b.rot+=(b.spin||0)*dt;
+    if(battle.weather==='wind') b.x+=70*dt;
+    if(inObstacle(b.x,b.y)){ if(b.explode) explodeAt(b.x,b.y,b.explode,b.dmg,b.hitSet,b.element); b.life=0; continue; }
+    for(const e of battle.enemies){
+      if(e.hp>0 && !b.hitSet.has(e) && dist(b.x,b.y,e.x,e.y)<e.r+b.r){
+        e.hp-=b.dmg; e.hitT=0.25; b.hitSet.add(e);
+        if(b.explode) explodeAt(b.x,b.y,b.explode,b.dmg,b.hitSet,b.element);
+        const a=Math.atan2(e.y-p.y,e.x-p.x);
+        e.x+=Math.cos(a)*22; e.y+=Math.sin(a)*22;
+        if(e.hp<=0){ dropCard(e); }
+        if(b.pierce>0){ b.pierce--; }
+        else { b.life=0; break; }
+      }
+    }
+  }
+  battle.bullets=battle.bullets.filter(b=>b.life>0 && b.x>-20&&b.x<canvas.width+20&&b.y>-20&&b.y<canvas.height+20);
+  battle.enemies=battle.enemies.filter(e=>e.hp>0);
+  // 敌方弹药
+  for(const b of battle.enemyBullets){
+    b.x+=b.vx*dt; b.y+=b.vy*dt; b.life-=dt;
+    if(battle.weather==='wind') b.x+=70*dt;
+    if(inObstacle(b.x,b.y)){ b.life=0; continue; }
+    if(p.invy<=0 && dist(b.x,b.y,p.x,p.y)<p.r+b.r){
+      p.hp-=10; b.life=0;
+      if(p.hp<=0){ p.hp=0; updateBattleHUD(); endBattle(false); return; }
+    }
+  }
+  battle.enemyBullets=battle.enemyBullets.filter(b=>b.life>0 && b.x>-20&&b.x<canvas.width+20&&b.y>-20&&b.y<canvas.height+20);
+  // 爆炸特效衰减
+  for(const f of battle.fx){ f.t-=dt; f.r+=(f.maxR-f.r)*Math.min(1,dt*10); }
+  battle.fx=battle.fx.filter(f=>f.t>0);
+}
+
+function dropCard(e){
+  battle.drops.push({x:e.x,y:e.y,r:14,cardId:e.cardId,bob:rand(0,6.28)});
+  toast('💥 敌人被击倒，掉出一张历史卡片！');
+}
+function explodeAt(x,y,radius,dmg,ignore,element){
+  for(const e of battle.enemies){
+    if(e.hp>0 && (!ignore||!ignore.has(e)) && dist(x,y,e.x,e.y)<radius+e.r){
+      e.hp-=dmg; e.hitT=0.25;
+      if(e.hp<=0){ dropCard(e); }
+    }
+  }
+  battle.fx.push({x,y,r:radius*0.3,maxR:radius,t:0.36,life:0.36,element:element||'fire'});
+}
+
+function fireBullet(){
+  const p=battle.player, m=battle.mouse;
+  const a=Math.atan2(m.y-p.y, m.x-p.x);
+  const id=battle.weapon;
+  const s=weaponStats(id, state.weaponLevel[id]);
+  p.facing=a;
+  const bx=p.x+Math.cos(a)*(p.r+6), by=p.y+Math.sin(a)*(p.r+6);
+  const shots=s.spread||1;
+  for(let i=0;i<shots;i++){
+    const off=shots>1?(i-(shots-1)/2)*0.14:0;
+    const ang=a+off;
+    battle.bullets.push({
+      x:bx, y:by, vx:Math.cos(ang)*s.speed, vy:Math.sin(ang)*s.speed,
+      r:s.r, life:1.6, dmg:s.dmg, proj:s.proj, color:s.color, element:s.element,
+      pierce:s.pierce, explode:s.explode, spin:(s.proj==='axe'?14:0),
+      rot:ang, hitSet:new Set()
+    });
+  }
+  battle.muzzle={x:bx, y:by, a:a, t:0.1, proj:s.proj, color:s.color, element:s.element};
+  battle.fireCd=s.fireRate;
+}
+function doDodge(){
+  const p=battle.player;
+  if(p.dodgeT>0) return;
+  p.dodgeT=0.4; p.invy=0.4;
+  toast('🤸 翻滚躲避！');
+}
+function doPickup(){
+  if(!battle) return;
+  const m=battle.mouse;
+  let best=-1,bd=1e9;
+  battle.drops.forEach((d,i)=>{const dd=dist(d.x,d.y,m.x,m.y); if(dd<bd){bd=dd;best=i;}});
+  if(best>=0 && bd<48){
+    const d=battle.drops[best];
+    battle.drops.splice(best,1);
+    battle.runCards.push(d.cardId);
+    updateBattleHUD();
+    if(battle.runCards.length>=5){ endBattle(true); }
+    else toast('📜 捡到卡片：'+CARD_BY_ID[d.cardId].title);
+  }
+}
+function doDrop(){
+  if(!battle||battle.runCards.length===0) return;
+  const id=battle.runCards.pop();
+  battle.drops.push({x:battle.player.x+rand(-20,20),y:battle.player.y+rand(-20,20),r:14,cardId:id,bob:rand(0,6.28)});
+  updateBattleHUD(); toast('📤 放下卡片：'+CARD_BY_ID[id].title);
+}
+
+function endBattle(success){
+  battle.running=false;
+  cancelAnimationFrame(rafId);
+  if(success){
+    battle.runCards.forEach(id=>{ state.collection[id]=(state.collection[id]||0)+1; });
+    state.puzzlePieces+=1; state.puzzleEarned+=1; grantPlantQuota(); state.weaponSouls+=8; save();
+    toast('🎉 集齐5张！回到主页，换得 1 块大树拼图 + 8 战魂');
+  }else{
+    state.weaponSouls+=2; save();
+    toast('💀 战斗失败，但获得 2 战魂，下次小心敌人的围攻！');
+  }
+  setTimeout(()=>showScreen('home'), success?1400:1400);
+}
+
+function updateBattleHUD(){
+  document.getElementById('hpfill').style.width=Math.max(0,battle.player.hp)/battle.player.maxhp*100+'%';
+  document.getElementById('runCards').textContent=battle.runCards.length;
+  document.getElementById('hudPieces').textContent=state.puzzlePieces;
+  document.getElementById('hudTrees').textContent=state.treeInventory;
+  const w=WEAPON_BY_ID[battle.weapon];
+  document.getElementById('hudWeapon').textContent=w.name+' Lv.'+state.weaponLevel[w.id];
+}
+
+/* 输入 */
+window.addEventListener('keydown',e=>{
+  if(!battle||!battle.running) return;
+  const k=e.key.toLowerCase(); battle.keys[k]=true;
+  if(e.key==='Shift') doDodge();
+  if(k==='q') doDrop();
+  const KEYMAP={'1':0,'2':1,'3':2,'4':3,'5':4,'6':5,'7':6,'8':7,'9':8,'0':9,'-':10,'=':11};
+  if(k in KEYMAP){
+    const w=WEAPONS[KEYMAP[k]];
+    if(w && battle.weapon!==w.id){
+      battle.weapon=w.id;
+      updateBattleHUD();
+      toast('🔫 切换武器：'+w.name+' Lv.'+state.weaponLevel[w.id]);
+    }
+  }
+  if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault();
+});
+window.addEventListener('keyup',e=>{ if(battle) battle.keys[e.key.toLowerCase()]=false; });
+
+canvas.addEventListener('mousemove',e=>{
+  if(!battle) return;
+  const r=canvas.getBoundingClientRect();
+  battle.mouse.x=(e.clientX-r.left)*(canvas.width/r.width);
+  battle.mouse.y=(e.clientY-r.top)*(canvas.height/r.height);
+});
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+canvas.addEventListener('mousedown',e=>{
+  if(!battle||!battle.running) return;
+  e.preventDefault();
+  if(e.button===0){ // 左键：朝鼠标发射弹药
+    battle.firing=true;
+    if(battle.fireCd<=0){ fireBullet(); }
+  }else if(e.button===2){ // 右键：捡起附近卡片
+    doPickup();
+  }
+});
+canvas.addEventListener('mouseup',e=>{ if(battle && e.button===0) battle.firing=false; });
+canvas.addEventListener('mouseleave',()=>{ if(battle) battle.firing=false; });
+
+document.getElementById('btnQuit').onclick=()=>{
+  if(battle){ battle.running=false; cancelAnimationFrame(rafId); }
+  showScreen('home');
+};
+
+// 战前部署：场景 / 天气 选择
+document.getElementById('sceneChips').querySelectorAll('.chip').forEach(c=>{
+  c.onclick=()=>{ document.querySelectorAll('#sceneChips .chip').forEach(x=>x.classList.remove('sel')); c.classList.add('sel'); selScene=c.dataset.scene; };
+});
+document.getElementById('weatherChips').querySelectorAll('.chip').forEach(c=>{
+  c.onclick=()=>{ document.querySelectorAll('#weatherChips .chip').forEach(x=>x.classList.remove('sel')); c.classList.add('sel'); selWeather=c.dataset.weather; };
+});
+document.getElementById('btnStartBattle').onclick=()=>{ startBattle(selScene,selWeather); };
+document.getElementById('btnSetupHome').onclick=()=>{ showScreen('home'); };
+
+/* 渲染 */
+function hexA(hex,a){
+  hex=hex.replace('#','');
+  const r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+// 按武器类型绘制不同弹道特效
+function drawProjectile(b){
+  const sp=Math.hypot(b.vx,b.vy)||1;
+  const tx=b.x-b.vx/sp*22, ty=b.y-b.vy/sp*22;
+  const E=ELEMENTS[b.element]||ELEMENTS.fire;
+  // —— 元素光晕 + 拖尾（lighter 叠加发光）——
+  ctx.save();
+  ctx.globalCompositeOperation='lighter';
+  const g=ctx.createLinearGradient(tx,ty,b.x,b.y);
+  g.addColorStop(0,`rgba(${E.trail},0)`); g.addColorStop(1,E.mid);
+  ctx.strokeStyle=g; ctx.lineWidth=b.r*1.7; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(tx,ty); ctx.lineTo(b.x,b.y); ctx.stroke();
+  const rg=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r*2.1);
+  rg.addColorStop(0,E.core); rg.addColorStop(0.45,E.mid); rg.addColorStop(1,`rgba(${E.trail},0)`);
+  ctx.fillStyle=rg; ctx.beginPath(); ctx.arc(b.x,b.y,b.r*2.1,0,6.28); ctx.fill();
+  ctx.restore();
+
+  // —— 形状层 ——
+  ctx.save();
+  if(b.proj==='slash'){
+    ctx.translate(b.x,b.y); ctx.rotate(b.rot); ctx.shadowColor=E.glow; ctx.shadowBlur=14;
+    ctx.strokeStyle=E.mid; ctx.lineWidth=b.r*1.4; ctx.lineCap='round';
+    ctx.beginPath(); ctx.arc(0,0,b.r*2.2,-0.9,0.9); ctx.stroke();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=b.r*0.5;
+    ctx.beginPath(); ctx.arc(0,0,b.r*2.2,-0.55,0.55); ctx.stroke();
+  }else if(b.proj==='axe'){
+    ctx.translate(b.x,b.y); ctx.rotate(b.rot); ctx.shadowColor=E.glow; ctx.shadowBlur=12;
+    ctx.fillStyle='#2a4a66'; ctx.fillRect(-2,-b.r*1.2,4,b.r*2.4);
+    ctx.fillStyle=E.mid; ctx.beginPath();
+    ctx.moveTo(0,-b.r*1.1); ctx.quadraticCurveTo(b.r*1.4,-b.r*0.8,b.r*1.1,b.r*0.25);
+    ctx.quadraticCurveTo(b.r*0.4,b.r*0.2,0,b.r*0.45); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle='#bfe9ff'; ctx.lineWidth=1.5; ctx.stroke();
+  }else if(b.proj==='knife'){
+    ctx.translate(b.x,b.y); ctx.rotate(b.rot); ctx.shadowColor=E.glow; ctx.shadowBlur=10;
+    ctx.fillStyle=E.mid; ctx.beginPath();
+    ctx.moveTo(b.r*1.5,0); ctx.lineTo(-b.r*1.0,-b.r*0.6); ctx.lineTo(-b.r*1.0,b.r*0.6); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#5a3a1a'; ctx.fillRect(-b.r*1.25,-b.r*0.18,b.r*0.5,b.r*0.36);
+  }else if(b.proj==='fire'){ // 法杖魔能球
+    ctx.translate(b.x,b.y); ctx.shadowColor=E.glow; ctx.shadowBlur=10;
+    ctx.fillStyle=E.core; ctx.beginPath(); ctx.arc(0,0,b.r*0.6,0,6.28); ctx.fill();
+  }else if(b.proj==='arrow'){
+    ctx.translate(b.x,b.y); ctx.rotate(b.rot); ctx.shadowColor=E.glow; ctx.shadowBlur=10;
+    ctx.strokeStyle=E.mid; ctx.lineWidth=2.5; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(-b.r*2,0); ctx.lineTo(b.r*1.2,0); ctx.stroke();
+    ctx.fillStyle=E.core; ctx.beginPath();
+    ctx.moveTo(b.r*1.4,0); ctx.lineTo(b.r*0.5,-b.r*0.6); ctx.lineTo(b.r*0.5,b.r*0.6); ctx.closePath(); ctx.fill();
+  }else if(b.proj==='rocket'){
+    ctx.translate(b.x,b.y); ctx.rotate(b.rot); ctx.shadowColor=E.glow; ctx.shadowBlur=10;
+    ctx.fillStyle='#16384f'; roundRect(-b.r*0.8,-b.r*0.5,b.r*1.6,b.r,5); ctx.fill();
+    ctx.fillStyle=E.mid; ctx.fillRect(b.r*0.7,-b.r*0.3,b.r*0.4,b.r*0.6);
+    ctx.strokeStyle='#bfe9ff'; ctx.lineWidth=1; ctx.strokeRect(-b.r*0.8,-b.r*0.5,b.r*1.6,b.r);
+  }else if(b.proj==='ion'){ // 水火双色离子球
+    ctx.translate(b.x,b.y); ctx.rotate(b.rot); ctx.shadowColor=E.glow; ctx.shadowBlur=13;
+    const ig=ctx.createRadialGradient(0,0,0,0,0,b.r*1.1);
+    ig.addColorStop(0,'#bfe9ff'); ig.addColorStop(0.5,'#39c5ff'); ig.addColorStop(1,'rgba(255,122,60,0)');
+    ctx.fillStyle=ig; ctx.beginPath(); ctx.arc(0,0,b.r*1.1,0,6.28); ctx.fill();
+    ctx.strokeStyle='#ff8a1e'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,0,b.r*0.7,0,6.28); ctx.stroke();
+  }else if(b.proj==='fist'){ // 大地之拳
+    ctx.translate(b.x,b.y); ctx.rotate(b.rot); ctx.shadowColor=E.glow; ctx.shadowBlur=10;
+    ctx.fillStyle='#6b4a22'; roundRect(-b.r*0.8,-b.r*0.8,b.r*1.6,b.r*1.6,4); ctx.fill();
+    ctx.strokeStyle='#caa15e'; ctx.lineWidth=2; ctx.strokeRect(-b.r*0.8,-b.r*0.8,b.r*1.6,b.r*1.6);
+    ctx.fillStyle='#3a2a12'; ctx.fillRect(-b.r*0.4,-b.r*0.4,b.r*0.25,b.r*0.8); ctx.fillRect(b.r*0.15,-b.r*0.4,b.r*0.25,b.r*0.8);
+  }else if(b.proj==='cruise'){ // 烈焰巡飞弹：机身 + 双翼 + 火焰核心
+    ctx.translate(b.x,b.y); ctx.rotate(b.rot); ctx.shadowColor=E.glow; ctx.shadowBlur=12;
+    // 三角翼
+    ctx.fillStyle='#2b3242'; ctx.beginPath();
+    ctx.moveTo(-b.r*0.9,0); ctx.lineTo(-b.r*1.8,-b.r*0.9); ctx.lineTo(-b.r*0.6,-b.r*0.4); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-b.r*0.9,0); ctx.lineTo(-b.r*1.8,b.r*0.9); ctx.lineTo(-b.r*0.6,b.r*0.4); ctx.closePath(); ctx.fill();
+    // 机身
+    ctx.fillStyle='#3a3f52'; roundRect(-b.r*0.9,-b.r*0.5,b.r*1.9,b.r,5); ctx.fill();
+    ctx.strokeStyle='#5a6172'; ctx.lineWidth=1; ctx.strokeRect(-b.r*0.9,-b.r*0.5,b.r*1.9,b.r);
+    // 火焰核心（元素色发光）
+    ctx.fillStyle=E.core; ctx.beginPath(); ctx.arc(b.r*0.7,0,b.r*0.42,0,6.28); ctx.fill();
+    ctx.fillStyle=E.mid; ctx.beginPath(); ctx.arc(b.r*0.7,0,b.r*0.22,0,6.28); ctx.fill();
+  }else if(b.proj==='hammer'){ // 雷霆之锤：锤柄 + 锤头
+    ctx.translate(b.x,b.y); ctx.rotate(b.rot); ctx.shadowColor=E.glow; ctx.shadowBlur=12;
+    // 锤柄
+    ctx.fillStyle='#2b3242'; roundRect(-b.r*0.18,-b.r*1.4,b.r*0.36,b.r*1.6,3); ctx.fill();
+    // 锤头
+    ctx.fillStyle='#3a3f52'; roundRect(-b.r*1.1,-b.r*1.1,b.r*2.2,b.r*1.0,4); ctx.fill();
+    ctx.strokeStyle=E.mid; ctx.lineWidth=2; ctx.strokeRect(-b.r*1.1,-b.r*1.1,b.r*2.2,b.r*1.0);
+    // 大地裂纹纹（元素色）
+    ctx.strokeStyle=E.glow; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(-b.r*0.6,-b.r*1.0); ctx.lineTo(-b.r*0.3,-b.r*0.2);
+    ctx.moveTo(b.r*0.1,-b.r*1.0); ctx.lineTo(b.r*0.4,-b.r*0.2);
+    ctx.moveTo(b.r*0.6,-b.r*1.0); ctx.lineTo(b.r*0.5,-b.r*0.2); ctx.stroke();
+    ctx.fillStyle=E.core; ctx.beginPath(); ctx.arc(0,-b.r*0.6,2.2,0,6.28); ctx.fill();
+  }else if(b.proj==='bolt'){ // 雷电手杖：连锁电弧
+    ctx.translate(b.x,b.y); ctx.rotate(b.rot); ctx.shadowColor=E.glow; ctx.shadowBlur=14;
+    ctx.strokeStyle=E.mid; ctx.lineWidth=b.r*0.6; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath();
+    ctx.moveTo(0,-b.r*1.6);
+    ctx.lineTo(b.r*0.5,-b.r*0.6);
+    ctx.lineTo(-b.r*0.4,b.r*0.1);
+    ctx.lineTo(b.r*0.5,b.r*0.8);
+    ctx.lineTo(0,b.r*1.6);
+    ctx.stroke();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=b.r*0.22;
+    ctx.beginPath();
+    ctx.moveTo(0,-b.r*1.6);
+    ctx.lineTo(b.r*0.5,-b.r*0.6);
+    ctx.lineTo(-b.r*0.4,b.r*0.1);
+    ctx.lineTo(b.r*0.5,b.r*0.8);
+    ctx.lineTo(0,b.r*1.6);
+    ctx.stroke();
+    ctx.fillStyle=E.core; ctx.beginPath(); ctx.arc(b.r*0.5,-b.r*0.6,b.r*0.22,0,6.28); ctx.fill();
+  }else{ // bullet 烈焰激光枪
+    ctx.translate(b.x,b.y); ctx.shadowColor=E.glow; ctx.shadowBlur=12;
+    ctx.fillStyle=E.core; ctx.beginPath(); ctx.arc(0,0,b.r,0,6.28); ctx.fill();
+  }
+  ctx.restore();
+}
+function render(){
+  const p=battle.player;
+  const t=performance.now()/1000;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // 场景背景（城市 / 大海 / 森林 / 宇宙）
+  drawScene(battle.scene,t);
+
+  // 掉落卡片
+  battle.drops.forEach(d=>{
+    const yy=d.y+Math.sin(performance.now()/300+d.bob)*3;
+    ctx.save(); ctx.translate(d.x,yy);
+    ctx.fillStyle='#fffdf8'; ctx.strokeStyle='#d9a441'; ctx.lineWidth=2;
+    ctx.fillRect(-13,-16,26,32); ctx.strokeRect(-13,-16,26,32);
+    ctx.fillStyle='#e23b3b'; ctx.font='bold 14px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('史',0,5);
+    ctx.restore();
+  });
+
+  // 障碍掩体（按场景换造型）
+  battle.obstacles.forEach(ob=>drawObstacle(ob,battle.scene));
+
+  // 敌人（人机）
+  battle.enemies.forEach(e=>{
+    drawFighter(e.x,e.y,e.r,e.color,Math.atan2(p.y-e.y,p.x-e.x),true,e.hitT>0);
+    ctx.fillStyle='#3a2b1f'; ctx.fillRect(e.x-e.r,e.y-e.r-12,e.r*2,4);
+    ctx.fillStyle='#ff6b6b'; ctx.fillRect(e.x-e.r,e.y-e.r-12,e.r*2*(e.hp/e.maxhp),4);
+  });
+
+  // 玩家（红色人形）
+  drawFighter(p.x,p.y,p.r,'#e23b3b',p.facing,false,p.invy>0);
+
+  // 玩家弹药（按武器类型渲染不同特效）
+  battle.bullets.forEach(b=>drawProjectile(b));
+  // 爆炸 / 元素冲击特效
+  battle.fx.forEach(f=>{
+    const E=ELEMENTS[f.element]||ELEMENTS.fire;
+    const a=Math.max(0,f.t/f.life);
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+    const g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.r);
+    g.addColorStop(0,`rgba(${E.trail},${0.55*a})`); g.addColorStop(0.6,E.mid); g.addColorStop(1,`rgba(${E.trail},0)`);
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,6.28); ctx.fill();
+    ctx.strokeStyle=hexA(E.glow,0.8*a); ctx.lineWidth=3;
+    ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,6.28); ctx.stroke();
+    ctx.restore();
+  });
+  // 开火枪口闪光特效（按武器着色）
+  if(battle.muzzle){
+    const m=battle.muzzle, fr=Math.max(0,m.t/0.1);
+    const E=ELEMENTS[m.element]||ELEMENTS.fire;
+    const col=E.glow;
+    ctx.save(); ctx.translate(m.x,m.y); ctx.rotate(m.a); ctx.globalCompositeOperation='lighter';
+    const mg=ctx.createRadialGradient(0,0,0,0,0,p.r*0.9*fr);
+    mg.addColorStop(0,'rgba(255,255,235,'+fr+')'); mg.addColorStop(0.5,E.mid); mg.addColorStop(1,hexA(col,0));
+    ctx.fillStyle=mg; ctx.beginPath(); ctx.arc(0,0,p.r*0.9*fr,0,6.28); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,'+(0.9*fr)+')';
+    ctx.beginPath();
+    for(let i=0;i<12;i++){ const ang=i*Math.PI/6, rr=(i%2?p.r*0.25:p.r*0.6)*fr; const px=Math.cos(ang)*rr, py=Math.sin(ang)*rr; i?ctx.lineTo(px,py):ctx.moveTo(px,py); } ctx.closePath(); ctx.fill();
+    ctx.strokeStyle=hexA(col,0.85*fr); ctx.lineWidth=2;
+    for(let i=0;i<5;i++){ const sa=(i-2)*0.16, len=p.r*(0.8+Math.random()*0.7)*fr; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(Math.cos(sa)*len, Math.sin(sa)*len); ctx.stroke(); }
+    ctx.restore();
+  }
+  // 敌方弹药
+  battle.enemyBullets.forEach(b=>{
+    ctx.save(); ctx.translate(b.x,b.y);
+    ctx.shadowColor='#ff3b3b'; ctx.shadowBlur=10;
+    ctx.fillStyle='#ff5b5b';
+    ctx.beginPath(); ctx.arc(0,0,b.r,0,6.28); ctx.fill();
+    ctx.restore();
+  });
+  // 天气效果（晴 / 风 / 雨 / 雪）
+  drawWeather(battle.weather,t);
+}
+
+/* ===== 场景 / 天气 绘制 ===== */
+function drawScene(scene,t){
+  const W=canvas.width,H=canvas.height;
+  if(scene==='city'){
+    const g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#241a3e'); g.addColorStop(0.5,'#3a2a4f'); g.addColorStop(1,'#4a2f3a');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    drawSkyline(W,H*0.62,H*0.42,'#15102b',60,7);
+    drawSkyline(W,H*0.74,H*0.5,'#0e0a1f',90,11);
+    ctx.fillStyle='#23232c'; ctx.fillRect(0,H*0.82,W,H*0.18);
+    ctx.fillStyle='rgba(255,210,120,.08)'; ctx.fillRect(0,H*0.82,W,3);
+  } else if(scene==='sea'){
+    const g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#bfe6f5'); g.addColorStop(0.42,'#7fc3e0'); g.addColorStop(0.45,'#1f7fae'); g.addColorStop(1,'#0c4f78');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+    const sg=ctx.createRadialGradient(W*0.78,90,0,W*0.78,90,120);
+    sg.addColorStop(0,'rgba(255,245,210,.7)'); sg.addColorStop(1,'rgba(255,245,210,0)');
+    ctx.fillStyle=sg; ctx.beginPath(); ctx.arc(W*0.78,90,120,0,6.28); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle='#fff3c4'; ctx.beginPath(); ctx.arc(W*0.78,90,34,0,6.28); ctx.fill();
+    ctx.strokeStyle='rgba(180,230,250,.35)'; ctx.lineWidth=2;
+    for(let i=0;i<7;i++){ const y=H*0.5+i*22; ctx.beginPath();
+      for(let x=0;x<=W;x+=20){ const yy=y+Math.sin(x*0.04+t*1.5+i)*3; if(x===0)ctx.moveTo(x,yy); else ctx.lineTo(x,yy);} ctx.stroke(); }
+  } else if(scene==='forest'){
+    const g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#143a22'); g.addColorStop(0.5,'#1c4a2c'); g.addColorStop(1,'#0e2716');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    drawTreeLine(W,H*0.5,40,'rgba(18,52,31,.85)',t*0.02,1.1);
+    drawTreeLine(W,H*0.66,64,'rgba(15,46,27,.95)',t*0.03,1.4);
+    for(let i=0;i<3;i++){ const fy=H*(0.6+0.12*i); const fx=((t*10*(i+1))%(W+220))-110;
+      const rg=ctx.createRadialGradient(fx,fy,0,fx,fy,160); rg.addColorStop(0,'rgba(200,230,210,.08)'); rg.addColorStop(1,'rgba(200,230,210,0)');
+      ctx.fillStyle=rg; ctx.beginPath(); ctx.arc(fx,fy,160,0,6.28); ctx.fill(); }
+  } else { // space
+    const g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#05060f'); g.addColorStop(1,'#0a0a1f');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    const neb=ctx.createRadialGradient(W*0.3,H*0.35,0,W*0.3,H*0.35,220);
+    neb.addColorStop(0,'rgba(120,80,200,.18)'); neb.addColorStop(1,'rgba(120,80,200,0)');
+    ctx.fillStyle=neb; ctx.beginPath(); ctx.arc(W*0.3,H*0.35,220,0,6.28); ctx.fill();
+    const neb2=ctx.createRadialGradient(W*0.7,H*0.7,0,W*0.7,H*0.7,200);
+    neb2.addColorStop(0,'rgba(40,140,200,.15)'); neb2.addColorStop(1,'rgba(40,140,200,0)');
+    ctx.fillStyle=neb2; ctx.beginPath(); ctx.arc(W*0.7,H*0.7,200,0,6.28); ctx.fill();
+    for(let i=0;i<140;i++){ const sx=(i*137.5)%W, sy=(i*89.3)%H;
+      const a=0.4+0.6*Math.abs(Math.sin(t*1.5+i*0.7)); ctx.fillStyle=`rgba(255,255,255,${a})`; ctx.fillRect(sx,sy,1.6,1.6); }
+    ctx.save(); ctx.translate(W*0.8,H*0.3);
+    const pg=ctx.createRadialGradient(-10,-10,4,0,0,40); pg.addColorStop(0,'#ffd9a0'); pg.addColorStop(1,'#c76a2a');
+    ctx.fillStyle=pg; ctx.beginPath(); ctx.arc(0,0,40,0,6.28); ctx.fill();
+    ctx.strokeStyle='rgba(255,220,160,.6)'; ctx.lineWidth=5;
+    ctx.save(); ctx.rotate(-0.4); ctx.beginPath(); ctx.ellipse(0,0,64,18,0,0,6.28); ctx.stroke(); ctx.restore();
+    ctx.restore();
+  }
+}
+function drawSkyline(W,baseY,maxH,color,gap,seed){
+  ctx.fillStyle=color; let x=0,i=0;
+  while(x<W){
+    const bw=gap*0.6+(Math.sin(i*1.3+seed)*gap*0.3);
+    const bh=maxH*(0.45+0.55*Math.abs(Math.sin(i*0.9+seed)));
+    ctx.fillRect(x,baseY-bh,bw,canvas.height-(baseY-bh));
+    ctx.fillStyle='rgba(255,200,110,.5)';
+    for(let wy=baseY-bh+10; wy<baseY-bh+22; wy+=14)
+      for(let wx=x+6; wx<x+bw-6; wx+=12)
+        if(((wx+wy+i*7)%3)===0) ctx.fillRect(wx,wy,5,6);
+    ctx.fillStyle=color; x+=bw+6; i++;
+  }
+}
+function drawObstacle(ob,scene){
+  const x=ob.x,y=ob.y,w=ob.w,h=ob.h;
+  const seed=((x*13+y*7)%97)/97;
+  const shadow=(cx,cy,rx,ry)=>{ ctx.save(); ctx.fillStyle='rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,0,0,6.28); ctx.fill(); ctx.restore(); };
+  if(scene==='city'){
+    shadow(x+w/2, y+h-2, w*0.55, h*0.16);
+    const tops=['#6b7da3','#7d6b8c','#6b8c79','#8c7a5a'];
+    const top=tops[Math.floor(seed*tops.length)]||'#6b7da3';
+    const g=ctx.createLinearGradient(x,y,x,y+h); g.addColorStop(0,top); g.addColorStop(0.5,'#4f5f80'); g.addColorStop(1,'#3a4660');
+    roundRect(x,y,w,h,7); ctx.fillStyle=g; ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.14)'; roundRect(x+3,y+3,w-6,7,4); ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.18)'; ctx.lineWidth=2;
+    for(let i=1;i<Math.floor(w/13);i++){ const vx=x+i*13; ctx.beginPath(); ctx.moveTo(vx,y+12); ctx.lineTo(vx,y+h-10); ctx.stroke(); }
+    ctx.fillStyle='#2a3346';
+    [[x+6,y+6],[x+w-6,y+6],[x+6,y+h-6],[x+w-6,y+h-6]].forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],3,0,6.28);ctx.fill();});
+    ctx.save(); ctx.beginPath(); ctx.rect(x+4,y+h*0.36,w*0.22,h*0.28); ctx.clip();
+    ctx.fillStyle='#e8b53a'; ctx.fillRect(x+4,y+h*0.36,w*0.22,h*0.28);
+    ctx.strokeStyle='#1a1a1a'; ctx.lineWidth=4;
+    for(let i=-1;i<6;i++){ ctx.beginPath(); ctx.moveTo(x+4+i*9,y+h*0.64); ctx.lineTo(x+4+i*9-12,y+h*0.36); ctx.stroke(); }
+    ctx.restore();
+    ctx.strokeStyle='#232b3c'; ctx.lineWidth=2.5; roundRect(x,y,w,h,7); ctx.stroke();
+  } else if(scene==='sea'){
+    shadow(x+w/2, y+h-2, w*0.55, h*0.16);
+    const rg=ctx.createLinearGradient(x,y,x,y+h); rg.addColorStop(0,'#8a8078'); rg.addColorStop(1,'#4a443e');
+    ctx.fillStyle=rg; ctx.beginPath();
+    ctx.moveTo(x+w*0.12,y+h*0.78);
+    ctx.quadraticCurveTo(x+w*0.05,y+h*0.4,x+w*0.32,y+h*0.22);
+    ctx.quadraticCurveTo(x+w*0.55,y+h*0.05,x+w*0.72,y+h*0.3);
+    ctx.quadraticCurveTo(x+w*0.98,y+h*0.55,x+w*0.86,y+h*0.82);
+    ctx.quadraticCurveTo(x+w*0.5,y+h*1.05,x+w*0.12,y+h*0.78);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.28)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(x+w*0.4,y+h*0.4); ctx.lineTo(x+w*0.5,y+h*0.7); ctx.lineTo(x+w*0.72,y+h*0.6); ctx.stroke();
+    ctx.fillStyle='rgba(110,160,90,.5)'; ctx.beginPath(); ctx.ellipse(x+w*0.3,y+h*0.3,w*0.18,h*0.1,0,0,6.28); ctx.fill();
+    ctx.fillStyle='#5a544c'; ctx.beginPath(); ctx.ellipse(x+w*0.82,y+h*0.86,w*0.16,h*0.13,0,0,6.28); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.35)'; ctx.beginPath(); ctx.ellipse(x+w*0.5,y+h*0.95,w*0.4,h*0.08,0,0,6.28); ctx.fill();
+    ctx.strokeStyle='#3a342e'; ctx.lineWidth=2; ctx.beginPath();
+    ctx.moveTo(x+w*0.12,y+h*0.78);
+    ctx.quadraticCurveTo(x+w*0.05,y+h*0.4,x+w*0.32,y+h*0.22);
+    ctx.quadraticCurveTo(x+w*0.55,y+h*0.05,x+w*0.72,y+h*0.3);
+    ctx.quadraticCurveTo(x+w*0.98,y+h*0.55,x+w*0.86,y+h*0.82);
+    ctx.quadraticCurveTo(x+w*0.5,y+h*1.05,x+w*0.12,y+h*0.78);
+    ctx.closePath(); ctx.stroke();
+  } else if(scene==='forest'){
+    shadow(x+w/2, y+h-2, w*0.5, h*0.16);
+    const lg=ctx.createLinearGradient(x,y,x,y+h); lg.addColorStop(0,'#8a5e36'); lg.addColorStop(1,'#5e3f22');
+    ctx.fillStyle=lg; roundRect(x+w*0.12,y+h*0.35,w*0.76,h*0.62,8); ctx.fill();
+    ctx.strokeStyle='rgba(60,40,20,.4)'; ctx.lineWidth=2;
+    for(let i=1;i<5;i++){ const vx=x+w*(0.2+0.15*i); ctx.beginPath(); ctx.moveTo(vx,y+h*0.4); ctx.lineTo(vx,y+h*0.95); ctx.stroke(); }
+    ctx.fillStyle='#caa46a'; ctx.beginPath(); ctx.ellipse(x+w*0.5,y+h*0.35,w*0.4,h*0.16,0,0,6.28); ctx.fill();
+    ctx.strokeStyle='#8a623a'; ctx.lineWidth=1.5;
+    for(let i=1;i<=3;i++){ ctx.beginPath(); ctx.ellipse(x+w*0.5,y+h*0.35,w*0.4*(i/3.2),h*0.16*(i/3.2),0,0,6.28); ctx.stroke(); }
+    ctx.fillStyle='rgba(90,150,80,.55)';
+    ctx.beginPath(); ctx.ellipse(x+w*0.22,y+h*0.42,w*0.12,h*0.06,0,0,6.28); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x+w*0.8,y+h*0.5,w*0.1,h*0.05,0,0,6.28); ctx.fill();
+    ctx.fillStyle='#e9e2d0'; ctx.fillRect(x+w*0.6,y+h*0.78,3,h*0.12);
+    ctx.fillStyle='#cf3b3b'; ctx.beginPath(); ctx.ellipse(x+w*0.6+1.5,y+h*0.78,6,4,0,Math.PI,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(x+w*0.6,y+h*0.77,1,0,6.28); ctx.fill(); ctx.beginPath(); ctx.arc(x+w*0.6+3,y+h*0.79,1,0,6.28); ctx.fill();
+    ctx.strokeStyle='#3f2a16'; ctx.lineWidth=2.5; roundRect(x+w*0.12,y+h*0.35,w*0.76,h*0.62,8); ctx.stroke();
+  } else if(scene==='space'){
+    shadow(x+w/2, y+h-2, w*0.5, h*0.16);
+    const cx=x+w/2;
+    ctx.save(); ctx.shadowColor='#9a7cff'; ctx.shadowBlur=16;
+    const cg=ctx.createLinearGradient(x,y,x,y+h); cg.addColorStop(0,'#b9a3ff'); cg.addColorStop(1,'#5a44a0');
+    ctx.fillStyle=cg;
+    ctx.beginPath(); ctx.moveTo(cx,y+4); ctx.lineTo(x+w*0.8,y+h*0.5); ctx.lineTo(cx,y+h-4); ctx.lineTo(x+w*0.2,y+h*0.5); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#7a64c8';
+    ctx.beginPath(); ctx.moveTo(x+w*0.78,y+h*0.3); ctx.lineTo(x+w*0.95,y+h*0.6); ctx.lineTo(x+w*0.72,y+h*0.75); ctx.lineTo(x+w*0.6,y+h*0.5); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(cx,y+6); ctx.lineTo(x+w*0.3,y+h*0.5); ctx.stroke();
+    ctx.fillStyle='rgba(200,180,255,.7)';
+    for(let i=0;i<4;i++){ ctx.beginPath(); ctx.arc(x+w*(0.3+0.15*i), y+h*(0.18+0.6*(((seed+i)%1))), 2,0,6.28); ctx.fill(); }
+    ctx.strokeStyle='#cdb8ff'; ctx.lineWidth=2; ctx.shadowColor='#8a6cff'; ctx.shadowBlur=8;
+    ctx.beginPath(); ctx.moveTo(cx,y+4); ctx.lineTo(x+w*0.8,y+h*0.5); ctx.lineTo(cx,y+h-4); ctx.lineTo(x+w*0.2,y+h*0.5); ctx.closePath(); ctx.stroke(); ctx.shadowBlur=0;
+  } else {
+    shadow(x+w/2, y+h-2, w*0.5, h*0.16);
+    const g=ctx.createLinearGradient(x,y,x,y+h); g.addColorStop(0,'#b98a5a'); g.addColorStop(1,'#8a623a');
+    ctx.fillStyle=g; roundRect(x,y,w,h,6); ctx.fill();
+    ctx.strokeStyle='rgba(94,63,34,.45)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+w,y+h); ctx.moveTo(x+w,y); ctx.lineTo(x,y+h); ctx.stroke();
+    ctx.strokeStyle='#5e3f22'; ctx.lineWidth=2.5; roundRect(x,y,w,h,6); ctx.stroke();
+  }
+}
+function drawWeather(w,t){
+  const W=canvas.width,H=canvas.height;
+  if(w==='sunny'){
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+    const sg=ctx.createRadialGradient(W*0.5,0,0,W*0.5,0,H);
+    sg.addColorStop(0,'rgba(255,240,200,.22)'); sg.addColorStop(1,'rgba(255,240,200,0)');
+    ctx.fillStyle=sg; ctx.fillRect(0,0,W,H); ctx.restore();
+  } else if(w==='wind'){
+    ctx.strokeStyle='rgba(255,255,255,.35)'; ctx.lineWidth=2;
+    for(let i=0;i<16;i++){
+      const y=(i*53+ (t*120)%H)%H;
+      const off=(t*420+i*80)%(W+200)-100;
+      ctx.beginPath(); ctx.moveTo(off,y); ctx.lineTo(off+60,y+8); ctx.stroke();
+    }
+  } else if(w==='rain'){
+    ctx.strokeStyle='rgba(180,220,255,.5)'; ctx.lineWidth=2;
+    for(let i=0;i<120;i++){
+      const x=(i*97.3)%W, y=(i*53+(t*900)%H)%H;
+      ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-6,y+18); ctx.stroke();
+    }
+  } else if(w==='snow'){
+    for(let i=0;i<90;i++){
+      const x=((i*113.7+Math.sin(t*1.5+i)*30)%W+W)%W;
+      const y=(i*47+(t*90)%H)%H, r=1.6+(i%3);
+      ctx.fillStyle='rgba(255,255,255,.85)';
+      ctx.beginPath(); ctx.arc(x,y,r,0,6.28); ctx.fill();
+    }
+  }
+}
+
+/* ===================== 小花园 ===================== */
+const gCanvas=document.getElementById('gardenCanvas');
+const gctx=gCanvas.getContext('2d');
+let gardenPlace='tree'; // 'tree' | 'card' | 植物 kind
+let gardenCardId=CARDS[0].id;
+
+// 植物 / 小动物元数据（松树由森林优化解锁，其余为随机解锁池）
+const PLANTS = {
+  pine:    {name:'松树',   emoji:'🌲'},
+  poplar:  {name:'杨树',   emoji:'🌳'},
+  sunflower:{name:'向日葵',emoji:'🌻'},
+  flower:  {name:'花草',   emoji:'🌼'},
+  cypress: {name:'松柏',   emoji:'🌲'},
+  peony:   {name:'牡丹',   emoji:'🌸'},
+  rose:    {name:'玫瑰',   emoji:'🌹'},
+  bird:    {name:'小鸟儿', emoji:'🐦'},
+  swallow: {name:'燕子',   emoji:'🕊️'},
+  insect:  {name:'小昆虫', emoji:'🐞'}
+};
+const PLANT_POOL = ['poplar','sunflower','flower','cypress','peony','rose','bird','swallow','insect'];
+
+function renderGarden(){
+  document.getElementById('gTrees').textContent=state.treeInventory;
+  document.getElementById('gPuzzle').textContent=state.puzzlePieces;
+  const qEl=document.getElementById('gPlantQuota'); if(qEl) qEl.textContent=state.plantQuota;
+  // 卡片选择器
+  const sel=document.getElementById('cardPicker');
+  sel.innerHTML=CARDS.map(c=>`<option value="${c.id}">${c.emoji} ${c.title}</option>`).join('');
+  gardenCardId=sel.value;
+  // 植物网格（已全部解锁；种植需消耗「种植额度」）
+  const grid=document.getElementById('plantGrid');
+  grid.innerHTML=Object.keys(PLANTS).map(k=>{
+    const p=PLANTS[k], can=state.plantQuota>0;
+    return `<button class="plant-btn ${gardenPlace===k?'sel':''} ${can?'':'locked'}" data-kind="${k}" ${can?'':'disabled'}>${p.emoji} ${p.name}${can?'':' ·额度0'}</button>`;
+  }).join('');
+  grid.querySelectorAll('.plant-btn:not(.locked)').forEach(b=>{
+    b.onclick=()=>{ gardenPlace=b.dataset.kind; toast('🌿 已选「'+PLANTS[b.dataset.kind].name+'」，左键点击花园空地种下'); renderGarden(); };
+  });
+  updateEnv();
+  drawGarden();
+}
+document.getElementById('cardPicker').onchange=e=>{ gardenCardId=e.target.value; };
+
+document.getElementById('placeTree').onclick=()=>{ gardenPlace='tree'; toast('🌲 已选「大树」，左键点击花园空地种下'); renderGarden(); };
+document.getElementById('placeCard').onclick=()=>{ gardenPlace='card'; toast('📜 已选「历史卡片」，左键点击花园空地摆放'); renderGarden(); };
+document.getElementById('btnOptimize').onclick=()=>{
+  if(state.puzzlePieces<5){ toast('需要 5 块大树拼图才能森林优化，先去主页集卡吧'); return; }
+  state.puzzlePieces-=5;
+  // 把已种的大树全部优化成松树
+  if(state.garden.trees.length){
+    state.garden.trees.forEach(t=>state.garden.plants.push({x:t.x,y:t.y,kind:'pine'}));
+    state.garden.trees=[];
+    if(!state.garden.unlocked.includes('pine')) state.garden.unlocked.push('pine');
+  }
+  // 随机解锁一种新植物 / 小动物
+  const pool=PLANT_POOL.filter(k=>!state.garden.unlocked.includes(k));
+  let got='';
+  if(pool.length){ got=pool[Math.floor(Math.random()*pool.length)]; state.garden.unlocked.push(got); }
+  save(); renderGarden(); updateEnv();
+  if(got) toast('🌲 大树已优化为松树！🎉 随机解锁：'+PLANTS[got].emoji+PLANTS[got].name+'（去面板选它种下）');
+  else toast('🌲 所有大树已优化为松树，植物图鉴也集齐啦！');
+};
+
+function gMouse(e){
+  const r=gCanvas.getBoundingClientRect();
+  return {x:(e.clientX-r.left)*(gCanvas.width/r.width), y:(e.clientY-r.top)*(gCanvas.height/r.height)};
+}
+gCanvas.addEventListener('contextmenu',e=>e.preventDefault());
+gCanvas.addEventListener('mousedown',e=>{
+  const m=gMouse(e);
+  if(e.button===2){ // 右键拾回
+    pickGarden(m);
+  }else if(e.button===0){ // 左键放置
+    placeGarden(m);
+  }
+});
+function placeGarden(m){
+  if(gardenPlace==='tree'){
+    if(state.treeInventory<=0){ toast('没有大树可种，先去主页用拼图兑换吧'); return; }
+    state.treeInventory--; state.garden.trees.push({x:m.x,y:m.y});
+  }else if(gardenPlace==='card'){
+    state.garden.cards.push({x:m.x,y:m.y,cardId:gardenCardId});
+  }else{
+    if(state.plantQuota<=0){
+      toast('🌿 种植额度不足！每集齐 5 块大树拼图可获得 '+PLANTS_PER_MILESTONE+' 株种植额度（去战斗集卡吧）');
+      return;
+    }
+    state.plantQuota--; state.garden.plants.push({x:m.x,y:m.y,kind:gardenPlace});
+  }
+  save(); renderGarden(); updateEnv();
+  const label = gardenPlace==='tree'?'🌳 种下一棵大树！'
+              : gardenPlace==='card'?'📜 摆好一张历史卡片'
+              : '🌿 种下'+PLANTS[gardenPlace].name+'！';
+  toast(label);
+}
+function pickGarden(m){
+  let bi=-1,bd=1e9,type='';
+  state.garden.trees.forEach((t,i)=>{const dd=dist(t.x,t.y,m.x,m.y); if(dd<bd){bd=dd;bi=i;type='tree';}});
+  state.garden.plants.forEach((p,i)=>{const dd=dist(p.x,p.y,m.x,m.y); if(dd<bd&&dd<48){bd=dd;bi=i;type='plant';}});
+  state.garden.cards.forEach((c,i)=>{const dd=dist(c.x,c.y,m.x,m.y); if(dd<bd&&dd<40){bd=dd;bi=i;type='card';}});
+  if(bi<0) return;
+  if(type==='tree'){ state.treeInventory++; state.garden.trees.splice(bi,1); }
+  else if(type==='plant'){ state.garden.plants.splice(bi,1); }
+  else { state.garden.cards.splice(bi,1); }
+  save(); renderGarden(); updateEnv(); toast('↩️ 已拾回');
+}
+function updateEnv(){
+  const score=state.garden.trees.length*15+state.garden.plants.length*8+state.garden.cards.length*5;
+  document.getElementById('gEnv').textContent=score;
+  document.getElementById('envFill').style.width=Math.min(100,score/2)+'%';
+}
+function drawGarden(t=0){
+  const W=gCanvas.width, H=gCanvas.height;
+  gctx.clearRect(0,0,W,H);
+  drawForestBg(W,H,t);
+  if(state.garden.trees.length===0&&state.garden.plants.length===0&&state.garden.cards.length===0){
+    gctx.fillStyle='rgba(226,242,212,.82)'; gctx.font='16px sans-serif'; gctx.textAlign='center';
+    gctx.fillText('点击左侧工具，再点这里种树 / 摆卡片',W/2,H/2);
+    return;
+  }
+  // 树
+  state.garden.trees.forEach(tr=>drawTree(tr.x,tr.y));
+  // 植物 / 小动物（先画地面，再画天空飞禽，避免被遮挡）
+  const ground=state.garden.plants.filter(p=>p.kind!=='bird'&&p.kind!=='swallow');
+  const sky=state.garden.plants.filter(p=>p.kind==='bird'||p.kind==='swallow');
+  ground.forEach(p=>drawPlant(p.kind,p.x,p.y));
+  // 卡片
+  state.garden.cards.forEach(c=>{
+    const card=CARD_BY_ID[c.cardId];
+    gctx.save(); gctx.translate(c.x,c.y);
+    gctx.fillStyle='#fffdf8'; gctx.strokeStyle='#d9a441'; gctx.lineWidth=2;
+    gctx.fillRect(-16,-20,32,40); gctx.strokeRect(-16,-20,32,40);
+    gctx.fillStyle='#e23b3b'; gctx.font='bold 16px sans-serif'; gctx.textAlign='center';
+    gctx.fillText('史',0,6);
+    gctx.fillStyle='#8a6d52'; gctx.font='10px sans-serif';
+    gctx.fillText(card?card.title.slice(0,4):'卡',0,30);
+    gctx.restore();
+  });
+  // 飞禽轻微上下浮动
+  sky.forEach(p=>{ const fy=p.y+Math.sin(t*1.5+p.x*0.05)*5; drawPlant(p.kind,p.x,fy); });
+}
+// 森林氛围背景：林冠渐变 + 远近树影 + 丁达尔光柱 + 雾气 + 苔光斑 + 飘浮孢子
+function drawForestBg(W,H,t){
+  // 1) 林冠渐变底色（幽深森林绿）
+  const g=gctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#163a22'); g.addColorStop(0.45,'#1f4a2c');
+  g.addColorStop(0.78,'#16391f'); g.addColorStop(1,'#0e2716');
+  gctx.fillStyle=g; gctx.fillRect(0,0,W,H);
+
+  // 2) 三层远近树影剪影（越远越暗、越偏蓝绿）
+  drawTreeLine(W,H*0.40,24,'rgba(18,52,31,.85)',t*0.02,0.9);
+  drawTreeLine(W,H*0.54,40,'rgba(22,64,38,.9)', t*0.03,1.15);
+  drawTreeLine(W,H*0.70,66,'rgba(15,46,27,.95)',t*0.04,1.5);
+
+  // 3) 斜射丁达尔光柱（从林冠缝隙洒下）
+  gctx.save(); gctx.globalCompositeOperation='lighter';
+  const beams=4;
+  for(let i=0;i<beams;i++){
+    const baseX=W*(0.18+0.21*i);
+    const sway=Math.sin(t*0.22+i)*26;
+    const x=baseX+sway;
+    const topW=12, botW=64, len=H*0.95;
+    gctx.beginPath();
+    gctx.moveTo(x-topW/2,-10);
+    gctx.lineTo(x+topW/2,-10);
+    gctx.lineTo(x+botW/2+46,len);
+    gctx.lineTo(x-botW/2+46,len);
+    gctx.closePath();
+    const bg=gctx.createLinearGradient(x,0,x+46,len);
+    bg.addColorStop(0,'rgba(255,246,205,.15)');
+    bg.addColorStop(1,'rgba(255,246,205,0)');
+    gctx.fillStyle=bg; gctx.fill();
+  }
+  gctx.restore();
+
+  // 4) 地面苔光斑（缓慢闪烁）
+  for(let i=0;i<6;i++){
+    const x=W*(0.12+0.15*i)+Math.sin(t*0.4+i)*9;
+    const y=H*(0.80+0.03*(i%2));
+    const a=0.08+0.06*Math.sin(t*1.1+i*1.7);
+    const rad=28+8*Math.sin(t*0.8+i);
+    const rg=gctx.createRadialGradient(x,y,0,x,y,rad);
+    rg.addColorStop(0,`rgba(176,255,168,${a})`);
+    rg.addColorStop(1,'rgba(176,255,168,0)');
+    gctx.fillStyle=rg; gctx.beginPath(); gctx.arc(x,y,rad,0,6.28); gctx.fill();
+  }
+
+  // 5) 飘浮孢子 / 尘埃微光
+  for(let i=0;i<16;i++){
+    const px=(i*97.3)%W;
+    const drift=(t*7+i*23)%(H+40);
+    const y=H-drift;
+    const a=0.14+0.12*Math.sin(t*2+i);
+    gctx.fillStyle=`rgba(216,255,200,${a})`;
+    gctx.beginPath(); gctx.arc(px+Math.sin(t+i)*6,y,1.5,0,6.28); gctx.fill();
+  }
+
+  // 6) 地面流动雾带
+  for(let i=0;i<3;i++){
+    const fy=H*(0.76+0.07*i);
+    const fx=((t*11*(i+1))%(W+220))-110;
+    const rg=gctx.createRadialGradient(fx,fy,0,fx,fy,170);
+    rg.addColorStop(0,'rgba(200,230,210,.09)');
+    rg.addColorStop(1,'rgba(200,230,210,0)');
+    gctx.fillStyle=rg; gctx.beginPath(); gctx.arc(fx,fy,170,0,6.28); gctx.fill();
+  }
+}
+function drawTreeLine(W,baseY,height,color,shift,freq){
+  gctx.fillStyle=color;
+  gctx.beginPath();
+  gctx.moveTo(0,W*2);
+  gctx.lineTo(0,baseY);
+  const step=24;
+  for(let x=0;x<W;x+=step){
+    const h=height*(0.55+0.45*Math.abs(Math.sin(x*0.05+shift*freq*3)));
+    gctx.lineTo(x+step/2, baseY-h);
+    gctx.lineTo(x+step, baseY);
+  }
+  gctx.lineTo(W,baseY);
+  gctx.lineTo(W,W*2);
+  gctx.closePath();
+  gctx.fill();
+}
+// 花园动画循环（仅在花园页可见时运行）
+let gardenRAF=null;
+function startGardenLoop(){
+  if(gardenRAF) return;
+  const loop=(ts)=>{ drawGarden(ts/1000); gardenRAF=requestAnimationFrame(loop); };
+  gardenRAF=requestAnimationFrame(loop);
+}
+function stopGardenLoop(){
+  if(gardenRAF){ cancelAnimationFrame(gardenRAF); gardenRAF=null; }
+}
+function drawTree(x,y){
+  gctx.save(); gctx.translate(x,y);
+  gctx.fillStyle='#8a5a2b'; gctx.fillRect(-7,-30,14,40);
+  gctx.fillStyle='#2f9e57';
+  [[-22,-34,26],[0,-52,30],[22,-34,26]].forEach(([cx,cy,r])=>{
+    gctx.beginPath(); gctx.arc(cx,cy,r,0,6.28); gctx.fill();
+  });
+  gctx.restore();
+}
+// 各植物 / 小动物手绘（原点 y 为落地基准）
+function drawPlant(kind,x,y){
+  gctx.save(); gctx.translate(x,y); gctx.textAlign='center';
+  if(kind==='pine'){
+    gctx.fillStyle='#7a4a22'; gctx.fillRect(-5,-26,10,30);
+    gctx.fillStyle='#2f7d4f';
+    for(let i=0;i<3;i++){const w=36-i*9,top=-74+i*22,h=34;
+      gctx.beginPath(); gctx.moveTo(0,top); gctx.lineTo(-w/2,top+h); gctx.lineTo(w/2,top+h); gctx.closePath(); gctx.fill();}
+  }else if(kind==='poplar'){
+    gctx.fillStyle='#8a5a2b'; gctx.fillRect(-4,-58,8,64);
+    gctx.fillStyle='#9ccc65'; gctx.beginPath(); gctx.ellipse(0,-74,16,36,0,0,6.28); gctx.fill();
+  }else if(kind==='sunflower'){
+    gctx.strokeStyle='#3f9e4f'; gctx.lineWidth=4; gctx.beginPath(); gctx.moveTo(0,4); gctx.lineTo(0,-50); gctx.stroke();
+    gctx.fillStyle='#ffd34d';
+    for(let i=0;i<12;i++){const a=i/12*6.28; gctx.save(); gctx.rotate(a); gctx.beginPath(); gctx.ellipse(0,-58,7,15,0,0,6.28); gctx.fill(); gctx.restore();}
+    gctx.fillStyle='#7a4a12'; gctx.beginPath(); gctx.arc(0,-58,13,0,6.28); gctx.fill();
+  }else if(kind==='flower'){
+    gctx.fillStyle='#3f9e4f';
+    [-10,0,10].forEach(dx=>{gctx.beginPath(); gctx.moveTo(dx,4); gctx.lineTo(dx-3,-16); gctx.lineTo(dx+3,-16); gctx.closePath(); gctx.fill();});
+    gctx.fillStyle='#ff7eb3'; gctx.beginPath(); gctx.arc(-10,-20,6,0,6.28); gctx.fill();
+    gctx.fillStyle='#ffd34d'; gctx.beginPath(); gctx.arc(10,-20,6,0,6.28); gctx.fill();
+    gctx.fillStyle='#c77dff'; gctx.beginPath(); gctx.arc(0,-26,6,0,6.28); gctx.fill();
+  }else if(kind==='cypress'){
+    gctx.fillStyle='#7a4a22'; gctx.fillRect(-4,-30,8,34);
+    gctx.fillStyle='#1f6b3a'; gctx.beginPath(); gctx.ellipse(0,-58,13,48,0,0,6.28); gctx.fill();
+  }else if(kind==='peony'){
+    gctx.fillStyle='#3f9e4f'; gctx.beginPath(); gctx.ellipse(-12,-14,12,7,0.5,0,6.28); gctx.fill(); gctx.beginPath(); gctx.ellipse(12,-14,12,7,-0.5,0,6.28); gctx.fill();
+    gctx.fillStyle='#e84393'; gctx.beginPath(); gctx.arc(0,-30,16,0,6.28); gctx.fill();
+    gctx.fillStyle='#ff9ec7'; gctx.beginPath(); gctx.arc(0,-30,9,0,6.28); gctx.fill();
+    gctx.fillStyle='#ffd6ea'; gctx.beginPath(); gctx.arc(0,-30,4,0,6.28); gctx.fill();
+  }else if(kind==='rose'){
+    gctx.strokeStyle='#3f9e4f'; gctx.lineWidth=4; gctx.beginPath(); gctx.moveTo(0,4); gctx.lineTo(0,-34); gctx.stroke();
+    gctx.fillStyle='#3f9e4f'; gctx.beginPath(); gctx.ellipse(-9,-18,8,4,0.6,0,6.28); gctx.fill(); gctx.beginPath(); gctx.ellipse(9,-22,8,4,-0.6,0,6.28); gctx.fill();
+    gctx.fillStyle='#d61f4a'; gctx.beginPath(); gctx.arc(0,-42,13,0,6.28); gctx.fill();
+    gctx.fillStyle='#ff5c7a'; for(let i=0;i<6;i++){const a=i/6*6.28; gctx.beginPath(); gctx.arc(Math.cos(a)*6,-42+Math.sin(a)*6,5,0,6.28); gctx.fill();}
+    gctx.fillStyle='#a3122f'; gctx.beginPath(); gctx.arc(0,-42,5,0,6.28); gctx.fill();
+  }else if(kind==='bird'){
+    gctx.fillStyle='#5b8def'; gctx.beginPath(); gctx.ellipse(0,0,13,9,0,0,6.28); gctx.fill();
+    gctx.fillStyle='#2f5bb0'; gctx.beginPath(); gctx.moveTo(-11,0); gctx.quadraticCurveTo(-26,-6,-30,2); gctx.quadraticCurveTo(-22,2,-11,4); gctx.fill();
+    gctx.fillStyle='#ffcf5b'; gctx.beginPath(); gctx.moveTo(11,-2); gctx.lineTo(20,-4); gctx.lineTo(11,2); gctx.fill();
+    gctx.fillStyle='#222'; gctx.beginPath(); gctx.arc(7,-3,1.8,0,6.28); gctx.fill();
+  }else if(kind==='swallow'){
+    gctx.fillStyle='#2b3a67';
+    gctx.beginPath(); gctx.moveTo(0,0); gctx.quadraticCurveTo(-22,-14,-34,-6); gctx.quadraticCurveTo(-20,-2,-6,4); gctx.fill();
+    gctx.beginPath(); gctx.moveTo(0,0); gctx.quadraticCurveTo(22,-14,34,-6); gctx.quadraticCurveTo(20,-2,6,4); gctx.fill();
+    gctx.beginPath(); gctx.moveTo(0,2); gctx.lineTo(-6,16); gctx.lineTo(0,8); gctx.lineTo(6,16); gctx.closePath(); gctx.fill();
+  }else if(kind==='insect'){
+    gctx.fillStyle='#e23b3b'; gctx.beginPath(); gctx.arc(0,-6,9,0,6.28); gctx.fill();
+    gctx.fillStyle='#222'; gctx.beginPath(); gctx.arc(0,-15,5,0,6.28); gctx.fill();
+    gctx.fillStyle='#222';
+    [[-4,-4],[4,-4],[-5,2],[5,2]].forEach(([dx,dy])=>{gctx.beginPath(); gctx.arc(dx,dy,2,0,6.28); gctx.fill();});
+    gctx.strokeStyle='#222'; gctx.lineWidth=1;
+    [[-9,-2],[9,-2]].forEach(dx=>{gctx.beginPath(); gctx.moveTo(dx,-6); gctx.lineTo(dx*1.6,2); gctx.stroke();});
+  }
+  gctx.restore();
+}
+document.getElementById('btnGardenHome').onclick=()=>showScreen('home');
+
+/* ===================== 启动 ===================== */
+renderHome();
+</script>
+</body>
+</html>

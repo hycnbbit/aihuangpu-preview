@@ -1,0 +1,98 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: #000; font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #fff; cursor: default; user-select: none;
+}
+
+canvas { display: block; }
+
+/* 准星 */
+#crosshair {
+  position: fixed; left: 50%; top: 50%; width: 40px; height: 40px;
+  transform: translate(-50%, -50%); pointer-events: none; z-index: 30;
+  transition: transform 0.05s ease-out;
+}
+#crosshair .ch {
+  position: absolute; background: rgba(255,255,255,0.85);
+  box-shadow: 0 0 2px rgba(0,0,0,0.8);
+}
+.ch-top, .ch-bottom { width: 2px; height: 9px; left: 50%; margin-left: -1px; }
+.ch-left, .ch-right { height: 2px; width: 9px; top: 50%; margin-top: -1px; }
+.ch-top { top: 0; } .ch-bottom { bottom: 0; }
+.ch-left { left: 0; } .ch-right { right: 0; }
+.ch-dot {
+  position: absolute; left: 50%; top: 50%; width: 2px; height: 2px;
+  margin: -1px 0 0 -1px; background: rgba(255,80,80,0.9); border-radius: 50%;
+}
+
+/* HUD */
+#hud {
+  position: fixed; left: 0; top: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 20; padding: 22px 28px;
+}
+.hud-left { position: absolute; left: 28px; bottom: 28px; }
+.hud-right { position: absolute; right: 28px; bottom: 28px; text-align: right; }
+.bar-wrap { width: 280px; }
+.bar-label { font-size: 13px; letter-spacing: 2px; opacity: 0.8; margin-bottom: 6px; }
+.bar {
+  width: 100%; height: 16px; background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.25); border-radius: 9px; overflow: hidden;
+}
+.bar-fill { height: 100%; width: 100%; transition: width 0.15s ease-out; }
+.bar-fill.health { background: linear-gradient(90deg,#ff4b4b,#ff9d3a); }
+
+#score { font-size: 26px; font-weight: 700; text-shadow: 0 2px 6px rgba(0,0,0,0.7); }
+#ammo { font-size: 40px; font-weight: 800; line-height: 1.1; text-shadow: 0 2px 6px rgba(0,0,0,0.7); }
+#ammo.reloading { color: #ffd24b; font-size: 26px; }
+#enemies { font-size: 15px; opacity: 0.85; margin-top: 2px; }
+
+/* 命中标记 */
+#hitmarker {
+  position: fixed; left: 50%; top: 50%; width: 22px; height: 22px;
+  transform: translate(-50%,-50%) rotate(45deg); z-index: 31; opacity: 0;
+  pointer-events: none;
+}
+#hitmarker::before, #hitmarker::after {
+  content: ""; position: absolute; background: #ff3b3b;
+}
+#hitmarker::before { left: 50%; top: 0; width: 2px; height: 100%; margin-left: -1px; }
+#hitmarker::after { top: 50%; left: 0; height: 2px; width: 100%; margin-top: -1px; }
+#hitmarker.show { animation: hm 0.18s ease-out; }
+@keyframes hm { 0%{opacity:1; transform:translate(-50%,-50%) rotate(45deg) scale(1.4);} 100%{opacity:0; transform:translate(-50%,-50%) rotate(45deg) scale(0.8);} }
+
+/* 受伤红屏 */
+#damage-overlay {
+  position: fixed; inset: 0; z-index: 15; pointer-events: none; opacity: 0;
+  background: radial-gradient(ellipse at center, rgba(255,0,0,0) 40%, rgba(180,0,0,0.55) 100%);
+  transition: opacity 0.12s ease-out;
+}
+
+/* 遮罩面板 */
+#blocker, #gameover {
+  position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at center, rgba(10,20,40,0.65), rgba(0,0,0,0.9));
+  backdrop-filter: blur(3px);
+}
+#panel {
+  text-align: center; padding: 40px 56px; border-radius: 18px;
+  background: rgba(15,22,38,0.7); border: 1px solid rgba(120,160,220,0.25);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6); max-width: 460px;
+}
+#panel h1 { font-size: 44px; letter-spacing: 4px; margin-bottom: 6px; font-weight: 800; }
+#panel h1.dead { color: #ff5555; }
+#panel .sub { opacity: 0.8; margin-bottom: 22px; letter-spacing: 1px; }
+.controls {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px;
+  font-size: 14px; opacity: 0.9; margin-bottom: 26px; text-align: left;
+}
+.controls b { color: #ffd24b; }
+#start-btn, #restart-btn {
+  pointer-events: auto; cursor: pointer; border: none; border-radius: 10px;
+  padding: 14px 46px; font-size: 18px; font-weight: 700; letter-spacing: 2px;
+  color: #08111f; background: linear-gradient(90deg,#5fd0ff,#3b8bff);
+  box-shadow: 0 8px 24px rgba(60,140,255,0.4); transition: transform 0.1s;
+}
+#start-btn:hover, #restart-btn:hover { transform: translateY(-2px); }
+.tip { font-size: 12px; opacity: 0.6; margin-top: 18px; }

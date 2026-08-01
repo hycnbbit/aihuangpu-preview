@@ -1,0 +1,7846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>闯关学堂 · 答题解锁小游戏</title>
+<style>
+  :root{
+    --bg1:#eef4ff; --bg2:#fef6ff; --card:#ffffff; --ink:#2b2f42;
+    --muted:#7b8197; --brand:#5b6cff; --brand2:#ff7eb3; --ok:#23c08a;
+    --bad:#ff5d6c; --gold:#ffb020; --line:#e7eaf3;
+    --shadow:0 10px 30px rgba(60,72,140,.12);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    min-height:100vh;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:14px 14px 110px;position:relative;z-index:1}
+
+  /* ===== 动态极光背景（柔和光晕漂浮） ===== */
+  .aurora{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+  .aurora span{position:absolute;display:block;border-radius:50%;filter:blur(64px);
+    opacity:.55;mix-blend-mode:multiply;animation:drift 20s infinite ease-in-out}
+  .aurora span:nth-child(1){width:360px;height:360px;top:-90px;left:-70px;
+    background:radial-gradient(circle,#9db2ff,transparent 70%)}
+  .aurora span:nth-child(2){width:320px;height:320px;top:18%;right:-90px;
+    background:radial-gradient(circle,#ffbfe3,transparent 70%);animation-delay:-5s}
+  .aurora span:nth-child(3){width:340px;height:340px;bottom:-110px;left:28%;
+    background:radial-gradient(circle,#a9f2df,transparent 70%);animation-delay:-10s}
+  .aurora span:nth-child(4){width:280px;height:280px;top:40%;left:8%;
+    background:radial-gradient(circle,#ffe1a6,transparent 70%);animation-delay:-14s}
+  @keyframes drift{
+    0%,100%{transform:translate(0,0) scale(1)}
+    33%{transform:translate(46px,34px) scale(1.12)}
+    66%{transform:translate(-34px,22px) scale(.93)}
+  }
+  /* 放音乐时：光晕加速、更亮，页面“燥”起来 */
+  body.music-on .aurora span{animation-duration:9s;opacity:.72}
+  header.top{
+    position:sticky;top:0;z-index:30;background:rgba(255,255,255,.82);
+    backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:18px;
+    padding:12px 16px;display:flex;align-items:center;justify-content:space-between;
+    box-shadow:var(--shadow);margin-bottom:16px;
+  }
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px}
+  .logo span:last-child{background:linear-gradient(90deg,var(--brand),var(--brand2),var(--brand));
+    background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:sheen 4s linear infinite}
+  @keyframes sheen{to{background-position:200% center}}
+  .logo .badge{font-size:26px;display:inline-block;animation:badgePulse 2.4s ease-in-out infinite;
+    -webkit-background-clip:initial;background-clip:initial}
+  @keyframes badgePulse{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.18) rotate(-8deg)}}
+  body.music-on .logo .badge{animation-duration:.9s}
+  .coins{display:flex;align-items:center;gap:6px;background:#fff7e6;border:1px solid #ffe1a6;
+    color:#9a6b00;font-weight:800;padding:7px 13px;border-radius:999px;
+    box-shadow:0 0 0 rgba(255,176,32,.5);animation:coinGlow 2.6s ease-in-out infinite}
+  @keyframes coinGlow{0%,100%{box-shadow:0 0 0 rgba(255,176,32,0)}50%{box-shadow:0 0 16px rgba(255,176,32,.45)}}
+  .coins .star{font-size:18px;display:inline-block;animation:badgePulse 2.4s ease-in-out infinite}
+  .coins.bump{animation:coinBump .45s ease}
+  @keyframes coinBump{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+  .head-right{display:flex;align-items:center;gap:10px}
+  .music-group{display:flex;align-items:center;gap:6px}
+  .m-btn{display:flex;align-items:center;gap:6px;background:#eef1ff;border:1px solid #d6dcff;
+    color:var(--brand);font-weight:800;padding:7px 12px;border-radius:999px;cursor:pointer;
+    font-size:13px;user-select:none;transition:.2s}
+  .m-btn:active{transform:scale(.95)}
+  .m-btn.off-state{background:#f1f2f7;color:var(--muted);border-color:var(--line)}
+  .m-btn .eq{display:inline-flex;gap:2px;align-items:flex-end;height:12px}
+  .m-btn .eq i{width:3px;background:currentColor;border-radius:2px;height:4px}
+  .m-btn:not(.off-state) .eq i{animation:eq .6s infinite ease-in-out}
+  .m-btn .eq i:nth-child(2){animation-delay:.2s}
+  .m-btn .eq i:nth-child(3){animation-delay:.4s}
+  @keyframes eq{0%,100%{height:4px}50%{height:12px}}
+
+  .nav{position:fixed;left:0;right:0;bottom:0;z-index:40;
+    display:flex;justify-content:center;padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+    background:linear-gradient(0deg,rgba(255,255,255,.96),rgba(255,255,255,.7));}
+  .nav-inner{display:flex;gap:4px;background:#fff;border:1px solid var(--line);
+    border-radius:18px;padding:6px;box-shadow:var(--shadow);width:100%;max-width:560px;justify-content:space-around}
+  .nav button{flex:1;border:0;background:transparent;color:var(--muted);font-weight:700;
+    font-size:11px;padding:8px 2px;border-radius:13px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:.15s}
+  .nav button .ic{font-size:19px}
+  .nav button.active{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;
+    box-shadow:0 6px 16px rgba(91,108,255,.4)}
+  .nav button.active .ic{animation:badgePulse 1.6s ease-in-out infinite}
+
+  section.view{display:none;animation:fade .25s ease}
+  section.view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .hero{position:relative;overflow:hidden;color:#fff;border-radius:22px;padding:22px 20px;
+    background:linear-gradient(135deg,#5b6cff,#8a5bff,#ff7eb3,#5b6cff);background-size:280% 280%;
+    box-shadow:0 14px 34px rgba(91,108,255,.32);animation:heroFlow 12s ease infinite}
+  @keyframes heroFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  .hero::before{content:"";position:absolute;top:-60%;left:-30%;width:60%;height:220%;
+    background:linear-gradient(115deg,transparent,rgba(255,255,255,.35),transparent);
+    transform:rotate(12deg);animation:heroShine 5.5s ease-in-out infinite}
+  @keyframes heroShine{0%{left:-40%}55%,100%{left:130%}}
+  .hero>*{position:relative;z-index:1}
+  body.music-on .hero{animation-duration:4s}
+  .hero h1{margin:0 0 6px;font-size:24px}
+  .hero p{margin:0;opacity:.92;font-size:14px;line-height:1.6}
+  .hero .steps{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+  .hero .chip{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);
+    padding:7px 12px;border-radius:999px;font-size:13px;font-weight:700}
+
+  .sec-title{font-size:17px;font-weight:800;margin:22px 4px 12px;display:flex;align-items:center;gap:8px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .tile{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;cursor:pointer;
+    box-shadow:var(--shadow);transition:transform .18s,box-shadow .18s,border-color .18s;display:flex;flex-direction:column;gap:8px}
+  .tile::after{content:"";position:absolute;inset:0;border-radius:18px;padding:1px;opacity:0;transition:opacity .2s;pointer-events:none;
+    background:linear-gradient(135deg,var(--brand),var(--brand2));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude}
+  .tile:hover{transform:translateY(-5px) scale(1.02);box-shadow:0 18px 34px rgba(91,108,255,.24);border-color:transparent}
+  .tile:hover::after{opacity:1}
+  .tile:active{transform:translateY(-1px) scale(.99)}
+  .tile .ic{font-size:34px;transition:transform .18s}
+  .tile:hover .ic{transform:scale(1.15) rotate(-4deg)}
+  .tile .t{font-weight:800}
+  .tile .d{font-size:12px;color:var(--muted);line-height:1.5}
+
+  /* ============ 外圈火焰奔腾特效（开始学习时触发） ============ */
+  #flames{position:fixed;inset:0;z-index:50;pointer-events:none;opacity:0;transition:opacity .45s ease}
+  #flames.on{opacity:1}
+  #flameCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #iceCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  /* 冰雪特效激活时：屏幕边缘泛起一层冷光 */
+  #flames.ice-on{background:radial-gradient(ellipse at center, transparent 52%, rgba(120,180,255,.16) 100%)}
+  /* 触屏设备：禁用 hover 位移，避免 iOS 把点击“吞掉”导致点不动 */
+  @media (hover:none){
+    .tile:hover,.shop-item:hover,.tile:hover .ic{transform:none!important;box-shadow:var(--shadow)!important}
+  }
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+  .q-meta{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin-bottom:10px}
+  .pill{background:#eef1ff;color:var(--brand);font-weight:700;padding:4px 10px;border-radius:999px;font-size:12px}
+  .q-text{font-size:19px;font-weight:800;line-height:1.5;margin:6px 0 16px}
+  .opts{display:flex;flex-direction:column;gap:10px}
+  .opt{border:2px solid var(--line);border-radius:14px;padding:13px 15px;cursor:pointer;font-weight:600;
+    display:flex;gap:10px;align-items:center;transition:.12s;background:#fff}
+  .opt .k{width:26px;height:26px;border-radius:8px;background:#f0f2fa;display:grid;place-items:center;font-weight:800;color:var(--muted)}
+  .opt:hover{border-color:var(--brand)}
+  .opt.right{border-color:var(--ok);background:#e9fbf3;color:#0c8a63}
+  .opt.wrong{border-color:var(--bad);background:#ffeef0;color:#c23344}
+  .opt.disabled{pointer-events:none}
+  .explain{margin-top:14px;font-size:13px;background:#fff8e6;border:1px solid #ffe1a6;color:#8a6300;
+    border-radius:12px;padding:10px 12px;display:none;line-height:1.6}
+  .explain.show{display:block}
+  .next-row{display:flex;justify-content:flex-end;margin-top:14px}
+  .btn{border:0;border-radius:13px;padding:12px 20px;font-weight:800;cursor:pointer;font-size:15px;
+    background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;box-shadow:var(--shadow);transition:.15s}
+  .btn:active{transform:scale(.97)}
+  .btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--line);box-shadow:none}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn.sm{padding:9px 14px;font-size:13px}
+
+  .shop-item{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);
+    border-radius:16px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px;
+    transition:transform .18s,box-shadow .18s,border-color .18s}
+  .shop-item:hover{transform:translateY(-3px);box-shadow:0 16px 30px rgba(91,108,255,.2);border-color:#c9d2ff}
+  .shop-item .ic{font-size:34px;width:48px;text-align:center}
+  .shop-item .info{flex:1}
+  .shop-item .info .n{font-weight:800}
+  .shop-item .info .s{font-size:12px;color:var(--muted);margin-top:2px}
+  .shop-item .buy{border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;
+    background:#fff3d6;color:#9a6b00;white-space:nowrap}
+  .shop-item .buy:disabled{opacity:.45;cursor:not-allowed}
+  .shop-item .owned{color:var(--ok);font-weight:800;font-size:13px;white-space:nowrap}
+
+  .locked{position:relative;filter:grayscale(.6);opacity:.85}
+  .locked .lock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:6px;background:rgba(43,47,66,.55);border-radius:18px;color:#fff;font-weight:800;cursor:pointer}
+  .locked .lock .lk{font-size:30px}
+
+  .result{text-align:center;padding:26px 18px}
+  .result .big{font-size:54px;margin-bottom:8px}
+  .result h2{margin:0 0 6px}
+  .result p{color:var(--muted);margin:4px 0 18px}
+  .result .earn{display:inline-flex;align-items:center;gap:6px;background:#fff7e6;border:1px solid #ffe1a6;
+    color:#9a6b00;font-weight:800;padding:8px 16px;border-radius:999px;font-size:16px}
+
+  /* memory */
+  .mem-board{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .mem-card{aspect-ratio:1/1;border-radius:14px;background:linear-gradient(135deg,#5b6cff,#8a5bff);
+    color:#fff;display:grid;place-items:center;font-size:30px;cursor:pointer;user-select:none;
+    transition:transform .15s;box-shadow:var(--shadow);position:relative}
+  .mem-card .face{opacity:0}
+  .mem-card.flipped,.mem-card.matched{background:#fff;border:2px solid var(--brand);color:var(--ink)}
+  .mem-card.flipped .face,.mem-card.matched .face{opacity:1}
+  .mem-card .back{position:absolute;font-size:24px;opacity:1}
+  .mem-card.flipped .back,.mem-card.matched .back{opacity:0}
+  .mem-card.matched{background:#e9fbf3;border-color:var(--ok)}
+
+  /* puzzle */
+  .puz-board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:320px;margin:0 auto}
+  .puz-cell{aspect-ratio:1/1;border-radius:12px;background:linear-gradient(135deg,#ff9a5b,#ff5d8f);
+    color:#fff;display:grid;place-items:center;font-size:30px;font-weight:800;cursor:pointer;box-shadow:var(--shadow)}
+  .puz-cell.blank{background:#eef1fa;box-shadow:none;cursor:default}
+  .puz-cell:not(.blank):active{transform:scale(.96)}
+
+  /* reaction */
+  .react-stage{height:340px;background:#eef1fa;border-radius:16px;position:relative;overflow:hidden;display:grid;place-items:center}
+  .react-btn{position:absolute;background:linear-gradient(135deg,var(--ok),#19a6c4);color:#fff;border:0;
+    border-radius:50%;width:96px;height:96px;font-weight:800;font-size:15px;cursor:pointer;box-shadow:var(--shadow)}
+
+  /* idiom */
+  .idiom-chain{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;min-height:40px}
+  .idiom-tag{background:#eef1ff;color:var(--brand);font-weight:800;padding:8px 12px;border-radius:12px;font-size:15px}
+  .idiom-tag.me{background:#e9fbf3;color:#0c8a63}
+  .inp-row{display:flex;gap:8px}
+  .inp{flex:1;border:2px solid var(--line);border-radius:13px;padding:12px 14px;font-size:16px;font-weight:700;outline:none;font-family:inherit}
+  .inp:focus{border-color:var(--brand)}
+  .idiom-hintbar{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.6}
+
+  /* linkgame */
+  .link-board{display:grid;gap:6px;justify-content:center;margin:0 auto;position:relative}
+  .link-cell{width:100%;aspect-ratio:1/1;border-radius:10px;background:#fff;border:2px solid var(--line);
+    display:grid;place-items:center;font-size:24px;cursor:pointer;transition:.1s;min-width:0}
+  .link-cell.empty{visibility:hidden}
+  .link-cell.sel{border-color:var(--brand);background:#eef1ff;transform:scale(1.05)}
+  #linkSvg{position:absolute;inset:0;pointer-events:none;z-index:5}
+
+  /* typing */
+  .type-word{font-size:40px;font-weight:800;text-align:center;letter-spacing:2px;margin:10px 0;min-height:52px}
+  .type-word .done{color:var(--ok)}
+  .type-word .cur{color:var(--brand);text-decoration:underline}
+  .type-stat{display:flex;justify-content:space-around;text-align:center;margin:14px 0}
+  .type-stat .b{font-size:24px;font-weight:800}
+  .type-stat .l{font-size:12px;color:var(--muted)}
+
+  /* rank & daily */
+  .rank-row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:12px 14px;box-shadow:var(--shadow);margin-bottom:10px}
+  .rank-row .no{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-weight:800;background:#f0f2fa;color:var(--muted)}
+  .rank-row .no.g1{background:#fff3d6;color:#b8860b}.rank-row .no.g2{background:#eef1f5;color:#8a94a6}.rank-row .no.g3{background:#ffeadb;color:#c9743a}
+  .rank-row .nm{flex:1;font-weight:700}
+  .rank-row .sc{font-weight:800;color:var(--brand)}
+  .rank-row.me{border-color:var(--brand)}
+
+  .task-item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:13px 14px;box-shadow:var(--shadow);margin-bottom:10px}
+  .task-item .ic{font-size:26px}
+  .task-item .info{flex:1}
+  .task-item .info .n{font-weight:800}
+  .task-item .info .p{font-size:12px;color:var(--muted);margin-top:3px}
+  .bar{height:7px;background:#eef1fa;border-radius:99px;margin-top:6px;overflow:hidden}
+  .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand2));border-radius:99px}
+  .task-item .act{border:0;border-radius:11px;padding:9px 13px;font-weight:800;cursor:pointer;white-space:nowrap;font-size:13px}
+  .task-item .act.claim{background:linear-gradient(135deg,var(--ok),#19a6c4);color:#fff}
+  .task-item .act.done{background:#eef1f5;color:var(--muted)}
+  .task-item .act.wip{background:#f0f2fa;color:var(--muted)}
+
+  .toast{position:fixed;left:50%;top:74px;transform:translateX(-50%);z-index:80;background:#2b2f42;color:#fff;
+    padding:11px 18px;border-radius:14px;font-weight:700;box-shadow:var(--shadow);opacity:0;transition:.25s;pointer-events:none}
+  .toast.show{opacity:1;top:84px}
+  .backlink{display:inline-flex;align-items:center;gap:6px;color:var(--brand);font-weight:700;cursor:pointer;margin-bottom:10px;font-size:14px}
+  .muted{color:var(--muted);font-size:13px}
+  .center{text-align:center}
+  /* 快速心算 */
+  .math-row{display:flex;gap:28px;justify-content:center;margin:14px 0}
+  .math-row .b{font-size:30px;font-weight:800;color:var(--brand)}
+  .math-row .l{font-size:12px;color:var(--muted)}
+  .math-q{font-size:38px;font-weight:800;margin:10px 0 16px;letter-spacing:2px}
+  /* 火眼金睛 */
+  .find-board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px auto;max-width:280px}
+  .find-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:30px;
+    background:#fff;border:2px solid #e6e9f5;border-radius:12px;cursor:pointer;transition:.15s}
+  .find-cell:active{transform:scale(.92)}
+  /* 打地鼠 */
+  .mole-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:260px;margin:12px auto}
+  .hole{aspect-ratio:1;border:none;border-radius:14px;background:#e9eef7;font-size:30px;cursor:pointer;transition:transform .05s,background .1s}
+  .hole.up{background:#ffd36b;transform:scale(1.06)}
+  .hole.up::after{content:"🐹"}
+  /* 石头剪刀布 */
+  .rps-row{display:flex;gap:14px;justify-content:center;margin:16px 0}
+  .rps-btn{font-size:38px;padding:10px 18px}
+  /* 别踩白块 */
+  .tiles-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:300px;margin:12px auto}
+  .tile-col{aspect-ratio:1/2.4;border:none;border-radius:12px;background:#dfe6f2;font-size:13px;cursor:pointer;transition:background .08s}
+  .tile-col.active{background:#5b8cff;color:#fff}
+  /* 井字棋 */
+  .ttt-board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:240px;margin:12px auto}
+  .ttt-cell{aspect-ratio:1;border:none;border-radius:12px;background:#eef2fb;font-size:40px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .08s}
+  .ttt-cell.taken{cursor:default}
+
+  /* 贪吃蛇 */
+  .snake-canvas{background:#0c1020;border-radius:14px;max-width:320px;width:100%;height:auto;touch-action:none;margin:6px auto;display:block;box-shadow:var(--shadow)}
+  .dpad{display:flex;flex-direction:column;align-items:center;gap:6px;margin:10px 0 2px}
+  .dpad-mid{display:flex;gap:6px}
+  .dpad-btn{width:54px;height:46px;font-size:20px;border:none;border-radius:12px;background:#e7ecf7;cursor:pointer;transition:.1s}
+  .dpad-btn:active{background:#5b8cff;color:#fff;transform:scale(.94)}
+  /* 极速狂点 */
+  .bump{animation:coinBump .45s ease}
+  .tap-num{font-size:46px;font-weight:900;color:var(--gold);margin:10px 0 4px}
+  .tap-hit{width:170px;height:170px;border:none;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd166,#ff7a59);color:#fff;font-size:26px;font-weight:800;cursor:pointer;box-shadow:var(--shadow);transition:transform .06s;margin:8px auto;display:block}
+  .tap-hit:active{transform:scale(.92)}
+  /* 颜色侦探 */
+  .color-board{display:grid;gap:6px;max-width:300px;margin:14px auto}
+  .color-cell{aspect-ratio:1;border-radius:8px;cursor:pointer;transition:transform .08s}
+  .color-cell:hover{transform:scale(1.04)}
+  /* 静心呼吸 */
+  .breathe-stage{height:200px;display:flex;align-items:center;justify-content:center;position:relative;margin:10px 0}
+  .breathe-circle{width:90px;height:90px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#bfe3ff,#7fb2ff);box-shadow:0 0 30px rgba(127,178,255,.6);transition:transform 2.8s ease-in-out, box-shadow .3s}
+  .breathe-circle.big{transform:scale(1.9);box-shadow:0 0 50px rgba(127,178,255,.85)}
+  .breathe-circle.ok{box-shadow:0 0 60px rgba(120,255,190,.95)}
+  .breathe-phase{position:absolute;bottom:6px;font-size:15px;color:#37a;font-weight:700}
+  .breathe-btns{display:flex;gap:12px;justify-content:center;margin-top:6px}
+
+
+  /* 舒尔特方格 */
+  .sch-board{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0}
+  .sch-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;
+    background:#f1f3fb;border:2px solid var(--line);border-radius:12px;cursor:pointer;user-select:none;transition:.08s}
+  .sch-cell.hit{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .sch-cell.miss{background:var(--bad);color:#fff}
+
+  /* 数字记忆 */
+  .sim-board{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:260px;margin:16px auto}
+  .sim-btn{height:90px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:34px;cursor:pointer;user-select:none;opacity:.5;transition:.12s;box-shadow:var(--shadow)}
+  .sim-btn.lit{opacity:1;transform:scale(1.06)}
+
+  /* 年级切换器 */
+  .grade-bar{display:flex;gap:10px;flex-wrap:wrap;margin:4px 4px 14px}
+  .grade-btn{border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 16px;
+    font-size:15px;font-weight:700;color:var(--ink);cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px}
+  .grade-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+  .grade-btn.active{border-color:var(--gold);background:linear-gradient(135deg,#fff3d6,#ffe6b0);color:#a05a00;box-shadow:0 4px 14px rgba(255,170,40,.35)}
+
+  /* 兜底：强制所有可点击元素显示小手光标（放在最后、!important，盖过一切） */
+  .tile, .opt, .btn, .buy, .act, .m-btn, .nav button, .pill, .backlink,
+  .hole, .tile-col, .ttt-cell:not(.taken), .mem-card, .puz-cell:not(.blank),
+  .sim-btn, .lock, .rank-row, .task-item, .shop-item, .game-cell, [onclick]{cursor:pointer !important}
+  button:disabled, .btn:disabled, .buy:disabled, .act.done{cursor:not-allowed !important}
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+<div id="flames" aria-hidden="true"><canvas id="flameCanvas"></canvas><canvas id="iceCanvas"></canvas></div>
+<div class="wrap">
+  <header class="top">
+    <div class="logo"><span class="badge">🎓</span><span>闯关学堂</span></div>
+    <div class="head-right">
+      <div class="music-group">
+        <button id="musicOff" class="m-btn off-btn" onclick="musicOff()" title="关闭音乐">🔇 关</button>
+        <button id="musicFlip" class="m-btn flip-btn" onclick="flipTrack()" title="点一下切换：战斗曲 → 反转曲 → 狂暴金属 → 电音战鼓 → 极速朋克 → 电音轰炸 → 硬核崩塌 → 终极BOSS战 → 燃战歌 → 循环">
+          <span class="eq"><i></i><i></i><i></i></span><span id="flipLabel">战斗曲</span>
+        </button>
+      </div>
+      <div class="coins"><span class="star">⭐</span><span id="coinNum">0</span> 学分</div>
+    </div>
+  </header>
+
+  <!-- 首页 -->
+  <section class="view active" id="home">
+    <div class="hero">
+      <h1>边学边玩，闯关解锁 🎮</h1>
+      <p>答对题目赚取「学分」，到商店兑换并解锁好玩的小游戏。学习不再枯燥！</p>
+      <div class="steps">
+        <span class="chip">① 去答题赚学分</span>
+        <span class="chip">② 商店兑换解锁</span>
+        <span class="chip">③ 玩解锁的小游戏</span>
+      </div>
+    </div>
+
+    <div class="sec-title">📅 每日任务 <span class="muted" id="dailyMini" style="font-weight:600"></span></div>
+    <div id="homeDaily"></div>
+
+    <div class="sec-title">🎓 选择年级 <span class="muted" id="gradeHint" style="font-weight:600"></span></div>
+    <div class="grade-bar" id="gradeBar"></div>
+
+    <div class="sec-title">📚 开始学习</div>
+    <div class="grid" id="homeCats"></div>
+
+    <div class="sec-title">🎯 快捷入口</div>
+    <div class="grid">
+      <div class="tile" onclick="go('shop')"><span class="ic">🛒</span><span class="t">积分商城</span><span class="d">用学分兑换解锁小游戏</span></div>
+      <div class="tile" onclick="go('arcade')"><span class="ic">🕹️</span><span class="t">游戏中心</span><span class="d">已解锁的游戏都在这里</span></div>
+      <div class="tile" onclick="go('rank')"><span class="ic">🏆</span><span class="t">排行榜</span><span class="d">看看你的名次与最佳成绩</span></div>
+      <div class="tile" onclick="go('daily')"><span class="ic">📅</span><span class="t">每日任务</span><span class="d">完成任务领取额外学分</span></div>
+    </div>
+  </section>
+
+  <!-- 答题 -->
+  <section class="view" id="quiz">
+    <div class="backlink" onclick="go('home')">← 返回首页</div>
+    <div class="card" id="quizCard"></div>
+  </section>
+
+  <!-- 商店 -->
+  <section class="view" id="shop">
+    <div class="backlink" onclick="go('home')">← 返回首页</div>
+    <div class="sec-title">🛒 积分商城</div>
+    <div id="shopList"></div>
+  </section>
+
+  <!-- 游戏中心 -->
+  <section class="view" id="arcade">
+    <div class="backlink" onclick="go('home')">← 返回首页</div>
+    <div class="sec-title">🕹️ 游戏中心</div>
+    <div class="muted" style="margin:0 4px 12px">锁定的游戏需要先到商城兑换解锁哦～</div>
+    <div class="grid" id="arcadeList"></div>
+  </section>
+
+  <!-- 排行榜 -->
+  <section class="view" id="rank">
+    <div class="backlink" onclick="go('home')">← 返回首页</div>
+    <div class="sec-title">🏆 排行榜</div>
+    <div class="q-meta" style="margin:0 4px 10px">
+      <span class="pill" id="rankTabTotal" onclick="switchRank('total')" style="cursor:pointer">累计学分榜</span>
+      <span class="pill" id="rankTabGame" onclick="switchRank('game')" style="cursor:pointer;background:#f0f2fa;color:var(--muted)">游戏最佳榜</span>
+    </div>
+    <div id="rankList"></div>
+  </section>
+
+  <!-- 每日任务 -->
+  <section class="view" id="daily">
+    <div class="backlink" onclick="go('home')">← 返回首页</div>
+    <div class="sec-title">📅 每日任务 <span class="muted" id="dailyReset" style="font-weight:600"></span></div>
+    <div id="dailyList"></div>
+  </section>
+
+  <!-- 记忆翻牌 -->
+  <section class="view" id="game-memory">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card">
+      <div class="q-meta"><span class="pill">🃏 记忆翻牌</span><span id="memStat">找出全部 8 对</span></div>
+      <div class="mem-board" id="memBoard"></div>
+      <div class="next-row"><button class="btn ghost" onclick="startMemory()">🔄 重开一局</button></div>
+    </div>
+  </section>
+
+  <!-- 滑块拼图 -->
+  <section class="view" id="game-puzzle">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card">
+      <div class="q-meta"><span class="pill">🧩 滑块拼图</span><span id="puzStat">把数字按顺序排好</span></div>
+      <div class="puz-board" id="puzBoard"></div>
+      <div class="next-row" style="justify-content:space-between">
+        <button class="btn ghost" onclick="startPuzzle()">🔄 重新打乱</button>
+        <span class="muted" id="puzMoves">步数：0</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 反应训练 -->
+  <section class="view" id="game-reaction">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card">
+      <div class="q-meta"><span class="pill">⚡ 反应训练</span><span id="reactStat">点击出现的按钮，测反应</span></div>
+      <div class="react-stage" id="reactStage">
+        <div class="muted" id="reactHint">点击「开始」测一测你的反应速度</div>
+      </div>
+      <div class="next-row" style="justify-content:center;margin-top:14px">
+        <button class="btn" id="reactStart" onclick="startReaction()">开始训练</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 词语接龙 -->
+  <section class="view" id="game-idiom">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card">
+      <div class="q-meta"><span class="pill">🔤 词语接龙</span><span id="idiomStat">连击：0</span></div>
+      <div class="idiom-chain" id="idiomChain"></div>
+      <div class="inp-row">
+        <input class="inp" id="idiomInput" placeholder="输入以「?」开头的词语" autocomplete="off" />
+        <button class="btn" onclick="submitIdiom()">接龙</button>
+      </div>
+      <div class="idiom-hintbar" id="idiomHint"></div>
+      <div class="next-row" style="justify-content:space-between;margin-top:12px">
+        <button class="btn ghost sm" onclick="startIdiom()">🔄 重新开始</button>
+        <button class="btn ghost sm" onclick="idiomTip()">💡 求提示</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 连连看 -->
+  <section class="view" id="game-link">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card">
+      <div class="q-meta"><span class="pill">🔗 连连看</span><span id="linkStat">剩余：0</span></div>
+      <div style="position:relative">
+        <div class="link-board" id="linkBoard"></div>
+        <svg id="linkSvg"></svg>
+      </div>
+      <div class="next-row" style="justify-content:space-between;margin-top:12px">
+        <button class="btn ghost sm" onclick="startLink()">🔄 重开一局</button>
+        <button class="btn ghost sm" onclick="shuffleLink()">🔀 洗牌</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 打字游戏 -->
+  <section class="view" id="game-typing">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card">
+      <div class="q-meta"><span class="pill">⌨️ 打字游戏</span><span id="typeStat">限时 30 秒</span></div>
+      <div class="type-stat">
+        <div><div class="b" id="typeTime">30</div><div class="l">剩余秒</div></div>
+        <div><div class="b" id="typeScore">0</div><div class="l">得分</div></div>
+        <div><div class="b" id="typeWpm">0</div><div class="l">正确词</div></div>
+      </div>
+      <div class="type-word" id="typeWord">点击开始</div>
+      <div class="inp-row">
+        <input class="inp" id="typeInput" placeholder="在此输入上方内容" autocomplete="off" disabled />
+        <button class="btn" id="typeBtn" onclick="startTyping()">开始</button>
+      </div>
+      <div class="muted" style="margin-top:10px">输入正确后自动跳到下一词，看看 30 秒能打多少！</div>
+    </div>
+  </section>
+
+  <!-- 猜数字 -->
+  <section class="view" id="game-guess">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card">
+      <div class="q-meta"><span class="pill">🎯 猜数字</span><span id="guessStat">已猜 0 次</span></div>
+      <div class="muted" id="guessMsg" style="margin:8px 0 14px">我想了一个 1–100 之间的数，来猜猜看！</div>
+      <div class="inp-row">
+        <input class="inp" id="guessInput" type="number" placeholder="输入 1–100" />
+        <button class="btn" id="guessBtn" onclick="submitGuess()">猜！</button>
+      </div>
+      <div class="next-row" style="justify-content:center;margin-top:12px">
+        <button class="btn ghost sm" onclick="startGuess()">🔄 重新开始</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 舒尔特方格 -->
+  <section class="view" id="game-schulte">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card">
+      <div class="q-meta"><span class="pill">🔢 舒尔特方格</span><span id="schStat">按顺序点击 1 → 25</span></div>
+      <div class="sch-board" id="schBoard"></div>
+      <div class="muted" style="margin-top:8px">按顺序快速点击 1 到 25，比谁更快更准。</div>
+      <div class="next-row" style="justify-content:center;margin-top:12px">
+        <button class="btn ghost sm" onclick="startSchulte()">🔄 重新开始</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 数字记忆 -->
+  <section class="view" id="game-simon">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card">
+      <div class="q-meta"><span class="pill">🎵 数字记忆</span><span id="simStat">看清楚闪烁顺序</span></div>
+      <div class="sim-board" id="simBoard"></div>
+      <div class="muted" style="margin-top:8px">记住按钮闪烁的顺序，然后照着点出来，序列会越来越长。</div>
+      <div class="next-row" style="justify-content:center;margin-top:12px">
+        <button class="btn ghost sm" onclick="startSimon()">🔄 重新开始</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 快速心算 -->
+  <section class="view" id="game-math">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card center">
+      <div class="q-meta"><span class="pill">🧠 快速心算</span><span id="mathStat">限时 30 秒</span></div>
+      <div class="math-row">
+        <div><div class="b" id="mathTime">30</div><div class="l">剩余秒</div></div>
+        <div><div class="b" id="mathRight">0</div><div class="l">答对</div></div>
+      </div>
+      <div class="math-q" id="mathQ">点击开始</div>
+      <div class="inp-row" style="justify-content:center">
+        <input class="inp" id="mathInput" placeholder="输入答案" inputmode="numeric" autocomplete="off" />
+      </div>
+      <div class="next-row" style="justify-content:center">
+        <button class="btn" id="mathStart" onclick="startMath()">🚀 开始</button>
+      </div>
+      <div class="muted" style="margin-top:8px">限时内尽量多答对，每对 +4 学分；结束可领取奖励。</div>
+    </div>
+  </section>
+
+  <!-- 火眼金睛 -->
+  <section class="view" id="game-find">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card center">
+      <div class="q-meta"><span class="pill">🔍 火眼金睛</span><span id="findStat">找出不一样的图案</span></div>
+      <div class="find-board" id="findBoard"></div>
+      <div class="next-row" style="justify-content:center">
+        <button class="btn" id="findStart" onclick="startFind()">🚀 开始</button>
+      </div>
+      <div class="muted" style="margin-top:8px">每关只有一个图案不同，点中它进入下一关；点错即结束。每过一关 +3 学分。</div>
+    </div>
+  </section>
+
+  <!-- 打地鼠 -->
+  <section class="view" id="game-mole">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card center">
+      <div class="q-meta"><span class="pill">🎯 打地鼠</span><span id="moleStat">得分：0</span></div>
+      <div class="mole-grid" id="moleGrid"></div>
+      <div class="next-row" style="justify-content:center">
+        <button class="btn" id="moleStart" onclick="startMole()">🚀 开始</button>
+      </div>
+      <div class="muted" style="margin-top:8px">地鼠冒头就点它！30 秒内敲得越多分越高，每 3 分 +2 学分。</div>
+    </div>
+  </section>
+
+  <!-- 石头剪刀布 -->
+  <section class="view" id="game-rps">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card center">
+      <div class="q-meta"><span class="pill">✌️ 石头剪刀布</span><span id="rpsStat">胜：0 / 5 局</span></div>
+      <div class="rps-row">
+        <button class="btn rps-btn" onclick="playRps('✊')">✊</button>
+        <button class="btn rps-btn" onclick="playRps('✋')">✋</button>
+        <button class="btn rps-btn" onclick="playRps('✌️')">✌️</button>
+      </div>
+      <div id="rpsResult" class="muted" style="font-size:16px;min-height:24px">选一个出吧！</div>
+      <div class="muted" style="margin-top:6px">和电脑五局定胜负，赢的局数越多奖励越多。</div>
+    </div>
+  </section>
+
+  <!-- 别踩白块 -->
+  <section class="view" id="game-tiles">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card center">
+      <div class="q-meta"><span class="pill">🎵 别踩白块</span><span id="tilesStat">得分：0</span></div>
+      <div class="tiles-row" id="tilesRow">
+        <button class="tile-col" onclick="tapTile(0)">点我</button>
+        <button class="tile-col" onclick="tapTile(1)">点我</button>
+        <button class="tile-col" onclick="tapTile(2)">点我</button>
+        <button class="tile-col" onclick="tapTile(3)">点我</button>
+      </div>
+      <div class="next-row" style="justify-content:center">
+        <button class="btn" id="tilesStart" onclick="startTiles()">🚀 开始</button>
+      </div>
+      <div class="muted" style="margin-top:8px">亮起哪一列就点哪一列，点错或太慢就结束。越快越加分！</div>
+    </div>
+  </section>
+
+  <!-- 井字棋 -->
+  <section class="view" id="game-ttt">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card center">
+      <div class="q-meta"><span class="pill">🟢 井字棋</span><span id="tttStat">你执 ✕，电脑执 ○</span></div>
+      <div class="ttt-board" id="tttBoard">
+        <button class="ttt-cell" onclick="tapTtt(0)"></button>
+        <button class="ttt-cell" onclick="tapTtt(1)"></button>
+        <button class="ttt-cell" onclick="tapTtt(2)"></button>
+        <button class="ttt-cell" onclick="tapTtt(3)"></button>
+        <button class="ttt-cell" onclick="tapTtt(4)"></button>
+        <button class="ttt-cell" onclick="tapTtt(5)"></button>
+        <button class="ttt-cell" onclick="tapTtt(6)"></button>
+        <button class="ttt-cell" onclick="tapTtt(7)"></button>
+        <button class="ttt-cell" onclick="tapTtt(8)"></button>
+      </div>
+      <div class="next-row" style="justify-content:center">
+        <button class="btn ghost sm" onclick="startTtt()">🔄 重新开始</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 贪吃蛇 -->
+  <section class="view" id="game-snake">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card center">
+      <div class="q-meta"><span class="pill">🐍 贪吃蛇</span><span id="snakeStat">得分：0</span></div>
+      <canvas id="snakeCanvas" width="320" height="320" class="snake-canvas"></canvas>
+      <div class="dpad">
+        <button class="dpad-btn" onclick="snakeDir(0,-1)">↑</button>
+        <div class="dpad-mid">
+          <button class="dpad-btn" onclick="snakeDir(-1,0)">←</button>
+          <button class="dpad-btn" onclick="snakeDir(1,0)">→</button>
+        </div>
+        <button class="dpad-btn" onclick="snakeDir(0,1)">↓</button>
+      </div>
+      <div class="next-row" style="justify-content:center">
+        <button class="btn" id="snakeStart" onclick="startSnake()">🚀 开始</button>
+      </div>
+      <div class="muted" style="margin-top:8px">用方向键或屏幕按钮控制，吃苹果变长；撞墙或撞自己就结束。每吃一个 +2 学分。</div>
+    </div>
+  </section>
+
+  <!-- 极速狂点 -->
+  <section class="view" id="game-tap">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card center">
+      <div class="q-meta"><span class="pill">🔥 极速狂点</span><span id="tapStat">点满 10 秒！</span></div>
+      <div class="tap-num" id="tapNum">0</div>
+      <button class="tap-hit" id="tapHit" onclick="tapHit()">点我！</button>
+      <div class="next-row" style="justify-content:center">
+        <button class="btn" id="tapStart" onclick="startTap()">🚀 开始</button>
+      </div>
+      <div class="muted" style="margin-top:8px">10 秒内尽情狂点大按钮，每点一下 +1，结束按次数发学分。</div>
+    </div>
+  </section>
+
+  <!-- 颜色侦探 -->
+  <section class="view" id="game-color">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card center">
+      <div class="q-meta"><span class="pill">🌈 颜色侦探</span><span id="colorStat">找出颜色不同的方块</span></div>
+      <div class="color-board" id="colorBoard"></div>
+      <div class="next-row" style="justify-content:center">
+        <button class="btn" id="colorStart" onclick="startColor()">🚀 开始</button>
+      </div>
+      <div class="muted" style="margin-top:8px">只有一块颜色略微不同，点中它进入下一关；点错即结束。每过一关 +3 学分。</div>
+    </div>
+  </section>
+
+  <!-- 静心呼吸 -->
+  <section class="view" id="game-breathe">
+    <div class="backlink" onclick="go('arcade')">← 返回游戏中心</div>
+    <div class="card center">
+      <div class="q-meta"><span class="pill">🫧 静心呼吸</span><span id="breatheStat">跟着圆圈放松</span></div>
+      <div class="breathe-stage">
+        <div class="breathe-circle" id="breatheCircle"></div>
+        <div class="breathe-phase" id="breathePhase">准备好了吗？</div>
+      </div>
+      <div class="breathe-btns">
+        <button class="btn ghost" onclick="breatheTap('in')">🌬️ 吸气</button>
+        <button class="btn ghost" onclick="breatheTap('out')">😮‍💨 呼气</button>
+      </div>
+      <div class="next-row" style="justify-content:center">
+        <button class="btn" id="breatheStart" onclick="startBreathe()">🚀 开始</button>
+      </div>
+      <div class="muted" style="margin-top:8px">圆圈放大时按「吸气」，缩小时按「呼气」。跟准节奏 10 次，越准越放松，结算发学分。</div>
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="active" data-go="home"><span class="ic">🏠</span>首页</button>
+    <button data-go="quiz"><span class="ic">📝</span>答题</button>
+    <button data-go="shop"><span class="ic">🛒</span>商店</button>
+    <button data-go="arcade"><span class="ic">🕹️</span>游戏</button>
+    <button data-go="rank"><span class="ic">🏆</span>排行</button>
+    <button data-go="daily"><span class="ic">📅</span>任务</button>
+  </div>
+</nav>
+
+<script>
+/* ================= 数据 ================= */
+const BANK = {
+"life": {
+"name": "生活常识",
+"icon": "💡",
+"min": 1,
+"questions": [
+{
+"q": "红绿灯中哪种颜色表示“通行”？",
+"o": [
+"红",
+"黄",
+"绿",
+"蓝"
+],
+"a": 2,
+"tip": "绿灯表示准许通行。",
+"d": 1
+},
+{
+"q": "家用灭火器一般适用于？",
+"o": [
+"所有火",
+"初期小火",
+"油锅大火",
+"带电火灾"
+],
+"a": 1,
+"tip": "适用于初期小火。",
+"d": 1
+},
+{
+"q": "用肥皂洗手建议至少搓洗多久？",
+"o": [
+"5秒",
+"20秒",
+"2分钟",
+"10分钟"
+],
+"a": 1,
+"tip": "建议至少20秒。",
+"d": 1
+},
+{
+"q": "打雷下雨时较安全的做法是？",
+"o": [
+"站大树下",
+"待封闭车内",
+"靠近金属栏",
+"打座机"
+],
+"a": 1,
+"tip": "封闭汽车相对安全。",
+"d": 2
+},
+{
+"q": "保存新鲜叶菜较合适的是？",
+"o": [
+"暴晒",
+"密封冷藏",
+"热水泡",
+"敞口常温"
+],
+"a": 1,
+"tip": "冷藏延缓变质。",
+"d": 2
+},
+{
+"q": "下列哪种属于可回收物？",
+"o": [
+"剩饭",
+"废纸盒",
+"废电池",
+"过期药"
+],
+"a": 1,
+"tip": "废纸等可回收。",
+"d": 2
+},
+{
+"q": "火灾逃生用湿毛巾捂口鼻并低姿，是因为？",
+"o": [
+"省力",
+"热烟上升、近地空气较好",
+"好玩",
+"怕被发现"
+],
+"a": 1,
+"tip": "近地可避毒烟。",
+"d": 3
+},
+{
+"q": "下列哪种节水做法更好？",
+"o": [
+"长流冲淋",
+"盆接水洗菜",
+"水龙头常开",
+"洗衣机半载"
+],
+"a": 1,
+"tip": "盆接更省水。",
+"d": 3
+},
+{
+"q": "过马路最安全的做法是？",
+"o": [
+"边看手机边走",
+"走斑马线并观察",
+"猛跑穿过",
+"车流中停留"
+],
+"a": 1,
+"tip": "走斑马线最安全。",
+"d": 3
+},
+{
+"q": "被狗咬伤后，最妥当的第一步是？",
+"o": [
+"涂酱油",
+"肥皂水冲洗并尽快就医",
+"包扎不处理",
+"置之不理"
+],
+"a": 1,
+"tip": "冲洗并就医防感染。",
+"d": 4
+}
+]
+},
+"animal": {
+"name": "动物世界",
+"icon": "🐾",
+"min": 1,
+"questions": [
+{
+"q": "下列哪种动物是哺乳动物？",
+"o": [
+"鲨鱼",
+"鲸鱼",
+"鳄鱼",
+"金鱼"
+],
+"a": 1,
+"tip": "鲸用肺呼吸、胎生。",
+"d": 1
+},
+{
+"q": "大熊猫主要吃什么？",
+"o": [
+"肉",
+"竹子",
+"鱼",
+"昆虫"
+],
+"a": 1,
+"tip": "以竹子为主食。",
+"d": 1
+},
+{
+"q": "下列哪种动物会冬眠？",
+"o": [
+"老虎",
+"熊",
+"大象",
+"长颈鹿"
+],
+"a": 1,
+"tip": "熊在冬季冬眠。",
+"d": 1
+},
+{
+"q": "蜜蜂采集什么来酿蜜？",
+"o": [
+"树叶",
+"花蜜",
+"泥土",
+"雨水"
+],
+"a": 1,
+"tip": "采花蜜酿造蜂蜜。",
+"d": 2
+},
+{
+"q": "世界上现存最大的鸟是？",
+"o": [
+"鹰",
+"鸵鸟",
+"天鹅",
+"孔雀"
+],
+"a": 1,
+"tip": "鸵鸟是现存最大鸟。",
+"d": 2
+},
+{
+"q": "下列哪种动物不是昆虫？",
+"o": [
+"蚂蚁",
+"蜘蛛",
+"蜜蜂",
+"蝴蝶"
+],
+"a": 1,
+"tip": "蜘蛛8条腿，非昆虫。",
+"d": 2
+},
+{
+"q": "青蛙的幼体叫什么、用什么呼吸？",
+"o": [
+"蝌蚪、鳃",
+"幼鸟、肺",
+"幼虫、气门",
+"蛹、皮肤"
+],
+"a": 0,
+"tip": "蝌蚪用鳃呼吸。",
+"d": 3
+},
+{
+"q": "蝙蝠能真正飞行，它属于哪类动物？",
+"o": [
+"鸟类",
+"哺乳动物",
+"爬行动物",
+"鱼类"
+],
+"a": 1,
+"tip": "蝙蝠是哺乳动物。",
+"d": 3
+},
+{
+"q": "骆驼驼峰主要储存什么，使其耐旱？",
+"o": [
+"水",
+"脂肪",
+"骨头",
+"空气"
+],
+"a": 1,
+"tip": "储脂肪供能耐旱。",
+"d": 3
+},
+{
+"q": "下列哪种动物有长距离迁徙习性、路程可达上万公里？",
+"o": [
+"家猫",
+"北极燕鸥",
+"仓鼠",
+"金鱼"
+],
+"a": 1,
+"tip": "北极燕鸥迁徙极远。",
+"d": 4
+}
+]
+},
+"sports": {
+"name": "体育",
+"icon": "⚽",
+"min": 1,
+"questions": [
+{
+"q": "篮球比赛每队上场几人？",
+"o": [
+"5人",
+"7人",
+"11人",
+"3人"
+],
+"a": 0,
+"tip": "篮球每队上场5人。",
+"d": 1
+},
+{
+"q": "足球比赛每队上场几人？",
+"o": [
+"5人",
+"7人",
+"11人",
+"9人"
+],
+"a": 2,
+"tip": "足球每队上场11人。",
+"d": 1
+},
+{
+"q": "乒乓球现行计分制是？",
+"o": [
+"21分制",
+"11分制",
+"15分制",
+"30分制"
+],
+"a": 1,
+"tip": "现行11分制。",
+"d": 1
+},
+{
+"q": "马拉松全程距离约为？",
+"o": [
+"1公里",
+"10公里",
+"42公里",
+"100公里"
+],
+"a": 2,
+"tip": "全程约42公里。",
+"d": 2
+},
+{
+"q": "排球比赛每队上场几人？",
+"o": [
+"5人",
+"6人",
+"7人",
+"4人"
+],
+"a": 1,
+"tip": "排球每队上场6人。",
+"d": 2
+},
+{
+"q": "游泳时较安全的做法是？",
+"o": [
+"独自去深水",
+"有成人陪并在浅水",
+"跳水前不观察",
+"游到力竭"
+],
+"a": 1,
+"tip": "有陪浅水更安全。",
+"d": 2
+},
+{
+"q": "篮球普通位置投篮命中通常得几分？",
+"o": [
+"1分",
+"2分",
+"3分",
+"5分"
+],
+"a": 1,
+"tip": "普通位置得2分。",
+"d": 3
+},
+{
+"q": "夏季奥运会与冬季奥运会通常相隔几年交替？",
+"o": [
+"1年",
+"2年",
+"4年",
+"10年"
+],
+"a": 1,
+"tip": "夏冬奥相隔2年。",
+"d": 3
+},
+{
+"q": "下列哪项属于田径中的“田赛”（比高度/远度）？",
+"o": [
+"100米跑",
+"跳高/跳远",
+"400米跑",
+"接力跑"
+],
+"a": 1,
+"tip": "跳高跳远属田赛。",
+"d": 3
+},
+{
+"q": "标准足球比赛常规时间分上下半场，每半场几分钟？",
+"o": [
+"30分钟",
+"45分钟",
+"60分钟",
+"90分钟"
+],
+"a": 1,
+"tip": "每半场45分钟。",
+"d": 4
+}
+]
+},
+"music": {
+"name": "音乐",
+"icon": "🎵",
+"min": 1,
+"questions": [
+{
+"q": "钢琴属于哪类乐器？",
+"o": [
+"弦乐",
+"键盘乐",
+"管乐",
+"打击乐"
+],
+"a": 1,
+"tip": "钢琴是键盘乐器。",
+"d": 1
+},
+{
+"q": "do re mi 是音乐的什么？",
+"o": [
+"颜色",
+"唱名",
+"数字",
+"字母"
+],
+"a": 1,
+"tip": "首调唱名。",
+"d": 1
+},
+{
+"q": "下列哪种是中国民族乐器？",
+"o": [
+"钢琴",
+"二胡",
+"小号",
+"吉他"
+],
+"a": 1,
+"tip": "二胡是中国民族乐器。",
+"d": 1
+},
+{
+"q": "小提琴靠什么方式发声？",
+"o": [
+"吹气",
+"弓拉弦",
+"敲击",
+"拨片"
+],
+"a": 1,
+"tip": "弓拉弦发声。",
+"d": 2
+},
+{
+"q": "鼓属于哪类乐器？",
+"o": [
+"弦乐",
+"打击乐",
+"键盘",
+"电子"
+],
+"a": 1,
+"tip": "鼓是打击乐器。",
+"d": 2
+},
+{
+"q": "下列哪种是铜管乐器？",
+"o": [
+"长笛",
+"小号",
+"小提琴",
+"木琴"
+],
+"a": 1,
+"tip": "小号是铜管乐器。",
+"d": 2
+},
+{
+"q": "“高音”在听觉上更显得？",
+"o": [
+"低沉",
+"尖锐",
+"安静",
+"缓慢"
+],
+"a": 1,
+"tip": "音高越高越尖锐。",
+"d": 3
+},
+{
+"q": "音乐中“节拍”指的是？",
+"o": [
+"音色",
+"强弱规律的重复",
+"曲长",
+"乐器数量"
+],
+"a": 1,
+"tip": "节拍是强弱循环。",
+"d": 3
+},
+{
+"q": "吉他通常六根弦，标准调弦从低到高一般是？",
+"o": [
+"EADGBE",
+"ABCDE",
+"123456",
+"DoReMi"
+],
+"a": 0,
+"tip": "标准调弦为EADGBE。",
+"d": 3
+},
+{
+"q": "乐理中“中央C”通常标记为哪个音名？",
+"o": [
+"C4",
+"A1",
+"Z0",
+"X9"
+],
+"a": 0,
+"tip": "中央C记作C4。",
+"d": 4
+}
+]
+},
+"nature": {
+"name": "自然百科",
+"icon": "🌿",
+"min": 1,
+"questions": [
+{
+"q": "晴天太阳从哪个方向升起？",
+"o": [
+"西方",
+"东方",
+"北方",
+"南方"
+],
+"a": 1,
+"tip": "太阳从东方升起。",
+"d": 1
+},
+{
+"q": "彩虹通常出现在什么之后？",
+"o": [
+"下雪后",
+"雨过天晴",
+"打雷时",
+"刮风时"
+],
+"a": 1,
+"tip": "雨后放晴易现彩虹。",
+"d": 1
+},
+{
+"q": "下列哪种是植物的繁殖器官？",
+"o": [
+"根",
+"花",
+"茎",
+"叶"
+],
+"a": 1,
+"tip": "花是生殖器官。",
+"d": 1
+},
+{
+"q": "风是怎样形成的？",
+"o": [
+"地球自转",
+"空气水平流动",
+"月亮引力",
+"闪电"
+],
+"a": 1,
+"tip": "风是空气流动。",
+"d": 2
+},
+{
+"q": "雪花基本形状多为？",
+"o": [
+"方形",
+"六角对称",
+"三角形",
+"圆形"
+],
+"a": 1,
+"tip": "雪花多六角结构。",
+"d": 2
+},
+{
+"q": "下列哪种现象属于水循环？",
+"o": [
+"地震",
+"蒸发与降水",
+"火山",
+"日食"
+],
+"a": 1,
+"tip": "蒸发降水属水循环。",
+"d": 2
+},
+{
+"q": "树木在温带多于哪个季节落叶？",
+"o": [
+"春",
+"秋",
+"夏",
+"冬午"
+],
+"a": 1,
+"tip": "温带秋季落叶。",
+"d": 3
+},
+{
+"q": "闪电之后常伴随雷声，是因为？",
+"o": [
+"雷先发生",
+"光速远快于声速",
+"闪电无声",
+"云会响"
+],
+"a": 1,
+"tip": "光速远快于声速。",
+"d": 3
+},
+{
+"q": "下列哪种属于可再生能源？",
+"o": [
+"煤",
+"太阳能",
+"石油",
+"天然气"
+],
+"a": 1,
+"tip": "太阳能可再生。",
+"d": 3
+},
+{
+"q": "土壤主要来源于什么的风化，肥沃土壤常含哪些物质？",
+"o": [
+"岩石；有机质与矿物",
+"塑料；糖",
+"金属；盐",
+"玻璃；沙"
+],
+"a": 0,
+"tip": "岩石风化加有机质成壤。",
+"d": 4
+}
+]
+},
+"food": {
+"name": "美食",
+"icon": "🍜",
+"min": 1,
+"questions": [
+{
+"q": "米饭主要来自哪种农作物？",
+"o": [
+"小麦",
+"水稻",
+"玉米",
+"大豆"
+],
+"a": 1,
+"tip": "水稻煮成米饭。",
+"d": 1
+},
+{
+"q": "下列哪种食物富含蛋白质？",
+"o": [
+"西瓜",
+"鸡蛋",
+"可乐",
+"糖果"
+],
+"a": 1,
+"tip": "鸡蛋是优质蛋白。",
+"d": 1
+},
+{
+"q": "豆腐是用什么做的？",
+"o": [
+"牛奶",
+"黄豆",
+"面粉",
+"鸡蛋"
+],
+"a": 1,
+"tip": "豆腐由黄豆制成。",
+"d": 1
+},
+{
+"q": "做面包膨松常用哪种方式？",
+"o": [
+"加盐",
+"酵母发酵",
+"加冰",
+"晒干"
+],
+"a": 1,
+"tip": "酵母发酵使面包松软。",
+"d": 2
+},
+{
+"q": "牛奶主要提供哪类营养素？",
+"o": [
+"只有糖",
+"钙和优质蛋白",
+"只有脂肪",
+"无营养"
+],
+"a": 1,
+"tip": "牛奶富含钙和蛋白。",
+"d": 2
+},
+{
+"q": "下列哪种是绿叶蔬菜？",
+"o": [
+"土豆",
+"菠菜",
+"番茄",
+"玉米"
+],
+"a": 1,
+"tip": "菠菜是绿叶蔬菜。",
+"d": 2
+},
+{
+"q": "煮面条时水一般要？",
+"o": [
+"冷的",
+"烧开下锅",
+"结冰",
+"半温"
+],
+"a": 1,
+"tip": "煮面需开水下锅。",
+"d": 3
+},
+{
+"q": "食盐的主要成分是？",
+"o": [
+"蔗糖",
+"氯化钠",
+"碳酸钙",
+"葡萄糖"
+],
+"a": 1,
+"tip": "食盐主要含氯化钠。",
+"d": 3
+},
+{
+"q": "苹果的种子长在哪个部位？",
+"o": [
+"皮上",
+"果核内部",
+"表面",
+"蒂部外"
+],
+"a": 1,
+"tip": "种子在果核内。",
+"d": 3
+},
+{
+"q": "过量摄入甜食最可能直接导致？",
+"o": [
+"长高",
+"龋齿与肥胖",
+"变聪明",
+"视力变好"
+],
+"a": 1,
+"tip": "易致龋齿与肥胖。",
+"d": 4
+}
+]
+},
+"health": {
+"name": "健康常识",
+"icon": "🩺",
+"min": 1,
+"questions": [
+{
+"q": "每天适量喝水有助于？",
+"o": [
+"脱水",
+"维持身体代谢",
+"变黑",
+"掉头发"
+],
+"a": 1,
+"tip": "水参与代谢。",
+"d": 1
+},
+{
+"q": "哪种习惯利于夜间睡好？",
+"o": [
+"睡前剧烈运动",
+"规律作息",
+"熬夜打游戏",
+"大量咖啡"
+],
+"a": 1,
+"tip": "规律作息助眠。",
+"d": 1
+},
+{
+"q": "感冒时多休息多饮水是为了？",
+"o": [
+"让病毒更活跃",
+"帮助身体恢复",
+"加重咳嗽",
+"没有用"
+],
+"a": 1,
+"tip": "休息饮水助恢复。",
+"d": 1
+},
+{
+"q": "看书时光线过暗会？",
+"o": [
+"保护眼睛",
+"增加眼疲劳",
+"治疗近视",
+"没关系"
+],
+"a": 1,
+"tip": "光线不足易致眼疲劳。",
+"d": 2
+},
+{
+"q": "被犬咬伤后首先应？",
+"o": [
+"不管",
+"肥皂水冲洗并就医",
+"涂酱油",
+"不处理"
+],
+"a": 1,
+"tip": "冲洗并及时就医。",
+"d": 2
+},
+{
+"q": "刷牙主要目的是？",
+"o": [
+"美白牙齿",
+"清除牙菌斑防蛀牙",
+"练习舌头",
+"改变脸型"
+],
+"a": 1,
+"tip": "刷牙清除菌斑。",
+"d": 2
+},
+{
+"q": "测量体温常用部位是？",
+"o": [
+"脚底",
+"腋下/口腔",
+"手背",
+"头顶"
+],
+"a": 1,
+"tip": "腋下口腔常用。",
+"d": 3
+},
+{
+"q": "均衡饮食是指？",
+"o": [
+"只吃肉",
+"多样适量搭配",
+"只吃水果",
+"不吃饭"
+],
+"a": 1,
+"tip": "多样适量才均衡。",
+"d": 3
+},
+{
+"q": "长期睡眠不足最可能影响？",
+"o": [
+"身高不变",
+"注意力与情绪",
+"发色",
+"血型"
+],
+"a": 1,
+"tip": "缺眠损注意与情绪。",
+"d": 4
+},
+{
+"q": "长期高压情绪可能引发？",
+"o": [
+"无任何影响",
+"免疫力下降与睡眠问题",
+"身高增长",
+"血型改变"
+],
+"a": 1,
+"tip": "长期压力损免疫睡眠。",
+"d": 4
+}
+]
+},
+"safety": {
+"name": "安全常识",
+"icon": "⚠️",
+"min": 1,
+"questions": [
+{
+"q": "过马路要走？",
+"o": [
+"中央隔离带",
+"斑马线/人行横道",
+"车流中",
+"随便"
+],
+"a": 1,
+"tip": "走斑马线最安全。",
+"d": 1
+},
+{
+"q": "家用插座最怕什么？",
+"o": [
+"插满合格电器",
+"湿手触摸",
+"贴标签",
+"关灯"
+],
+"a": 1,
+"tip": "湿手触电风险高。",
+"d": 1
+},
+{
+"q": "陌生人给的零食饮料应？",
+"o": [
+"马上吃",
+"拒绝并接受家长确认",
+"藏起来",
+"分给同学"
+],
+"a": 1,
+"tip": "不随意接受陌生人食品。",
+"d": 1
+},
+{
+"q": "闻到煤气味首先应？",
+"o": [
+"开灯查看",
+"开窗通风、勿动电器",
+"点火检查",
+"打电话大叫"
+],
+"a": 1,
+"tip": "开窗并避免火花。",
+"d": 2
+},
+{
+"q": "独自在家有人敲门说是“修理工”应？",
+"o": [
+"直接开门",
+"先与家长确认",
+"让他进",
+"给钱"
+],
+"a": 1,
+"tip": "先核实身份再开门。",
+"d": 2
+},
+{
+"q": "火灾逃生时为何要低姿？",
+"o": [
+"省力气",
+"热烟上升、近地空气较好",
+"好玩",
+"怕被发现"
+],
+"a": 1,
+"tip": "近地可避毒烟。",
+"d": 2
+},
+{
+"q": "游泳要去？",
+"o": [
+"野外的陌生水域",
+"有救生员的泳池",
+"洪水里",
+"结冰湖面"
+],
+"a": 1,
+"tip": "正规泳池更安全。",
+"d": 3
+},
+{
+"q": "使用刀具时应？",
+"o": [
+"对着人比划",
+"刀刃朝外、专心使用",
+"抛着玩",
+"闭眼切"
+],
+"a": 1,
+"tip": "专心、刃朝安全方向。",
+"d": 3
+},
+{
+"q": "遇到雷雨应远离？",
+"o": [
+"开阔草地中央",
+"高大的孤立树木",
+"自家一楼",
+"汽车内"
+],
+"a": 1,
+"tip": "孤立大树易遭雷击。",
+"d": 3
+},
+{
+"q": "牢记家长联系方式属于？",
+"o": [
+"没有用",
+"重要的安全自护",
+"不能记",
+"只记自己"
+],
+"a": 0,
+"tip": "牢记联系方式有助求助。",
+"d": 4
+}
+]
+},
+"chinese": {
+"name": "汉字语文",
+"icon": "🔤",
+"min": 1,
+"questions": [
+{
+"q": "“大”的反义词是？",
+"o": [
+"小",
+"多",
+"高",
+"长"
+],
+"a": 0,
+"tip": "大—小是反义。",
+"d": 1
+},
+{
+"q": "“火”字的意思与什么有关？",
+"o": [
+"水",
+"燃烧",
+"植物",
+"石头"
+],
+"a": 1,
+"tip": "火与燃烧有关。",
+"d": 1
+},
+{
+"q": "下列哪个是表示动作的词（动词）？",
+"o": [
+"跑",
+"红",
+"大",
+"桌"
+],
+"a": 0,
+"tip": "跑是动词。",
+"d": 1
+},
+{
+"q": "“明”由哪两个字组成？",
+"o": [
+"日、月",
+"水、火",
+"木、金",
+"人、口"
+],
+"a": 0,
+"tip": "日月为明。",
+"d": 2
+},
+{
+"q": "“三”的下一位数是？",
+"o": [
+"二",
+"四",
+"五",
+"十"
+],
+"a": 1,
+"tip": "数序三之后是四。",
+"d": 2
+},
+{
+"q": "“山”这个字指的是？",
+"o": [
+"水",
+"高耸的地形",
+"云",
+"风"
+],
+"a": 1,
+"tip": "山是高耸地形。",
+"d": 2
+},
+{
+"q": "“笑”表达的情绪是？",
+"o": [
+"生气",
+"高兴",
+"害怕",
+"伤心"
+],
+"a": 1,
+"tip": "笑表示高兴。",
+"d": 3
+},
+{
+"q": "“上”和“下”是？",
+"o": [
+"同义",
+"反义",
+"无关",
+"都是颜色"
+],
+"a": 1,
+"tip": "上下是反义。",
+"d": 3
+},
+{
+"q": "“书”是用来做什么的？",
+"o": [
+"吃",
+"阅读学习",
+"穿",
+"坐"
+],
+"a": 1,
+"tip": "书用于阅读学习。",
+"d": 3
+},
+{
+"q": "“明”在“明察秋毫”中意为？",
+"o": [
+"光亮→清楚",
+"月亮",
+"日子",
+"眼睛"
+],
+"a": 0,
+"tip": "明引申为“清楚”。",
+"d": 4
+}
+]
+},
+"art": {
+"name": "美术",
+"icon": "🎨",
+"min": 1,
+"questions": [
+{
+"q": "红色和黄色混合通常得到？",
+"o": [
+"绿色",
+"橙色",
+"紫色",
+"黑色"
+],
+"a": 1,
+"tip": "红+黄≈橙。",
+"d": 1
+},
+{
+"q": "蓝色和黄色混合通常得到？",
+"o": [
+"绿色",
+"橙色",
+"粉色",
+"白色"
+],
+"a": 0,
+"tip": "蓝+黄≈绿。",
+"d": 1
+},
+{
+"q": "红色、黄色、蓝色被称为？",
+"o": [
+"冷色",
+"三原色",
+"金属色",
+"灰色"
+],
+"a": 1,
+"tip": "它们是色彩三原色。",
+"d": 1
+},
+{
+"q": "画太阳常用哪种颜色？",
+"o": [
+"黑色",
+"红色/黄色",
+"灰色",
+"棕色"
+],
+"a": 1,
+"tip": "太阳常画红黄色。",
+"d": 2
+},
+{
+"q": "下列哪种是绘画工具？",
+"o": [
+"锤子",
+"画笔",
+"螺丝刀",
+"锅"
+],
+"a": 1,
+"tip": "画笔用于绘画。",
+"d": 2
+},
+{
+"q": "圆形看起来像什么？",
+"o": [
+"方块",
+"球/太阳",
+"三角",
+"直线"
+],
+"a": 1,
+"tip": "圆像球或太阳。",
+"d": 2
+},
+{
+"q": "用纸张折出造型属于？",
+"o": [
+"剪纸",
+"折纸",
+"雕塑",
+"书法"
+],
+"a": 1,
+"tip": "折纸是用纸造型。",
+"d": 3
+},
+{
+"q": "“冷色”一般让人感觉？",
+"o": [
+"温暖",
+"清凉",
+"吵闹",
+"甜"
+],
+"a": 1,
+"tip": "蓝绿等冷色显清凉。",
+"d": 3
+},
+{
+"q": "树干通常画成什么颜色？",
+"o": [
+"蓝色",
+"棕色",
+"粉红",
+"透明"
+],
+"a": 1,
+"tip": "树干多为棕色。",
+"d": 3
+},
+{
+"q": "下列哪种是中国传统画种、重水墨意境？",
+"o": [
+"油画",
+"国画",
+"漫画",
+"像素画"
+],
+"a": 0,
+"tip": "国画重意境。",
+"d": 4
+}
+]
+},
+"traffic": {
+"name": "交通",
+"icon": "🚦",
+"min": 1,
+"questions": [
+{
+"q": "红灯表示？",
+"o": [
+"通行",
+"停止",
+"加速",
+"转弯"
+],
+"a": 1,
+"tip": "红灯停。",
+"d": 1
+},
+{
+"q": "乘坐小汽车要系好？",
+"o": [
+"围巾",
+"安全带",
+"手表",
+"帽子"
+],
+"a": 1,
+"tip": "安全带保护安全。",
+"d": 1
+},
+{
+"q": "自行车应在哪里骑行？",
+"o": [
+"机动车道中央",
+"非机动车道/靠右",
+"人行横道",
+"逆行"
+],
+"a": 1,
+"tip": "自行车走非机动道靠右。",
+"d": 1
+},
+{
+"q": "过铁路道口看到栏杆放下应？",
+"o": [
+"钻过去",
+"停下等待",
+"加速冲过",
+"爬栏杆"
+],
+"a": 1,
+"tip": "栏杆放下须等待。",
+"d": 2
+},
+{
+"q": "行人应在哪里行走？",
+"o": [
+"车行道",
+"人行道",
+"高速公路",
+"铁轨上"
+],
+"a": 1,
+"tip": "行人走人行道。",
+"d": 2
+},
+{
+"q": "坐公交车应在哪里上下车？",
+"o": [
+"马路中间",
+"站台/停靠点",
+"车流中",
+"高速上"
+],
+"a": 1,
+"tip": "在站台有序上下。",
+"d": 2
+},
+{
+"q": "下列哪种行为很危险？",
+"o": [
+"走斑马线",
+"在车流中追逐",
+"扶扶手",
+"等绿灯"
+],
+"a": 1,
+"tip": "车流中追逐极危险。",
+"d": 3
+},
+{
+"q": "骑车时戴头盔可以？",
+"o": [
+"更好看",
+"保护头部",
+"更慢",
+"没有用"
+],
+"a": 1,
+"tip": "头盔保护头部。",
+"d": 3
+},
+{
+"q": "雾天开车应？",
+"o": [
+"远光灯常亮",
+"开雾灯并减速",
+"关灯",
+"加速"
+],
+"a": 1,
+"tip": "雾天开雾灯减速。",
+"d": 3
+},
+{
+"q": "校车停靠、警示灯闪烁时，后方车辆应？",
+"o": [
+"绕过",
+"停车等待学生",
+"鸣笛催促",
+"加速超过"
+],
+"a": 1,
+"tip": "须停车让行学生。",
+"d": 4
+}
+]
+},
+"olympic": {
+"name": "奥运体育",
+"icon": "🏅",
+"min": 1,
+"questions": [
+{
+"q": "奥运会五环代表？",
+"o": [
+"五大洲",
+"五种运动",
+"五个国家",
+"五色随机"
+],
+"a": 0,
+"tip": "五环象征五大洲团结。",
+"d": 1
+},
+{
+"q": "夏季奥运会几年举办一次？",
+"o": [
+"2年",
+"4年",
+"6年",
+"1年"
+],
+"a": 1,
+"tip": "夏奥会每4年一届。",
+"d": 1
+},
+{
+"q": "乒乓球被称为中国的？",
+"o": [
+"国球",
+"国宝",
+"国画",
+"国歌"
+],
+"a": 0,
+"tip": "乒乓球常被称国球。",
+"d": 1
+},
+{
+"q": "跳水比赛在哪种场地进行？",
+"o": [
+"跑道",
+"跳水池",
+"足球场",
+"冰面"
+],
+"a": 1,
+"tip": "跳水在跳水池。",
+"d": 2
+},
+{
+"q": "下列哪项是奥运会项目？",
+"o": [
+"麻将",
+"游泳",
+"斗地主",
+"非奥运棋类"
+],
+"a": 1,
+"tip": "游泳是奥运项目。",
+"d": 2
+},
+{
+"q": "举重比的是？",
+"o": [
+"谁跑得快",
+"举起的重量",
+"谁跳得高",
+"谁游得快"
+],
+"a": 1,
+"tip": "举重比试举起重物。",
+"d": 2
+},
+{
+"q": "田径中的“百米”比的是？",
+"o": [
+"耐力",
+"短距离速度",
+"跳远",
+"投掷"
+],
+"a": 1,
+"tip": "百米是短跑速度。",
+"d": 3
+},
+{
+"q": "体操运动员需要很好的？",
+"o": [
+"嗅觉",
+"柔韧与协调",
+"听力",
+"味觉"
+],
+"a": 1,
+"tip": "体操重柔韧协调。",
+"d": 3
+},
+{
+"q": "冬奥会主要在什么场地比赛？",
+"o": [
+"沙漠",
+"冰/雪场",
+"游泳池",
+"跑道"
+],
+"a": 1,
+"tip": "冬奥在冰雪场地。",
+"d": 3
+},
+{
+"q": "夺得冠军时通常升什么、奏什么？",
+"o": [
+"升国旗奏国歌",
+"升队旗奏广告",
+"什么都不做",
+"升别国国旗"
+],
+"a": 0,
+"tip": "夺冠升国旗奏国歌。",
+"d": 4
+}
+]
+},
+"movie": {
+"name": "电影动画",
+"icon": "🎬",
+"min": 1,
+"questions": [
+{
+"q": "《西游记》里会七十二变的是？",
+"o": [
+"猪八戒",
+"孙悟空",
+"沙僧",
+"唐僧"
+],
+"a": 1,
+"tip": "孙悟空会七十二变。",
+"d": 1
+},
+{
+"q": "米老鼠是哪个公司的经典形象？",
+"o": [
+"迪士尼",
+"不知名小公司",
+"汽车品牌",
+"食品厂"
+],
+"a": 0,
+"tip": "米老鼠是迪士尼形象。",
+"d": 1
+},
+{
+"q": "动画片《熊出没》的主角是？",
+"o": [
+"熊大熊二与光头强",
+"猫和老鼠",
+"企鹅",
+"恐龙"
+],
+"a": 0,
+"tip": "熊大熊二与光头强。",
+"d": 1
+},
+{
+"q": "电影里“主角”指的是？",
+"o": [
+"群众演员",
+"故事中心人物",
+"道具",
+"旁白"
+],
+"a": 1,
+"tip": "主角是故事核心。",
+"d": 2
+},
+{
+"q": "《葫芦兄弟》里葫芦娃一般有几个？",
+"o": [
+"2个",
+"7个",
+"1个",
+"100个"
+],
+"a": 1,
+"tip": "七色葫芦娃共7个。",
+"d": 2
+},
+{
+"q": "下列哪部是国产动画？",
+"o": [
+"《猫和老鼠》",
+"《大闹天宫》",
+"《狮子王》",
+"《冰雪奇缘》"
+],
+"a": 1,
+"tip": "《大闹天宫》是国产动画。",
+"d": 2
+},
+{
+"q": "电影院里观看时一般应？",
+"o": [
+"大声打电话",
+"保持安静",
+"随意走动",
+"开大灯"
+],
+"a": 1,
+"tip": "观影保持安静。",
+"d": 3
+},
+{
+"q": "“卡通”一般指的是？",
+"o": [
+"新闻",
+"动画/漫画风格",
+"菜谱",
+"地图"
+],
+"a": 1,
+"tip": "卡通指动画漫画风。",
+"d": 3
+},
+{
+"q": "《喜羊羊与灰太狼》里想抓羊的是？",
+"o": [
+"喜羊羊",
+"灰太狼",
+"懒羊羊",
+"村长"
+],
+"a": 1,
+"tip": "灰太狼想抓羊。",
+"d": 3
+},
+{
+"q": "看3D电影通常需戴什么？",
+"o": [
+"墨镜",
+"3D眼镜",
+"听诊器",
+"耳机"
+],
+"a": 1,
+"tip": "3D电影戴专用眼镜。",
+"d": 4
+}
+]
+},
+"plant": {
+"name": "植物世界",
+"icon": "🌱",
+"min": 1,
+"questions": [
+{
+"q": "向日葵的花盘会？",
+"o": [
+"朝月亮",
+"趋光向日",
+"朝风",
+"朝地下"
+],
+"a": 1,
+"tip": "向日葵花盘趋光向日。",
+"d": 1
+},
+{
+"q": "苹果长在哪种植物上？",
+"o": [
+"树上",
+"水里",
+"地下",
+"石头上"
+],
+"a": 0,
+"tip": "苹果是乔木的果实。",
+"d": 1
+},
+{
+"q": "绿色植物靠什么制造养分？",
+"o": [
+"吃虫子",
+"光合作用",
+"睡觉",
+"只喝水"
+],
+"a": 1,
+"tip": "光合作用是制养关键。",
+"d": 1
+},
+{
+"q": "下列哪种是开花植物？",
+"o": [
+"苔藓",
+"桃树",
+"蕨类",
+"蘑菇"
+],
+"a": 1,
+"tip": "桃树会开花。",
+"d": 2
+},
+{
+"q": "种子发芽不必需下列哪项？",
+"o": [
+"水",
+"适宜温度",
+"光（多数）",
+"土壤（可无）"
+],
+"a": 2,
+"tip": "许多种子无土也能萌发。",
+"d": 2
+},
+{
+"q": "仙人掌的刺其实是它的？",
+"o": [
+"叶子",
+"根",
+"花",
+"果实"
+],
+"a": 0,
+"tip": "刺是退化的叶。",
+"d": 2
+},
+{
+"q": "水稻主要生长在？",
+"o": [
+"沙漠",
+"水田",
+"雪山",
+"海底"
+],
+"a": 1,
+"tip": "水稻多在水田种植。",
+"d": 3
+},
+{
+"q": "下列哪种植物会爬藤？",
+"o": [
+"白菜",
+"葡萄",
+"松树",
+"仙人掌"
+],
+"a": 1,
+"tip": "葡萄是藤本植物。",
+"d": 3
+},
+{
+"q": "枫叶在秋天常变成什么颜色？",
+"o": [
+"绿色",
+"红色/橙色",
+"蓝色",
+"黑色"
+],
+"a": 1,
+"tip": "枫叶秋变红橙。",
+"d": 3
+},
+{
+"q": "树木的“年轮”可反映什么信息？",
+"o": [
+"颜色喜好",
+"当年气候与树龄",
+"血型",
+"高度极限"
+],
+"a": 1,
+"tip": "年轮记录年龄与气候。",
+"d": 4
+}
+]
+},
+"festival": {
+"name": "传统节日",
+"icon": "🏮",
+"min": 1,
+"questions": [
+{
+"q": "春节一般在哪个季节？",
+"o": [
+"夏天",
+"冬春之交",
+"秋天",
+"雨季"
+],
+"a": 1,
+"tip": "春节在冬春之交。",
+"d": 1
+},
+{
+"q": "端午节是为了纪念谁？",
+"o": [
+"李白",
+"屈原",
+"杜甫",
+"孔子"
+],
+"a": 1,
+"tip": "端午纪念屈原。",
+"d": 1
+},
+{
+"q": "中秋节大家常吃什么？",
+"o": [
+"饺子",
+"月饼",
+"粽子",
+"汤圆"
+],
+"a": 1,
+"tip": "中秋吃月饼。",
+"d": 1
+},
+{
+"q": "元宵节常见的活动是？",
+"o": [
+"赛龙舟",
+"赏花灯",
+"登高",
+"贴春联"
+],
+"a": 1,
+"tip": "元宵赏花灯。",
+"d": 2
+},
+{
+"q": "贴春联、放鞭炮是哪一节日的习俗？",
+"o": [
+"中秋",
+"春节",
+"清明",
+"重阳"
+],
+"a": 1,
+"tip": "春节贴联放炮。",
+"d": 2
+},
+{
+"q": "过生日常吃的甜食是？",
+"o": [
+"馒头",
+"蛋糕",
+"咸菜",
+"辣椒"
+],
+"a": 1,
+"tip": "生日常吃蛋糕。",
+"d": 2
+},
+{
+"q": "重阳节有哪项习俗？",
+"o": [
+"吃月饼",
+"登高、敬老",
+"赛龙舟",
+"包饺子"
+],
+"a": 1,
+"tip": "重阳登高敬老。",
+"d": 3
+},
+{
+"q": "下列哪项是清明节的习俗？",
+"o": [
+"赏月",
+"扫墓踏青",
+"吃粽子",
+"看花灯"
+],
+"a": 1,
+"tip": "清明扫墓踏青。",
+"d": 3
+},
+{
+"q": "“年”的传说里，人们用哪类东西吓走“年”？",
+"o": [
+"轻声",
+"红色与响声（鞭炮）",
+"躲起来不理",
+"送礼物"
+],
+"a": 1,
+"tip": "红与响声驱“年”。",
+"d": 3
+},
+{
+"q": "端午节常吃的传统食物是？",
+"o": [
+"汤圆",
+"粽子",
+"月饼",
+"蛋糕"
+],
+"a": 1,
+"tip": "端午吃粽子。",
+"d": 4
+}
+]
+},
+"brain": {
+"name": "脑筋急转弯",
+"icon": "🤔",
+"min": 1,
+"questions": [
+{
+"q": "什么东西越洗越脏？",
+"o": [
+"手",
+"水",
+"碗",
+"衣服"
+],
+"a": 1,
+"tip": "水洗东西，自己变脏。",
+"d": 1
+},
+{
+"q": "什么布剪不断？",
+"o": [
+"棉布",
+"瀑布",
+"麻布",
+"纱布"
+],
+"a": 1,
+"tip": "瀑布非布料。",
+"d": 1
+},
+{
+"q": "什么人始终不敢洗澡？",
+"o": [
+"泥人",
+"医生",
+"老师",
+"工人"
+],
+"a": 0,
+"tip": "泥人遇水会化。",
+"d": 1
+},
+{
+"q": "一年中哪个月都有至少28天？",
+"o": [
+"只有二月",
+"每个月都有",
+"没有",
+"六月"
+],
+"a": 1,
+"tip": "每月至少28天。",
+"d": 1
+},
+{
+"q": "什么车寸步难行？",
+"o": [
+"风车",
+"自行车",
+"汽车",
+"火车"
+],
+"a": 0,
+"tip": "风车不行走。",
+"d": 2
+},
+{
+"q": "什么东西天气越热它爬得越高？",
+"o": [
+"蜗牛",
+"温度计",
+"猫",
+"影子"
+],
+"a": 1,
+"tip": "温度越高读数升。",
+"d": 2
+},
+{
+"q": "什么帽不能戴？",
+"o": [
+"草帽",
+"螺帽（螺母）",
+"棒球帽",
+"安全帽"
+],
+"a": 1,
+"tip": "螺帽是零件。",
+"d": 2
+},
+{
+"q": "一个人从十米高跳下却没事，是因为？",
+"o": [
+"他是超人",
+"从矮处/床上跳",
+"没落地",
+"飞了"
+],
+"a": 1,
+"tip": "从很低处跳无恙。",
+"d": 3
+},
+{
+"q": "什么书你在书店买不到？",
+"o": [
+"语文书",
+"遗书/天书（谜）",
+"漫画",
+"字典"
+],
+"a": 1,
+"tip": "此类“书”非卖品。",
+"d": 3
+},
+{
+"q": "什么东西你一说出它的名字就破坏了它？",
+"o": [
+"秘密",
+"苹果",
+"桌子",
+"帽子"
+],
+"a": 0,
+"tip": "秘密一说即破。",
+"d": 4
+}
+]
+},
+"folk": {
+"name": "民俗生肖",
+"icon": "🐉",
+"min": 1,
+"questions": [
+{
+"q": "十二生肖中排第一的是？",
+"o": [
+"牛",
+"鼠",
+"虎",
+"龙"
+],
+"a": 1,
+"tip": "子鼠排第一。",
+"d": 1
+},
+{
+"q": "“龙”在十二生肖中排第几？",
+"o": [
+"第一",
+"第五",
+"第九",
+"第十二"
+],
+"a": 1,
+"tip": "辰龙排第五。",
+"d": 1
+},
+{
+"q": "过年时长辈给小孩的钱叫？",
+"o": [
+"工资",
+"压岁钱/红包",
+"学费",
+"罚款"
+],
+"a": 1,
+"tip": "压岁钱寓意压祟。",
+"d": 1
+},
+{
+"q": "红色在中国民俗里常代表？",
+"o": [
+"哀悼",
+"喜庆吉祥",
+"背叛",
+"冷漠"
+],
+"a": 1,
+"tip": "红象征喜庆。",
+"d": 2
+},
+{
+"q": "舞龙舞狮常在什么场合出现？",
+"o": [
+"葬礼",
+"喜庆节日",
+"考试",
+"看病"
+],
+"a": 1,
+"tip": "用于喜庆节庆。",
+"d": 2
+},
+{
+"q": "下列哪种动物不在十二生肖？",
+"o": [
+"兔",
+"猫",
+"马",
+"羊"
+],
+"a": 1,
+"tip": "猫不在十二生肖。",
+"d": 2
+},
+{
+"q": "“守岁”是指除夕？",
+"o": [
+"白天睡觉",
+"熬夜迎接新年",
+"扫地",
+"吃饭"
+],
+"a": 1,
+"tip": "守岁是除夕不眠迎新。",
+"d": 3
+},
+{
+"q": "生肖“牛”对应地支中的？",
+"o": [
+"子",
+"丑",
+"寅",
+"卯"
+],
+"a": 1,
+"tip": "丑牛。",
+"d": 3
+},
+{
+"q": "贴“福”字有时倒贴，谐音寓意？",
+"o": [
+"福走了",
+"福到了",
+"福没了",
+"福小了"
+],
+"a": 0,
+"tip": "倒贴谐音“福到”。",
+"d": 3
+},
+{
+"q": "传统中国婚礼常见主色是？",
+"o": [
+"全黑",
+"红色",
+"全灰",
+"全蓝"
+],
+"a": 1,
+"tip": "红是婚庆主色。",
+"d": 4
+}
+]
+},
+"science": {
+"name": "科学",
+"icon": "🔬",
+"min": 2,
+"questions": [
+{
+"q": "水在什么温度下会沸腾（标准大气压）？",
+"o": [
+"50℃",
+"100℃",
+"150℃",
+"0℃"
+],
+"a": 1,
+"tip": "标准大气压下沸点100℃。",
+"d": 2
+},
+{
+"q": "光在真空中的速度约为多少？",
+"o": [
+"3万km/s",
+"30万km/s",
+"300km/s",
+"3亿m/s"
+],
+"a": 1,
+"tip": "光速约30万千米/秒。",
+"d": 2
+},
+{
+"q": "下列哪种气体能使澄清石灰水变浑浊？",
+"o": [
+"氧气",
+"二氧化碳",
+"氮气",
+"氢气"
+],
+"a": 1,
+"tip": "二氧化碳使石灰水浑浊。",
+"d": 2
+},
+{
+"q": "地球距离太阳第几近的行星？",
+"o": [
+"第一",
+"第二",
+"第三",
+"第四"
+],
+"a": 2,
+"tip": "地球是第三颗行星。",
+"d": 2
+},
+{
+"q": "彩虹通常有几种主要颜色？",
+"o": [
+"5种",
+"6种",
+"7种",
+"9种"
+],
+"a": 2,
+"tip": "红橙黄绿蓝靛紫共7种。",
+"d": 2
+},
+{
+"q": "人体最大的器官是？",
+"o": [
+"心脏",
+"肝脏",
+"皮肤",
+"大脑"
+],
+"a": 2,
+"tip": "皮肤是最大器官。",
+"d": 2
+},
+{
+"q": "声音不能在下列哪种环境中传播？",
+"o": [
+"空气",
+"水",
+"真空",
+"固体"
+],
+"a": 2,
+"tip": "真空无介质不传声。",
+"d": 3
+},
+{
+"q": "把铁钉放入硫酸铜溶液，现象是？",
+"o": [
+"无变化",
+"铁钉表面变红、溶液变浅",
+"爆炸",
+"结冰"
+],
+"a": 1,
+"tip": "铁置换出铜，钉面附铜。",
+"d": 3
+},
+{
+"q": "下列哪种变化属于化学变化？",
+"o": [
+"冰融化",
+"纸燃烧",
+"水蒸发",
+"玻璃碎"
+],
+"a": 1,
+"tip": "燃烧生成新物质是化学变化。",
+"d": 3
+},
+{
+"q": "牛顿第一定律又叫做？",
+"o": [
+"万有引力定律",
+"惯性定律",
+"浮力定律",
+"能量守恒"
+],
+"a": 1,
+"tip": "牛顿第一定律即惯性定律。",
+"d": 4
+},
+{
+"q": "植物进行光合作用主要吸收哪种气体？",
+"o": [
+"氧气",
+"二氧化碳",
+"氮气",
+"氢气"
+],
+"a": 1,
+"tip": "光合吸收CO₂释放O₂。",
+"d": 4
+},
+{
+"q": "解释“夏天柏油路看似有水”：这是？",
+"o": [
+"真有积水",
+"光线折射(海市蜃楼类)",
+"下雨前兆",
+"油漆反光"
+],
+"a": 1,
+"tip": "地面热空气折射造成蜃景。",
+"d": 4
+}
+]
+},
+"history": {
+"name": "历史",
+"icon": "🏛️",
+"min": 2,
+"questions": [
+{
+"q": "中国第一个统一的封建王朝是？",
+"o": [
+"汉朝",
+"秦朝",
+"唐朝",
+"周朝"
+],
+"a": 1,
+"tip": "秦始皇统一六国建秦朝。",
+"d": 2
+},
+{
+"q": "“四大发明”不包括以下哪项？",
+"o": [
+"造纸术",
+"指南针",
+"火药",
+"地动仪"
+],
+"a": 3,
+"tip": "四大发明无地动仪。",
+"d": 2
+},
+{
+"q": "活字印刷术的发明者是？",
+"o": [
+"蔡伦",
+"毕昇",
+"张衡",
+"祖冲之"
+],
+"a": 1,
+"tip": "北宋毕昇发明活字印刷。",
+"d": 2
+},
+{
+"q": "丝绸之路的东方起点一般认为是？",
+"o": [
+"洛阳",
+"长安",
+"北京",
+"成都"
+],
+"a": 1,
+"tip": "西汉长安是丝路东端。",
+"d": 2
+},
+{
+"q": "万里长城主要修建于抵御哪类入侵？",
+"o": [
+"匈奴等北方游牧民族",
+"海上倭寇",
+"西方列强",
+"南方部落"
+],
+"a": 0,
+"tip": "长城防北方游牧民族。",
+"d": 2
+},
+{
+"q": "唐朝著名的“贞观之治”出现在哪位皇帝在位？",
+"o": [
+"唐玄宗",
+"唐太宗",
+"唐高祖",
+"武则天"
+],
+"a": 1,
+"tip": "贞观是太宗年号。",
+"d": 3
+},
+{
+"q": "中国古代“科举制”主要用于选拔？",
+"o": [
+"武将",
+"官吏(读书人)",
+"工匠",
+"商人"
+],
+"a": 1,
+"tip": "科举选官。",
+"d": 3
+},
+{
+"q": "甲骨文最早出现在哪个朝代？",
+"o": [
+"商朝",
+"唐朝",
+"明朝",
+"清朝"
+],
+"a": 0,
+"tip": "甲骨文属商代。",
+"d": 3
+},
+{
+"q": "“杯酒释兵权”与哪位皇帝有关？",
+"o": [
+"宋太祖赵匡胤",
+"唐太宗",
+"秦始皇",
+"汉武帝"
+],
+"a": 0,
+"tip": "宋太祖杯酒释兵权。",
+"d": 4
+},
+{
+"q": "《资治通鉴》的编撰者是？",
+"o": [
+"司马迁",
+"司马光",
+"班固",
+"陈寿"
+],
+"a": 1,
+"tip": "司马光主编《资治通鉴》。",
+"d": 4
+},
+{
+"q": "郑和下西洋发生在哪个朝代？",
+"o": [
+"唐朝",
+"明朝",
+"宋朝",
+"清朝"
+],
+"a": 1,
+"tip": "郑和航海在明代。",
+"d": 4
+}
+]
+},
+"literature": {
+"name": "文学",
+"icon": "📖",
+"min": 2,
+"questions": [
+{
+"q": "《西游记》的作者是？",
+"o": [
+"施耐庵",
+"罗贯中",
+"吴承恩",
+"曹雪芹"
+],
+"a": 2,
+"tip": "明代吴承恩著《西游记》。",
+"d": 2
+},
+{
+"q": "“床前明月光”出自哪首诗？",
+"o": [
+"《静夜思》",
+"《春晓》",
+"《登鹳雀楼》",
+"《悯农》"
+],
+"a": 0,
+"tip": "李白《静夜思》。",
+"d": 2
+},
+{
+"q": "以下哪位是唐代诗人？",
+"o": [
+"苏轼",
+"李白",
+"辛弃疾",
+"陆游"
+],
+"a": 1,
+"tip": "李白是唐代诗人。",
+"d": 2
+},
+{
+"q": "《红楼梦》中寄居贾府的女主人公是？",
+"o": [
+"薛宝钗",
+"林黛玉",
+"王熙凤",
+"史湘云"
+],
+"a": 1,
+"tip": "林黛玉寄居贾府。",
+"d": 2
+},
+{
+"q": "“哑巴吃黄连”的下一句是？",
+"o": [
+"有苦说不出",
+"自找的",
+"甜在心里",
+"装糊涂"
+],
+"a": 0,
+"tip": "哑巴吃黄连——有苦说不出。",
+"d": 2
+},
+{
+"q": "“桃花潭水深千尺”下一句是？",
+"o": [
+"不及汪伦送我情",
+"疑是地上霜",
+"更上一层楼",
+"万里送行舟"
+],
+"a": 0,
+"tip": "李白诗赠汪伦。",
+"d": 3
+},
+{
+"q": "《三国演义》中“草船借箭”的主人公是？",
+"o": [
+"周瑜",
+"诸葛亮",
+"曹操",
+"刘备"
+],
+"a": 1,
+"tip": "诸葛亮草船借箭。",
+"d": 3
+},
+{
+"q": "“先天下之忧而忧”出自哪位？",
+"o": [
+"范仲淹",
+"欧阳修",
+"苏轼",
+"王安石"
+],
+"a": 0,
+"tip": "范仲淹《岳阳楼记》。",
+"d": 3
+},
+{
+"q": "《水浒传》中绰号“及时雨”的是？",
+"o": [
+"宋江",
+"武松",
+"林冲",
+"李逵"
+],
+"a": 0,
+"tip": "宋江绰号及时雨。",
+"d": 4
+},
+{
+"q": "“落霞与孤鹜齐飞”出自哪篇？",
+"o": [
+"《滕王阁序》",
+"《赤壁赋》",
+"《岳阳楼记》",
+"《兰亭集序》"
+],
+"a": 0,
+"tip": "王勃《滕王阁序》。",
+"d": 4
+},
+{
+"q": "“史家之绝唱，无韵之离骚”评价的是？",
+"o": [
+"《史记》",
+"《汉书》",
+"《资治通鉴》",
+"《左传》"
+],
+"a": 0,
+"tip": "鲁迅评《史记》。",
+"d": 4
+}
+]
+},
+"geo": {
+"name": "地理",
+"icon": "🌍",
+"min": 2,
+"questions": [
+{
+"q": "世界上面积最大的洲是？",
+"o": [
+"亚洲",
+"非洲",
+"欧洲",
+"南极洲"
+],
+"a": 0,
+"tip": "亚洲面积约4458万km²最大。",
+"d": 2
+},
+{
+"q": "中国的首都是？",
+"o": [
+"上海",
+"北京",
+"广州",
+"深圳"
+],
+"a": 1,
+"tip": "北京是首都。",
+"d": 2
+},
+{
+"q": "下列哪个国家不在亚洲？",
+"o": [
+"日本",
+"印度",
+"法国",
+"韩国"
+],
+"a": 2,
+"tip": "法国位于欧洲。",
+"d": 2
+},
+{
+"q": "珠穆朗玛峰位于哪两国交界？",
+"o": [
+"中国和尼泊尔",
+"中国和印度",
+"印度和尼泊尔",
+"中国和不丹"
+],
+"a": 0,
+"tip": "珠峰在中尼交界。",
+"d": 2
+},
+{
+"q": "世界上最长的河流一般认为是？",
+"o": [
+"长江",
+"亚马逊河",
+"尼罗河",
+"黄河"
+],
+"a": 2,
+"tip": "尼罗河常被认为是最长河。",
+"d": 2
+},
+{
+"q": "中国面积最大的省级行政区是？",
+"o": [
+"西藏",
+"新疆",
+"内蒙古",
+"青海"
+],
+"a": 1,
+"tip": "新疆面积居首。",
+"d": 3
+},
+{
+"q": "“季风气候”显著的大洲是？",
+"o": [
+"亚洲",
+"南极洲",
+"非洲(部分)",
+"欧洲"
+],
+"a": 0,
+"tip": "亚洲季风最典型。",
+"d": 3
+},
+{
+"q": "沟通太平洋与印度洋的海峡是？",
+"o": [
+"马六甲海峡",
+"直布罗陀",
+"英吉利",
+"霍尔木兹"
+],
+"a": 0,
+"tip": "马六甲连两洋。",
+"d": 3
+},
+{
+"q": "赤道穿过下列哪个国家？",
+"o": [
+"俄罗斯",
+"厄瓜多尔",
+"加拿大",
+"挪威"
+],
+"a": 1,
+"tip": "厄瓜多尔临赤道。",
+"d": 4
+},
+{
+"q": "地中海连接哪两个海/洋区域？",
+"o": [
+"大西洋与黑海",
+"大西洋与印度洋(经苏伊士)",
+"太平洋",
+"北冰洋"
+],
+"a": 1,
+"tip": "经苏伊士连印度洋。",
+"d": 4
+},
+{
+"q": "影响气候最主要的因素是？",
+"o": [
+"单一纬度",
+"纬度、海陆、地形等综合",
+"只看海拔",
+"只看人口"
+],
+"a": 2,
+"tip": "气候受多因素综合影响。",
+"d": 4
+}
+]
+},
+"math": {
+"name": "数学",
+"icon": "🔢",
+"min": 2,
+"questions": [
+{
+"q": "12 + 8 = ?",
+"o": [
+"18",
+"20",
+"22",
+"10"
+],
+"a": 1,
+"tip": "12+8=20。",
+"d": 2
+},
+{
+"q": "7 × 6 = ?",
+"o": [
+"42",
+"36",
+"48",
+"40"
+],
+"a": 0,
+"tip": "7×6=42。",
+"d": 2
+},
+{
+"q": "100 − 37 = ?",
+"o": [
+"63",
+"73",
+"53",
+"67"
+],
+"a": 0,
+"tip": "100−37=63。",
+"d": 2
+},
+{
+"q": "下面哪个是质数？",
+"o": [
+"9",
+"11",
+"15",
+"21"
+],
+"a": 1,
+"tip": "11只有1和自身两个因数。",
+"d": 2
+},
+{
+"q": "一块长方形长5宽3，面积是？",
+"o": [
+"15",
+"8",
+"9",
+"53"
+],
+"a": 0,
+"tip": "面积=长×宽=15。",
+"d": 2
+},
+{
+"q": "3/4 与 1/2 比较，哪个大？",
+"o": [
+"3/4大",
+"1/2大",
+"一样",
+"不能比"
+],
+"a": 0,
+"tip": "3/4=0.75>0.5。",
+"d": 3
+},
+{
+"q": "解方程 2x + 4 = 14，x = ?",
+"o": [
+"5",
+"4",
+"6",
+"3"
+],
+"a": 0,
+"tip": "2x=10，x=5。",
+"d": 3
+},
+{
+"q": "一个等边三角形每个角是几度？",
+"o": [
+"60°",
+"90°",
+"45°",
+"120°"
+],
+"a": 0,
+"tip": "等边三角各角60°。",
+"d": 3
+},
+{
+"q": "若 a:b = 2:3，且 a=8，则 b=?",
+"o": [
+"12",
+"10",
+"9",
+"15"
+],
+"a": 0,
+"tip": "b=8×3/2=12。",
+"d": 4
+},
+{
+"q": "一个圆柱底面半径2、高5，体积(π取3)约为？",
+"o": [
+"60",
+"20",
+"30",
+"15"
+],
+"a": 0,
+"tip": "V=πr²h=3×4×5=60。",
+"d": 4
+},
+{
+"q": "甲比乙多20%，乙为50，甲是？",
+"o": [
+"60",
+"70",
+"55",
+"100"
+],
+"a": 1,
+"tip": "甲=50×1.2=60。",
+"d": 4
+}
+]
+},
+"english": {
+"name": "英语",
+"icon": "🔤",
+"min": 2,
+"questions": [
+{
+"q": "“苹果”的英文是？",
+"o": [
+"apple",
+"banana",
+"orange",
+"pear"
+],
+"a": 0,
+"tip": "apple是苹果。",
+"d": 2
+},
+{
+"q": "“猫”的英文是？",
+"o": [
+"dog",
+"cat",
+"cow",
+"pig"
+],
+"a": 1,
+"tip": "cat是猫。",
+"d": 2
+},
+{
+"q": "“谢谢”的英文是？",
+"o": [
+"sorry",
+"thank you",
+"hello",
+"bye"
+],
+"a": 1,
+"tip": "thank you是谢谢。",
+"d": 2
+},
+{
+"q": "“红色”的英文是？",
+"o": [
+"red",
+"blue",
+"green",
+"black"
+],
+"a": 0,
+"tip": "red是红色。",
+"d": 2
+},
+{
+"q": "“水”的英文是？",
+"o": [
+"water",
+"fire",
+"wind",
+"earth"
+],
+"a": 0,
+"tip": "water是水。",
+"d": 2
+},
+{
+"q": "“学校”的英文是？",
+"o": [
+"school",
+"home",
+"park",
+"shop"
+],
+"a": 0,
+"tip": "school是学校。",
+"d": 3
+},
+{
+"q": "“I am a student” 意思是？",
+"o": [
+"我是老师",
+"我是学生",
+"他是医生",
+"她是护士"
+],
+"a": 1,
+"tip": "student是学生。",
+"d": 3
+},
+{
+"q": "“How are you?” 的常见回答是？",
+"o": [
+"I'm fine, thank you",
+"Goodbye",
+"I'm a book",
+"No"
+],
+"a": 0,
+"tip": "fine表“我很好”。",
+"d": 3
+},
+{
+"q": "“book”的复数形式是？",
+"o": [
+"books",
+"bookes",
+"book",
+"bookies"
+],
+"a": 0,
+"tip": "一般加s。",
+"d": 4
+},
+{
+"q": "“He ___ to school every day.” 应填？",
+"o": [
+"go",
+"goes",
+"going",
+"went"
+],
+"a": 1,
+"tip": "三单用goes。",
+"d": 4
+},
+{
+"q": "“What's the weather like?” 问的是？",
+"o": [
+"时间",
+"天气",
+"价格",
+"名字"
+],
+"a": 1,
+"tip": "问天气。",
+"d": 4
+}
+]
+},
+"tech": {
+"name": "科技",
+"icon": "⚙️",
+"min": 2,
+"questions": [
+{
+"q": "电话是谁的重要发明之一？",
+"o": [
+"爱迪生(改进)",
+"贝尔",
+"牛顿",
+"爱因斯坦"
+],
+"a": 1,
+"tip": "贝尔与电话发明相关。",
+"d": 2
+},
+{
+"q": "电灯的重要发明者是？",
+"o": [
+"爱迪生",
+"贝尔",
+"瓦特",
+"居里夫人"
+],
+"a": 0,
+"tip": "爱迪生改进实用电灯。",
+"d": 2
+},
+{
+"q": "下列哪种是可再生能源？",
+"o": [
+"煤",
+"太阳能",
+"石油",
+"天然气"
+],
+"a": 1,
+"tip": "太阳能可再生。",
+"d": 2
+},
+{
+"q": "飞机能够起飞主要依靠？",
+"o": [
+"轮子大",
+"机翼产生升力",
+"颜色",
+"声音"
+],
+"a": 1,
+"tip": "机翼升力使飞机升空。",
+"d": 2
+},
+{
+"q": "蒸汽机的重要改进者是？",
+"o": [
+"瓦特",
+"爱迪生",
+"贝尔",
+"牛顿"
+],
+"a": 0,
+"tip": "瓦特改良蒸汽机。",
+"d": 2
+},
+{
+"q": "互联网最初源于哪类网络？",
+"o": [
+"单一家用网",
+"ARPANET等军用研究网",
+"游戏网",
+"电视网"
+],
+"a": 1,
+"tip": "源于美军研究网。",
+"d": 3
+},
+{
+"q": "芯片(集成电路)主要用哪种材料？",
+"o": [
+"木头",
+"硅",
+"塑料",
+"玻璃"
+],
+"a": 1,
+"tip": "硅是芯片主要材料。",
+"d": 3
+},
+{
+"q": "GPS 主要用于？",
+"o": [
+"煮饭",
+"定位导航",
+"洗衣服",
+"种菜"
+],
+"a": 1,
+"tip": "GPS定位导航。",
+"d": 3
+},
+{
+"q": "下列哪项属于人工智能应用？",
+"o": [
+"手电筒",
+"语音助手/图像识别",
+"算盘",
+"火柴"
+],
+"a": 1,
+"tip": "语音助手是AI应用。",
+"d": 4
+},
+{
+"q": "摩尔定律描述的大致趋势是？",
+"o": [
+"芯片价格不变",
+"集成度约18-24月翻倍",
+"电脑变重",
+"网络变慢"
+],
+"a": 1,
+"tip": "集成度指数增长。",
+"d": 4
+},
+{
+"q": "量子计算机区别于经典计算机的关键在于利用？",
+"o": [
+"齿轮",
+"量子叠加与纠缠",
+"蒸汽",
+"电池"
+],
+"a": 1,
+"tip": "量子比特可叠加纠缠。",
+"d": 4
+}
+]
+},
+"poem": {
+"name": "古诗文",
+"icon": "📜",
+"min": 2,
+"questions": [
+{
+"q": "“春眠不觉晓”的下一句是？",
+"o": [
+"处处闻啼鸟",
+"疑是地上霜",
+"更上一层楼",
+"万里送行舟"
+],
+"a": 0,
+"tip": "孟浩然《春晓》。",
+"d": 2
+},
+{
+"q": "“欲穷千里目”的下一句是？",
+"o": [
+"低头思故乡",
+"更上一层楼",
+"处处闻啼鸟",
+"不及汪伦送我情"
+],
+"a": 1,
+"tip": "王之涣《登鹳雀楼》。",
+"d": 2
+},
+{
+"q": "“锄禾日当午”的下一句是？",
+"o": [
+"汗滴禾下土",
+"春种一粒粟",
+"粒粒皆辛苦",
+"秋收万颗子"
+],
+"a": 0,
+"tip": "李绅《悯农》。",
+"d": 2
+},
+{
+"q": "“白日依山尽”写的是哪里的景色？",
+"o": [
+"海边",
+"鹳雀楼远眺",
+"江南水乡",
+"沙漠"
+],
+"a": 1,
+"tip": "王之涣登楼所见。",
+"d": 2
+},
+{
+"q": "“孤舟蓑笠翁，独钓寒江雪”出自？",
+"o": [
+"《江雪》",
+"《春晓》",
+"《静夜思》",
+"《登鹳雀楼》"
+],
+"a": 0,
+"tip": "柳宗元《江雪》。",
+"d": 3
+},
+{
+"q": "“会当凌绝顶，一览众山小”描写的是？",
+"o": [
+"泰山",
+"西湖",
+"黄河",
+"长江"
+],
+"a": 0,
+"tip": "杜甫咏泰山。",
+"d": 3
+},
+{
+"q": "“海内存知己”的下一句是？",
+"o": [
+"天涯若比邻",
+"不及汪伦送我情",
+"更上一层楼",
+"万里送行舟"
+],
+"a": 0,
+"tip": "王勃送别名句。",
+"d": 3
+},
+{
+"q": "“停车坐爱枫林晚”中“坐”意为？",
+"o": [
+"坐下",
+"因为",
+"座位",
+"坐车"
+],
+"a": 1,
+"tip": "“坐”在此表“因为”。",
+"d": 4
+},
+{
+"q": "“落霞与孤鹜齐飞，秋水共长天一色”作者是？",
+"o": [
+"王勃",
+"李白",
+"杜甫",
+"苏轼"
+],
+"a": 0,
+"tip": "王勃《滕王阁序》。",
+"d": 4
+},
+{
+"q": "“先天下之忧而忧，后天下之乐而乐”出自？",
+"o": [
+"《岳阳楼记》",
+"《醉翁亭记》",
+"《赤壁赋》",
+"《爱莲说》"
+],
+"a": 0,
+"tip": "范仲淹名句。",
+"d": 4
+},
+{
+"q": "“采菊东篱下，悠然见南山”的作者是？",
+"o": [
+"陶渊明",
+"王维",
+"白居易",
+"李白"
+],
+"a": 0,
+"tip": "陶渊明田园诗。",
+"d": 4
+}
+]
+},
+"computer": {
+"name": "计算机",
+"icon": "💻",
+"min": 2,
+"questions": [
+{
+"q": "键盘主要用来？",
+"o": [
+"显示画面",
+"输入文字指令",
+"打印",
+"供电"
+],
+"a": 1,
+"tip": "键盘是输入设备。",
+"d": 2
+},
+{
+"q": "鼠标主要用来？",
+"o": [
+"散热",
+"指向与选择",
+"发声",
+"充电"
+],
+"a": 1,
+"tip": "鼠标用于指向操作。",
+"d": 2
+},
+{
+"q": "下列哪个是输出设备？",
+"o": [
+"鼠标",
+"显示器",
+"键盘",
+"话筒"
+],
+"a": 1,
+"tip": "显示器输出画面。",
+"d": 2
+},
+{
+"q": "计算机最核心的运算部件是？",
+"o": [
+"硬盘",
+"CPU(中央处理器)",
+"音箱",
+"机箱"
+],
+"a": 1,
+"tip": "CPU负责运算控制。",
+"d": 2
+},
+{
+"q": "“保存文件”常用快捷键是？",
+"o": [
+"Ctrl+C",
+"Ctrl+S",
+"Ctrl+V",
+"Ctrl+Z"
+],
+"a": 1,
+"tip": "Ctrl+S保存。",
+"d": 2
+},
+{
+"q": "二进制中只使用哪两个数字？",
+"o": [
+"0和1",
+"1和2",
+"0和9",
+"2和3"
+],
+"a": 0,
+"tip": "二进制 base-2 用0、1。",
+"d": 3
+},
+{
+"q": "1字节(Byte)等于多少位(bit)？",
+"o": [
+"2位",
+"8位",
+"16位",
+"1位"
+],
+"a": 1,
+"tip": "1Byte=8bit。",
+"d": 3
+},
+{
+"q": "下列哪种是恶意软件？",
+"o": [
+"浏览器",
+"计算机病毒",
+"文本编辑器",
+"计算器"
+],
+"a": 1,
+"tip": "病毒属恶意软件。",
+"d": 3
+},
+{
+"q": "IP 地址的主要作用是？",
+"o": [
+"装饰",
+"标识网络中的设备",
+"加声音",
+"调亮度"
+],
+"a": 1,
+"tip": "IP用于标识网络设备。",
+"d": 4
+},
+{
+"q": "下列属于“云计算”特点的是？",
+"o": [
+"只能单机",
+"按需通过网络获取算力",
+"不能存数据",
+"必须U盘"
+],
+"a": 1,
+"tip": "云按需提供资源。",
+"d": 4
+},
+{
+"q": "操作系统(如Windows)的主要作用是？",
+"o": [
+"杀毒 alone",
+"管理硬件与软件资源",
+"发电",
+"打字"
+],
+"a": 1,
+"tip": "OS管理软硬件资源。",
+"d": 4
+}
+]
+},
+"psych": {
+"name": "心理健康",
+"icon": "🧠",
+"min": 2,
+"questions": [
+{
+"q": "感到紧张时，哪种做法有助于平静？",
+"o": [
+"回避一切",
+"深呼吸放松",
+"不停刷手机",
+"喝大量咖啡"
+],
+"a": 1,
+"tip": "深呼吸助放松。",
+"d": 2
+},
+{
+"q": "遇到烦恼和朋友倾诉，这有利于？",
+"o": [
+"更糟",
+"缓解情绪",
+"生病",
+"变笨"
+],
+"a": 1,
+"tip": "倾诉缓解情绪。",
+"d": 2
+},
+{
+"q": "自信是指？",
+"o": [
+"觉得自己永远第一",
+"相信自己的能力",
+"看不起别人",
+"不努力"
+],
+"a": 1,
+"tip": "自信是信任自己能力。",
+"d": 2
+},
+{
+"q": "“换位思考”指的是？",
+"o": [
+"只看自己",
+"站在对方角度想",
+"不理别人",
+"指责别人"
+],
+"a": 1,
+"tip": "换位思考即同理心。",
+"d": 2
+},
+{
+"q": "下列哪种是健康的解压方式？",
+"o": [
+"熬夜打游戏",
+"运动、倾诉、休息",
+"暴饮暴食",
+"生闷气"
+],
+"a": 1,
+"tip": "运动倾诉更健康。",
+"d": 2
+},
+{
+"q": "专注做一件事时，最好？",
+"o": [
+"同时狂刷手机",
+"减少干扰、一次一事",
+"边写边看电视",
+"不停换任务"
+],
+"a": 1,
+"tip": "减少干扰提升专注。",
+"d": 3
+},
+{
+"q": "“成长型思维”认为能力可以？",
+"o": [
+"固定不变",
+"通过努力提升",
+"天生注定",
+"无法改变"
+],
+"a": 1,
+"tip": "成长型相信可提升。",
+"d": 3
+},
+{
+"q": "当同学成绩比自己好，健康的心态是？",
+"o": [
+"嫉妒破坏",
+"欣赏并学习",
+"嘲笑",
+"无视"
+],
+"a": 1,
+"tip": "欣赏学习更积极。",
+"d": 3
+},
+{
+"q": "长期睡眠不足最可能影响？",
+"o": [
+"身高不变",
+"注意力与情绪",
+"发色",
+"血型"
+],
+"a": 1,
+"tip": "缺眠损注意与情绪。",
+"d": 4
+},
+{
+"q": "“情绪ABC理论”中，影响情绪的主要是？",
+"o": [
+"事件本身",
+"对事件的看法/信念",
+"天气",
+"他人强制"
+],
+"a": 1,
+"tip": "认知评估影响情绪。",
+"d": 4
+},
+{
+"q": "建立良好人际关系的关键是？",
+"o": [
+"控制他人",
+"尊重、倾听与沟通",
+"只索取",
+"说谎"
+],
+"a": 2,
+"tip": "尊重沟通是基础。",
+"d": 4
+}
+]
+},
+"idiom2": {
+"name": "成语典故",
+"icon": "📿",
+"min": 2,
+"questions": [
+{
+"q": "“画蛇添足”比喻？",
+"o": [
+"锦上添花",
+"多此一举、弄巧成拙",
+"雪中送炭",
+"实事求是"
+],
+"a": 1,
+"tip": "添足反坏事。",
+"d": 2
+},
+{
+"q": "“守株待兔”讽刺？",
+"o": [
+"勤奋",
+"妄想不劳而获",
+"聪明",
+"勇敢"
+],
+"a": 1,
+"tip": "讽不知变通。",
+"d": 2
+},
+{
+"q": "“掩耳盗铃”比喻？",
+"o": [
+"自欺欺人",
+"光明正大",
+"勤奋",
+"诚实"
+],
+"a": 0,
+"tip": "盗铃捂耳是自欺。",
+"d": 2
+},
+{
+"q": "“亡羊补牢”意思是？",
+"o": [
+"放弃",
+"出问题后及时补救",
+"逃跑",
+"装睡"
+],
+"a": 1,
+"tip": "补牢仍未晚。",
+"d": 2
+},
+{
+"q": "“井底之蛙”形容？",
+"o": [
+"见多识广",
+"眼界狭小",
+"勇敢",
+"聪明"
+],
+"a": 1,
+"tip": "喻见识短浅。",
+"d": 2
+},
+{
+"q": "“杯弓蛇影”比喻？",
+"o": [
+"疑神疑鬼、自惊自怕",
+"胆大",
+"诚实",
+"马虎"
+],
+"a": 0,
+"tip": "将影当蛇自惊。",
+"d": 3
+},
+{
+"q": "“卧薪尝胆”形容？",
+"o": [
+"享乐",
+"忍辱负重、奋发图强",
+"懒惰",
+"骄傲"
+],
+"a": 1,
+"tip": "越王勾践励志。",
+"d": 3
+},
+{
+"q": "“滥竽充数”讽刺？",
+"o": [
+"高手",
+"没有真本事混在其中",
+"诚实",
+"努力"
+],
+"a": 1,
+"tip": "南郭先生混奏。",
+"d": 3
+},
+{
+"q": "“入木三分”原形容？",
+"o": [
+"木工",
+"书法笔力遒劲",
+"做饭",
+"射箭"
+],
+"a": 1,
+"tip": "赞王羲之笔力。",
+"d": 4
+},
+{
+"q": "“闻鸡起舞”形容？",
+"o": [
+"懒散",
+"志士及时奋发",
+"贪睡",
+"畏惧"
+],
+"a": 1,
+"tip": "祖逖刘琨励志。",
+"d": 4
+},
+{
+"q": "“破釜沉舟”比喻？",
+"o": [
+"犹豫",
+"下定决心、不留退路",
+"退缩",
+"随意"
+],
+"a": 2,
+"tip": "项羽决一死战。",
+"d": 4
+}
+]
+},
+"country": {
+"name": "国家地理",
+"icon": "🗺️",
+"min": 2,
+"questions": [
+{
+"q": "中国的首都是？",
+"o": [
+"上海",
+"北京",
+"广州",
+"深圳"
+],
+"a": 1,
+"tip": "北京是首都。",
+"d": 2
+},
+{
+"q": "美国的首都是？",
+"o": [
+"纽约",
+"华盛顿",
+"洛杉矶",
+"芝加哥"
+],
+"a": 1,
+"tip": "华盛顿是首都。",
+"d": 2
+},
+{
+"q": "日本的首都是？",
+"o": [
+"大阪",
+"东京",
+"京都",
+"名古屋"
+],
+"a": 1,
+"tip": "东京是日本首都。",
+"d": 2
+},
+{
+"q": "法国的首都是？",
+"o": [
+"马赛",
+"巴黎",
+"里昂",
+"尼斯"
+],
+"a": 1,
+"tip": "巴黎是首都。",
+"d": 2
+},
+{
+"q": "英国的首都是？",
+"o": [
+"曼彻斯特",
+"伦敦",
+"利物浦",
+"爱丁堡"
+],
+"a": 1,
+"tip": "伦敦是首都。",
+"d": 2
+},
+{
+"q": "“金字塔”最著名地位于哪个国家？",
+"o": [
+"中国",
+"埃及",
+"法国",
+"巴西"
+],
+"a": 1,
+"tip": "埃及金字塔闻名。",
+"d": 3
+},
+{
+"q": "世界上面积最大的国家是？",
+"o": [
+"中国",
+"俄罗斯",
+"加拿大",
+"美国"
+],
+"a": 1,
+"tip": "俄罗斯面积最大。",
+"d": 3
+},
+{
+"q": "“风车之国”通常指？",
+"o": [
+"比利时",
+"荷兰",
+"丹麦",
+"瑞典"
+],
+"a": 1,
+"tip": "荷兰以风车著称。",
+"d": 3
+},
+{
+"q": "横跨亚欧两洲的国家是？",
+"o": [
+"俄罗斯",
+"日本",
+"澳大利亚",
+"巴西"
+],
+"a": 0,
+"tip": "俄罗斯地跨欧亚。",
+"d": 4
+},
+{
+"q": "“袋鼠”是哪个国家的代表性动物？",
+"o": [
+"南非",
+"澳大利亚",
+"印度",
+"加拿大"
+],
+"a": 1,
+"tip": "袋鼠产澳大利亚。",
+"d": 4
+},
+{
+"q": "世界上最大的热带雨林是？",
+"o": [
+"亚马逊雨林",
+"西伯利亚森林",
+"刚果盆地(也大)",
+"黄山"
+],
+"a": 0,
+"tip": "亚马逊雨林最大。",
+"d": 4
+}
+]
+},
+"nobel": {
+"name": "科学之光",
+"icon": "🔭",
+"min": 2,
+"questions": [
+{
+"q": "诺贝尔奖章表彰的主要领域不包括？",
+"o": [
+"物理",
+"化学",
+"和平",
+"足球"
+],
+"a": 3,
+"tip": "诺奖无足球。",
+"d": 2
+},
+{
+"q": "“青霉素”的发现者是？",
+"o": [
+"法拉第",
+"弗莱明",
+"牛顿",
+"爱迪生"
+],
+"a": 1,
+"tip": "弗莱明发现青霉素。",
+"d": 2
+},
+{
+"q": "提出相对论的科学家是？",
+"o": [
+"牛顿",
+"爱因斯坦",
+"伽利略",
+"哥白尼"
+],
+"a": 1,
+"tip": "爱因斯坦提出相对论。",
+"d": 2
+},
+{
+"q": "“镭”的发现者是？",
+"o": [
+"居里夫人",
+"爱迪生",
+"贝尔",
+"瓦特"
+],
+"a": 0,
+"tip": "居里夫人发现镭。",
+"d": 2
+},
+{
+"q": "达尔文提出的著名学说是？",
+"o": [
+"进化论",
+"日心说",
+"地心说",
+"相对论"
+],
+"a": 0,
+"tip": "达尔文倡进化论。",
+"d": 2
+},
+{
+"q": "“万有引力”定律由谁提出？",
+"o": [
+"牛顿",
+"爱因斯坦",
+"伽利略",
+"法拉第"
+],
+"a": 0,
+"tip": "牛顿提出引力定律。",
+"d": 3
+},
+{
+"q": "“日心说”的主要提出者是？",
+"o": [
+"哥白尼",
+"托勒密",
+"亚里士多德",
+"牛顿"
+],
+"a": 0,
+"tip": "哥白尼倡日心说。",
+"d": 3
+},
+{
+"q": "“电磁感应”现象由谁发现？",
+"o": [
+"法拉第",
+"牛顿",
+"爱迪生",
+"居里夫人"
+],
+"a": 0,
+"tip": "法拉第发现电磁感应。",
+"d": 3
+},
+{
+"q": "“量子论”早期重要奠基人包括？",
+"o": [
+"普朗克",
+"牛顿",
+"爱迪生",
+"贝尔"
+],
+"a": 0,
+"tip": "普朗克提出量子概念。",
+"d": 4
+},
+{
+"q": "“DNA双螺旋结构”的发现者包括？",
+"o": [
+"沃森与克里克",
+"牛顿",
+"爱迪生",
+"法拉第"
+],
+"a": 0,
+"tip": "沃森、克里克阐结构。",
+"d": 4
+},
+{
+"q": "“元素周期律”由谁创立？",
+"o": [
+"门捷列夫",
+"牛顿",
+"爱因斯坦",
+"居里夫人"
+],
+"a": 0,
+"tip": "门捷列夫排周期表。",
+"d": 4
+}
+]
+},
+"net": {
+"name": "网络常识",
+"icon": "🌐",
+"min": 2,
+"questions": [
+{
+"q": "网址前的“http”或“https”指的是？",
+"o": [
+"一种动物",
+"通信协议",
+"电池",
+"歌曲"
+],
+"a": 1,
+"tip": "是超文本传输协议。",
+"d": 2
+},
+{
+"q": "下列哪个是常见搜索引擎？",
+"o": [
+"Word",
+"百度/Google",
+"Excel",
+"画图"
+],
+"a": 1,
+"tip": "百度谷歌是搜索。",
+"d": 2
+},
+{
+"q": "“Wi-Fi”主要用于？",
+"o": [
+"种花",
+"无线联网",
+"洗衣服",
+"发电"
+],
+"a": 1,
+"tip": "Wi-Fi是无线上网。",
+"d": 2
+},
+{
+"q": "上网时保护账号密码应？",
+"o": [
+"告诉所有人",
+"不泄露、用强密码",
+"写公共场所",
+"借给别人"
+],
+"a": 1,
+"tip": "勿泄露用强密码。",
+"d": 2
+},
+{
+"q": "收到陌生“中奖”链接应？",
+"o": [
+"马上点",
+"不轻信、核实",
+"转发好友",
+"输入银行卡"
+],
+"a": 1,
+"tip": "谨防诈骗链接。",
+"d": 2
+},
+{
+"q": "“浏览器”的作用是？",
+"o": [
+"煮饭",
+"访问网页",
+"打印",
+"发电"
+],
+"a": 1,
+"tip": "浏览器看网页。",
+"d": 3
+},
+{
+"q": "IP 地址的作用是？",
+"o": [
+"装饰屏幕",
+"标识网络设备",
+"调音量",
+"换壁纸"
+],
+"a": 1,
+"tip": "IP标识网络中的设备。",
+"d": 3
+},
+{
+"q": "“黑客”一词中性指？",
+"o": [
+"坏人专属",
+"精通计算机技术的人(可善可恶)",
+"游戏角色",
+"厨师"
+],
+"a": 1,
+"tip": "原指技术高手。",
+"d": 3
+},
+{
+"q": "“钓鱼网站”的目的是？",
+"o": [
+"教学",
+"骗取账号密码",
+"提供新闻",
+"卖书"
+],
+"a": 0,
+"tip": "钓站骗取信息。",
+"d": 4
+},
+{
+"q": "下列哪种做法更安全？",
+"o": [
+"所有网站用同一弱密码",
+"不同网站用不同强密码并开两步验证",
+"把密码贴屏幕",
+"随意填真实信息"
+],
+"a": 1,
+"tip": "差异化强密码更安。",
+"d": 4
+},
+{
+"q": "“防火墙”主要用于？",
+"o": [
+"防火",
+"网络访问控制与安全隔离",
+"防中暑",
+"防噪音"
+],
+"a": 2,
+"tip": "防火墙控访问护网安。",
+"d": 4
+}
+]
+},
+"money": {
+"name": "货币与国家",
+"icon": "💰",
+"min": 2,
+"questions": [
+{
+"q": "中国的法定货币是？",
+"o": [
+"美元",
+"人民币",
+"欧元",
+"日元"
+],
+"a": 1,
+"tip": "人民币是法定货币。",
+"d": 2
+},
+{
+"q": "美国的货币是？",
+"o": [
+"英镑",
+"美元",
+"法郎",
+"人民币"
+],
+"a": 1,
+"tip": "美元是美国货币。",
+"d": 2
+},
+{
+"q": "日本的货币是？",
+"o": [
+"人民币",
+"日元",
+"韩元",
+"泰铢"
+],
+"a": 1,
+"tip": "日元是日本货币。",
+"d": 2
+},
+{
+"q": "英国的货币是？",
+"o": [
+"欧元",
+"英镑",
+"美元",
+"法郎"
+],
+"a": 1,
+"tip": "英镑是英国货币。",
+"d": 2
+},
+{
+"q": "欧洲的许多国家共同使用？",
+"o": [
+"美元",
+"欧元",
+"人民币",
+"日元"
+],
+"a": 1,
+"tip": "欧元区用欧元。",
+"d": 2
+},
+{
+"q": "把钱存进银行，银行通常会？",
+"o": [
+"没收",
+"付给存款人利息",
+"收费拿走",
+"丢弃"
+],
+"a": 1,
+"tip": "存款有利息。",
+"d": 2
+},
+{
+"q": "“通货膨胀”一般指？",
+"o": [
+"物价普遍持续上涨",
+"物价全跌",
+"钱变多不值钱的反面",
+"工资暴涨"
+],
+"a": 0,
+"tip": "通胀即物价普涨币贬。",
+"d": 3
+},
+{
+"q": "“汇率”指的是？",
+"o": [
+"气温",
+"两种货币兑换的比价",
+"车速",
+"利率"
+],
+"a": 1,
+"tip": "汇率是货币比价。",
+"d": 3
+},
+{
+"q": "下列哪项属于“投资”而非单纯消费？",
+"o": [
+"买零食吃完",
+"买基金/股票以期增值",
+"请客吃饭",
+"买日用品耗尽"
+],
+"a": 1,
+"tip": "投资以期增值。",
+"d": 3
+},
+{
+"q": "“复利”指的是？",
+"o": [
+"单利",
+"利息再计息、利滚利",
+"不计算息",
+"只算本金"
+],
+"a": 1,
+"tip": "复利是利滚利。",
+"d": 4
+},
+{
+"q": "“储蓄”的主要意义是？",
+"o": [
+"立刻花光",
+"积少成多、应对未来",
+"永不花钱",
+"借钱花"
+],
+"a": 2,
+"tip": "储蓄备未来。",
+"d": 4
+}
+]
+},
+"arch": {
+"name": "建筑奇观",
+"icon": "🏛️",
+"min": 2,
+"questions": [
+{
+"q": "中国的“万里长城”主要修建目的是？",
+"o": [
+"观景",
+"防御外敌",
+"贸易",
+"种田"
+],
+"a": 1,
+"tip": "长城用于防御。",
+"d": 2
+},
+{
+"q": "埃及“金字塔”主要是古代什么建筑？",
+"o": [
+"住宅",
+"法老陵墓",
+"市场",
+"学校"
+],
+"a": 1,
+"tip": "金字塔是王陵。",
+"d": 2
+},
+{
+"q": "法国“埃菲尔铁塔”位于哪座城市？",
+"o": [
+"里昂",
+"巴黎",
+"马赛",
+"尼斯"
+],
+"a": 1,
+"tip": "铁塔在巴黎。",
+"d": 2
+},
+{
+"q": "中国的“故宫”位于哪座城市？",
+"o": [
+"西安",
+"北京",
+"南京",
+"洛阳"
+],
+"a": 1,
+"tip": "故宫在北京。",
+"d": 2
+},
+{
+"q": "“比萨斜塔”在哪个国家？",
+"o": [
+"法国",
+"意大利",
+"西班牙",
+"德国"
+],
+"a": 1,
+"tip": "比萨斜塔在意大利。",
+"d": 2
+},
+{
+"q": "下列哪项是中国古代桥梁代表？",
+"o": [
+"赵州桥",
+"埃菲尔铁塔",
+"金字塔",
+"凯旋门"
+],
+"a": 0,
+"tip": "赵州桥是中国古桥。",
+"d": 3
+},
+{
+"q": "“凯旋门”最著名地在哪个国家？",
+"o": [
+"英国",
+"法国",
+"美国",
+"日本"
+],
+"a": 1,
+"tip": "巴黎凯旋门在法国。",
+"d": 3
+},
+{
+"q": "“悉尼歌剧院”以什么造型著称？",
+"o": [
+"方盒子",
+"贝壳/风帆状屋顶",
+"金字塔",
+"圆塔"
+],
+"a": 1,
+"tip": "其屋顶似帆贝。",
+"d": 3
+},
+{
+"q": "“斗兽场(Colosseum)”在哪个国家？",
+"o": [
+"希腊",
+"意大利",
+"埃及",
+"土耳其"
+],
+"a": 1,
+"tip": "罗马斗兽场在意大利。",
+"d": 4
+},
+{
+"q": "中国“赵州桥”的设计者是？",
+"o": [
+"李春",
+"鲁班(传说)",
+"詹天佑",
+"茅以升"
+],
+"a": 0,
+"tip": "隋代李春设计。",
+"d": 4
+},
+{
+"q": "“悬索桥”主要依靠什么承重？",
+"o": [
+"土墙",
+"主缆与吊索",
+"木桩",
+"砖块"
+],
+"a": 2,
+"tip": "悬索桥靠主缆吊索。",
+"d": 4
+}
+]
+},
+"eco": {
+"name": "环保生态",
+"icon": "♻️",
+"min": 2,
+"questions": [
+{
+"q": "下列哪种做法有利于环保？",
+"o": [
+"乱扔垃圾",
+"垃圾分类回收",
+"焚烧塑料",
+"长明灯"
+],
+"a": 1,
+"tip": "分类回收减污染。",
+"d": 2
+},
+{
+"q": "“植树造林”有助于？",
+"o": [
+"加剧沙尘",
+"防风固沙、净化空气",
+"减少氧气",
+"升温"
+],
+"a": 1,
+"tip": "林木固沙净空。",
+"d": 2
+},
+{
+"q": "下列哪种是可回收物？",
+"o": [
+"废电池(有害)",
+"废纸盒",
+"剩饭菜",
+"烟头"
+],
+"a": 1,
+"tip": "废纸可回收。",
+"d": 2
+},
+{
+"q": "节约用电可以？",
+"o": [
+"增多污染",
+"减少化石燃料消耗",
+"让灯坏",
+"浪费钱"
+],
+"a": 1,
+"tip": "节电减排放。",
+"d": 2
+},
+{
+"q": "“白色污染”通常指？",
+"o": [
+"雪",
+"塑料垃圾污染",
+"白云",
+"面粉"
+],
+"a": 1,
+"tip": "指塑料污染。",
+"d": 2
+},
+{
+"q": "下列哪种气体过量会加剧“温室效应”？",
+"o": [
+"氧气",
+"二氧化碳",
+"氮气",
+"氩气"
+],
+"a": 1,
+"tip": "CO₂加剧温室效应。",
+"d": 3
+},
+{
+"q": "“生物多样性”指的是？",
+"o": [
+"只有人类",
+"物种的丰富与多样",
+"单一作物",
+"无生命"
+],
+"a": 1,
+"tip": "指物种多样性。",
+"d": 3
+},
+{
+"q": "保护湿地的主要原因是？",
+"o": [
+"占地",
+"湿地是“地球之肾”、净化调蓄",
+"没用",
+"应填平"
+],
+"a": 1,
+"tip": "湿地具净化调蓄功能。",
+"d": 3
+},
+{
+"q": "“碳中和”指的是？",
+"o": [
+"不再用能",
+"排放与吸收相抵",
+"全烧煤",
+"不种树"
+],
+"a": 1,
+"tip": "碳排与吸收平衡。",
+"d": 4
+},
+{
+"q": "下列哪项属于“清洁能源”？",
+"o": [
+"煤电",
+"风能/太阳能",
+"油页岩",
+"柴火"
+],
+"a": 1,
+"tip": "风光是清洁能源。",
+"d": 4
+},
+{
+"q": "“可持续发展”强调？",
+"o": [
+"竭泽而渔",
+"满足当代不损后代",
+"只管现在",
+"无限开采"
+],
+"a": 2,
+"tip": "可持续兼顾代际。",
+"d": 4
+}
+]
+},
+"chem": {
+"name": "化学",
+"icon": "🧪",
+"min": 3,
+"questions": [
+{
+"q": "水的化学式是？",
+"o": [
+"CO₂",
+"H₂O",
+"O₂",
+"NaCl"
+],
+"a": 1,
+"tip": "水由H、O组成。",
+"d": 3
+},
+{
+"q": "下列物质中属于单质的是？",
+"o": [
+"水",
+"氧气O₂",
+"二氧化碳",
+"氯化钠"
+],
+"a": 1,
+"tip": "O₂由同种元素组成。",
+"d": 3
+},
+{
+"q": "铁在潮湿空气中易生成？",
+"o": [
+"金",
+"铁锈(氧化铁)",
+"铜",
+"银"
+],
+"a": 1,
+"tip": "铁氧化生锈。",
+"d": 3
+},
+{
+"q": "下列变化属于化学变化的是？",
+"o": [
+"冰融化",
+"铁生锈",
+"水蒸发",
+"玻璃碎"
+],
+"a": 1,
+"tip": "生锈生成新物质。",
+"d": 3
+},
+{
+"q": "酸碱中和反应通常生成？",
+"o": [
+"只盐",
+"盐和水",
+"只气体",
+"只沉淀"
+],
+"a": 1,
+"tip": "中和产物为盐+水。",
+"d": 3
+},
+{
+"q": "配制一定质量分数溶液时，不必用到？",
+"o": [
+"天平/量筒",
+"酒精灯加热(一般)",
+"烧杯",
+"玻璃棒"
+],
+"a": 1,
+"tip": "常规配制不需加热。",
+"d": 3
+},
+{
+"q": "“质量守恒定律”指化学反应前后？",
+"o": [
+"质量减少",
+"总质量不变",
+"质量增加",
+"元素消失"
+],
+"a": 1,
+"tip": "反应前后总质量守恒。",
+"d": 4
+},
+{
+"q": "下列气体能使带火星木条复燃的是？",
+"o": [
+"氮气",
+"氧气",
+"二氧化碳",
+"氢气"
+],
+"a": 1,
+"tip": "O₂助燃使复燃。",
+"d": 4
+},
+{
+"q": "可燃冰主要成分是？",
+"o": [
+"甲烷水合物",
+"干冰",
+"酒精",
+"食盐"
+],
+"a": 0,
+"tip": "可燃冰是甲烷水合物。",
+"d": 4
+},
+{
+"q": "pH=7 的溶液呈？",
+"o": [
+"酸性",
+"中性",
+"碱性",
+"无颜色"
+],
+"a": 1,
+"tip": "pH=7为中性。",
+"d": 4
+},
+{
+"q": "“催化剂”在反应中？",
+"o": [
+"被消耗完",
+"改变速率而自身不耗",
+"变成产物",
+"不参与"
+],
+"a": 1,
+"tip": "催化剂改速率不耗。",
+"d": 4
+}
+]
+},
+"astro": {
+"name": "天文",
+"icon": "🔭",
+"min": 3,
+"questions": [
+{
+"q": "太阳系中体积最大的行星是？",
+"o": [
+"地球",
+"木星",
+"火星",
+"水星"
+],
+"a": 1,
+"tip": "木星最大。",
+"d": 3
+},
+{
+"q": "距地球最近的恒星是？",
+"o": [
+"北极星",
+"太阳",
+"天狼星",
+"织女星"
+],
+"a": 1,
+"tip": "太阳是最近恒星。",
+"d": 3
+},
+{
+"q": "地球绕着什么公转？",
+"o": [
+"月亮",
+"太阳",
+"火星",
+"银河中心(广义)?"
+],
+"a": 1,
+"tip": "地球绕太阳公转。",
+"d": 3
+},
+{
+"q": "月球是地球的？",
+"o": [
+"恒星",
+"卫星",
+"行星",
+"彗星"
+],
+"a": 1,
+"tip": "月球是地球卫星。",
+"d": 3
+},
+{
+"q": "太阳系中“红色星球”指？",
+"o": [
+"金星",
+"火星",
+"木星",
+"土星"
+],
+"a": 1,
+"tip": "火星表面呈红。",
+"d": 3
+},
+{
+"q": "光年是用来度量什么的单位？",
+"o": [
+"时间",
+"距离",
+"质量",
+"亮度"
+],
+"a": 1,
+"tip": "光年是距离单位。",
+"d": 4
+},
+{
+"q": "太阳系八大行星中离太阳最近的是？",
+"o": [
+"金星",
+"水星",
+"地球",
+"火星"
+],
+"a": 1,
+"tip": "水星最近。",
+"d": 4
+},
+{
+"q": "“黑洞”最显著的特征是？",
+"o": [
+"发光",
+"引力极强、连光难逃",
+"由水组成",
+"会唱歌"
+],
+"a": 1,
+"tip": "黑洞引力极强。",
+"d": 4
+},
+{
+"q": "银河系属于什么类型的天体系统？",
+"o": [
+"单颗恒星",
+"星系",
+"行星",
+"彗星"
+],
+"a": 1,
+"tip": "银河是星系。",
+"d": 4
+},
+{
+"q": "日食发生时，三者位置顺序是？",
+"o": [
+"地球-太阳-月球",
+"太阳-月球-地球",
+"月球-太阳-地球",
+"随意"
+],
+"a": 0,
+"tip": "月球挡日成日食。",
+"d": 4
+}
+]
+},
+"physics": {
+"name": "趣味物理",
+"icon": "🪀",
+"min": 3,
+"questions": [
+{
+"q": "声音不能在下列哪种介质中传播？",
+"o": [
+"空气",
+"真空",
+"水",
+"钢铁"
+],
+"a": 1,
+"tip": "真空不传声。",
+"d": 3
+},
+{
+"q": "“惯性”指的是物体？",
+"o": [
+"会飞",
+"保持原有运动状态的属性",
+"有重量",
+"会发光"
+],
+"a": 1,
+"tip": "惯性维持运动状态。",
+"d": 3
+},
+{
+"q": "水沸腾时温度？",
+"o": [
+"继续升高",
+"保持不变(标准压下100℃)",
+"下降",
+"随机"
+],
+"a": 1,
+"tip": "沸腾温度恒定。",
+"d": 3
+},
+{
+"q": "下列现象中属于光的折射的是？",
+"o": [
+"镜子反射",
+"筷子在水中“弯折”",
+"影子",
+"日食"
+],
+"a": 1,
+"tip": "弯折是折射。",
+"d": 3
+},
+{
+"q": "自由落体下落快慢主要与什么有关（忽略空气阻力）？",
+"o": [
+"颜色",
+"重力/高度",
+"声音",
+"气味"
+],
+"a": 1,
+"tip": "由重力决定。",
+"d": 3
+},
+{
+"q": "牛顿第二定律 F=ma 中，a 表示？",
+"o": [
+"面积",
+"加速度",
+"角度",
+"振幅"
+],
+"a": 1,
+"tip": "a为加速度。",
+"d": 4
+},
+{
+"q": "“浮力”的大小等于？",
+"o": [
+"物体重量",
+"排开液体的重量(阿基米德)",
+"体积",
+"密度"
+],
+"a": 1,
+"tip": "等于排液重。",
+"d": 4
+},
+{
+"q": "并联电路中各支路电压？",
+"o": [
+"不相等",
+"相等(等于电源电压)",
+"为零",
+"随机"
+],
+"a": 1,
+"tip": "并联电压相等。",
+"d": 4
+},
+{
+"q": "“能量守恒”指能量？",
+"o": [
+"可凭空消失",
+"总量不变、可转化",
+"越用越多",
+"只发热"
+],
+"a": 1,
+"tip": "总量守恒可转化。",
+"d": 4
+},
+{
+"q": "凸透镜能成倒立放大实像，应用到？",
+"o": [
+"平面镜",
+"投影仪/照相机(依距)",
+"潜望镜",
+"近视镜"
+],
+"a": 1,
+"tip": "凸透镜用于成像。",
+"d": 4
+}
+]
+},
+"bio": {
+"name": "生物奥秘",
+"icon": "🧬",
+"min": 3,
+"questions": [
+{
+"q": "细胞是生物体（除病毒外）的？",
+"o": [
+"装饰",
+"基本结构与功能单位",
+"食物",
+"废物"
+],
+"a": 1,
+"tip": "细胞是基本单位。",
+"d": 3
+},
+{
+"q": "人体遗传信息的载体主要是？",
+"o": [
+"蛋白质 alone",
+"DNA",
+"脂肪",
+"糖"
+],
+"a": 1,
+"tip": "DNA携遗传信息。",
+"d": 3
+},
+{
+"q": "植物进行光合作用的主要场所是？",
+"o": [
+"根",
+"叶绿体",
+"茎",
+"花"
+],
+"a": 1,
+"tip": "叶绿体行光合。",
+"d": 3
+},
+{
+"q": "人体输送氧气的血细胞是？",
+"o": [
+"白细胞",
+"红细胞",
+"血小板",
+"血浆"
+],
+"a": 1,
+"tip": "红细胞携氧。",
+"d": 3
+},
+{
+"q": "下列哪种生物属于哺乳动物？",
+"o": [
+"鲨鱼",
+"海豚",
+"鳄鱼",
+"金鱼"
+],
+"a": 1,
+"tip": "海豚是哺乳类。",
+"d": 3
+},
+{
+"q": "“基因突变”指的是？",
+"o": [
+"细胞变大",
+"遗传物质发生改变",
+"颜色变化",
+"体重变化"
+],
+"a": 1,
+"tip": "基因序列改变。",
+"d": 4
+},
+{
+"q": "达尔文用来解释物种演变的核心学说是？",
+"o": [
+"用进废退(拉马克)",
+"自然选择",
+"神创",
+"突变无所谓"
+],
+"a": 1,
+"tip": "自然选择驱演变。",
+"d": 4
+},
+{
+"q": "人体免疫系统中负责产生抗体的是？",
+"o": [
+"红细胞",
+"淋巴细胞(B细胞)",
+"血小板",
+"毛发"
+],
+"a": 1,
+"tip": "B细胞产抗体。",
+"d": 4
+},
+{
+"q": "生态系统中的“生产者”主要指？",
+"o": [
+"肉食动物",
+"绿色植物(自养)",
+"分解者",
+"消费者"
+],
+"a": 1,
+"tip": "绿色植物为生产者。",
+"d": 4
+},
+{
+"q": "“线粒体”被称为细胞的？",
+"o": [
+"骨架",
+"动力车间(供能)",
+"仓库",
+"核"
+],
+"a": 1,
+"tip": "线粒体供能。",
+"d": 4
+}
+]
+},
+"law": {
+"name": "法律常识",
+"icon": "⚖️",
+"min": 4,
+"questions": [
+{
+"q": "我国根本大法是？",
+"o": [
+"刑法",
+"宪法",
+"民法",
+"行政法"
+],
+"a": 1,
+"tip": "宪法是根本法。",
+"d": 4
+},
+{
+"q": "未满多少周岁的人为未成年人？",
+"o": [
+"14",
+"18",
+"20",
+"22"
+],
+"a": 1,
+"tip": "我国未成年人指未满18。",
+"d": 4
+},
+{
+"q": "公民最基本的政治权利是？",
+"o": [
+"选举权与被选举权",
+"任意罢工",
+"不纳税",
+"随意迁徙"
+],
+"a": 0,
+"tip": "选举与被选举是基本政治权利。",
+"d": 4
+},
+{
+"q": "“无罪推定”原则指？",
+"o": [
+"先认定有罪",
+"未经审判定罪前推定无罪",
+"直接释放",
+"罪加一等"
+],
+"a": 1,
+"tip": "定罪前推定无罪。",
+"d": 4
+},
+{
+"q": "签订合同应遵循的原则包括？",
+"o": [
+"欺诈",
+"平等自愿、诚实信用",
+"胁迫",
+"显失公平"
+],
+"a": 1,
+"tip": "平等诚信是原则。",
+"d": 4
+},
+{
+"q": "下列属于正当防卫条件的是？",
+"o": [
+"事后报复",
+"针对正在进行的不法侵害",
+"无故打人",
+"挑衅后反击"
+],
+"a": 0,
+"tip": "须针对正在进行的不法侵害。",
+"d": 4
+},
+{
+"q": "“民事行为能力”按什么划分？",
+"o": [
+"身高",
+"年龄与智力状况",
+"财富",
+"性别"
+],
+"a": 1,
+"tip": "依年龄智健康状况。",
+"d": 4
+},
+{
+"q": "知识产权主要保护的是？",
+"o": [
+"体力",
+"智力成果(著作、专利等)",
+"土地",
+"现金"
+],
+"a": 1,
+"tip": "保护智力成果。",
+"d": 4
+},
+{
+"q": "我国国家元首职务由谁担任？",
+"o": [
+"国务院总理",
+"国家主席",
+"军委副主席",
+"最高法院长"
+],
+"a": 1,
+"tip": "国家主席是国家元首。",
+"d": 4
+},
+{
+"q": "“法律援助”是为哪类人提供的？",
+"o": [
+"富人专属",
+"经济困难等符合条件者",
+"所有人免费",
+"官员"
+],
+"a": 2,
+"tip": "援贫弱维权。",
+"d": 4
+}
+]
+},
+"economy": {
+"name": "经济财富",
+"icon": "💹",
+"min": 4,
+"questions": [
+{
+"q": "“供不应求”时价格往往？",
+"o": [
+"下跌",
+"上涨",
+"不变",
+"消失"
+],
+"a": 1,
+"tip": "供小于求价涨。",
+"d": 4
+},
+{
+"q": "“货币”最基本的职能之一是？",
+"o": [
+"装饰",
+"价值尺度与流通手段",
+"玩具",
+"燃料"
+],
+"a": 1,
+"tip": "货币具价值尺度职能。",
+"d": 4
+},
+{
+"q": "“GDP”衡量的是？",
+"o": [
+"个人存款",
+"一国一定时期生产总量",
+"人口",
+"面积"
+],
+"a": 1,
+"tip": "GDP是生产总量指标。",
+"d": 4
+},
+{
+"q": "“机会成本”指的是？",
+"o": [
+"花费的钱",
+"为选A而放弃的次优选项价值",
+"税费",
+"利息"
+],
+"a": 1,
+"tip": "放弃的次优即机会成本。",
+"d": 4
+},
+{
+"q": "“通货膨胀”时钱会？",
+"o": [
+"更值钱",
+"购买力下降",
+"数量变多无影响",
+"变成黄金"
+],
+"a": 1,
+"tip": "通胀使币值下降。",
+"d": 4
+},
+{
+"q": "“边际效用递减”指？",
+"o": [
+"越用越多",
+"消费增多、单位满足感下降",
+"不变",
+"先降后升"
+],
+"a": 1,
+"tip": "多消费边际效用降。",
+"d": 4
+},
+{
+"q": "“比较优势”理论用于解释？",
+"o": [
+"战争",
+"国际贸易分工互利",
+"种地",
+"征税"
+],
+"a": 1,
+"tip": "比较优劣势互补贸易。",
+"d": 4
+},
+{
+"q": "“基准利率”由谁主要调节？",
+"o": [
+"个人",
+"中央银行",
+"商店",
+"学校"
+],
+"a": 1,
+"tip": "央行调基准利率。",
+"d": 4
+},
+{
+"q": "“外部性”指经济行为对？",
+"o": [
+"自己",
+"无关第三方的成本或收益",
+"仅政府",
+"仅企业"
+],
+"a": 1,
+"tip": "行为外溢至第三方。",
+"d": 4
+},
+{
+"q": "“复利”与“单利”的区别在于？",
+"o": [
+"都一样",
+"复利对利息再计息",
+"单利更多",
+"无法比较"
+],
+"a": 1,
+"tip": "复利利滚利。",
+"d": 4
+}
+]
+}
+};
+
+
+
+const SHOP = [
+  {id:"memory",  name:"记忆翻牌", icon:"🃏", cost:50, type:"game", desc:"翻开卡牌，配对全部 8 对！"},
+  {id:"puzzle",  name:"滑块拼图", icon:"🧩", cost:80, type:"game", desc:"把 1–8 按顺序排好，锻炼逻辑。"},
+  {id:"reaction",name:"反应训练", icon:"⚡", cost:60, type:"game", desc:"看到按钮就点，测反应速度。"},
+  {id:"idiom",   name:"词语接龙", icon:"🔤", cost:70, type:"game", desc:"用首字接龙，越接越长。"},
+  {id:"link",    name:"连连看",   icon:"🔗", cost:90, type:"game", desc:"连接相同图案消除，考验眼力。"},
+  {id:"typing",  name:"打字游戏", icon:"⌨️", cost:65, type:"game", desc:"限时打字，挑战手速。"},
+  {id:"guess",   name:"猜数字", icon:"🎯", cost:55, type:"game", desc:"1–100 猜数，步数越少越好。"},
+  {id:"schulte", name:"舒尔特方格", icon:"🔢", cost:75, type:"game", desc:"按顺序点 1–25，练专注力。"},
+  {id:"simon",   name:"数字记忆", icon:"🎵", cost:85, type:"game", desc:"记住并复述闪烁序列。"},
+  {id:"math",    name:"快速心算", icon:"🧠", cost:45, type:"game", desc:"限时口算加减乘，越多越赚。"},
+  {id:"find",    name:"火眼金睛", icon:"🔍", cost:55, type:"game", desc:"找出不一样的图案。"},
+  {id:"mole",    name:"打地鼠",     icon:"🎯", cost:0,  type:"game", desc:"限时敲地鼠，手速大挑战。"},
+  {id:"rps",     name:"石头剪刀布", icon:"✌️", cost:0,  type:"game", desc:"和电脑猜拳，五局定胜负。"},
+  {id:"tiles",   name:"别踩白块",   icon:"🎵", cost:0,  type:"game", desc:"跟着节奏点，别踩错！"},
+  {id:"ttt",     name:"井字棋",     icon:"🟢", cost:0,  type:"game", desc:"和电脑斗智的井字棋。"},
+  {id:"snake",   name:"贪吃蛇",     icon:"🐍", cost:0,  type:"game", desc:"越吃越长，撞墙就结束."},
+  {id:"tap",     name:"极速狂点",   icon:"🔥", cost:0,  type:"game", desc:"十秒手速大爆发，点点点！"},
+  {id:"color",   name:"颜色侦探",   icon:"🌈", cost:0,  type:"game", desc:"找出颜色不同的方块."},
+  {id:"breathe", name:"静心呼吸",   icon:"🫧", cost:0,  type:"game", desc:"跟着节奏放松与专注."},
+  {id:"hint",    name:"提示卡 ×1", icon:"💡", cost:20, type:"item", desc:"答题时可用，直接高亮正确答案。"},
+];
+
+const GAMES = [
+  // fx: "fire"=激情/动作类特效， "ice"=冷静思考类特效
+  {id:"memory",  name:"记忆翻牌", icon:"🃏", desc:"考验你的记忆力", fx:"ice"},
+  {id:"puzzle",  name:"滑块拼图", icon:"🧩", desc:"锻炼空间逻辑", fx:"ice"},
+  {id:"reaction",name:"反应训练", icon:"⚡", desc:"挑战反应极限", fx:"fire"},
+  {id:"idiom",   name:"词语接龙", icon:"🔤", desc:"积累词语词汇", fx:"ice"},
+  {id:"link",    name:"连连看",   icon:"🔗", desc:"眼力与专注力", fx:"ice"},
+  {id:"typing",  name:"打字游戏", icon:"⌨️", desc:"提升打字速度", fx:"fire"},
+  {id:"guess",   name:"猜数字", icon:"🎯", desc:"考你的推理", fx:"ice"},
+  {id:"schulte", name:"舒尔特方格", icon:"🔢", desc:"提升专注力", fx:"ice"},
+  {id:"simon",   name:"数字记忆", icon:"🎵", desc:"挑战记忆力", fx:"ice"},
+  {id:"math",    name:"快速心算", icon:"🧠", desc:"练脑力与速度", fx:"ice"},
+  {id:"find",    name:"火眼金睛", icon:"🔍", desc:"考验观察力", fx:"ice"},
+  {id:"mole",    name:"打地鼠",     icon:"🎯", desc:"手速大挑战", fx:"fire"},
+  {id:"rps",     name:"石头剪刀布", icon:"✌️", desc:"五局定胜负", fx:"fire"},
+  {id:"tiles",   name:"别踩白块", icon:"🎵", desc:"节奏点击", fx:"fire"},
+  {id:"ttt",     name:"井字棋",     icon:"🟢", desc:"人机对战", fx:"ice"},
+  {id:"snake",   name:"贪吃蛇",   icon:"🐍", desc:"越吃越长越上头", fx:"fire"},
+  {id:"tap",     name:"极速狂点", icon:"🔥", desc:"十秒手速大爆发", fx:"fire"},
+  {id:"color",   name:"颜色侦探", icon:"🌈", desc:"找出不一样的色块", fx:"ice"},
+  {id:"breathe", name:"静心呼吸", icon:"🫧", desc:"跟着节奏放松专注", fx:"ice"},
+];
+
+// 词语接龙词库（2–4 字中文词语，首尾字用于接龙；自动去重）
+const WORDS_RAW=[
+ "学习","学生","学校","学问","习惯","习题","练习","习性",
+ "生活","生命","生日","生气","生动","生物","生态","态度",
+ "活动","活力","活泼","动画","动作","动力","动物","物体","体力","力量",
+ "理解","理想","理由","理论","理念",
+ "解决","解放","解答","答案",
+ "想法","想象","思想","思考","思路","路途",
+ "法律","方法","法则","方案","方向","方块","方程","程序",
+ "向前","向往","前进","前景","进步","进展","进行","行走","走路",
+ "为人","未来","来源","来自","自由","自然","自信","自动","动机",
+ "由于","于是","然后","然而","后果","果断","断绝","绝对","绝望","盼望",
+ "对象","对手","大象","象征","现象","征服","服务","服装","务实","实践",
+ "实际","实现","践行","现在","现实","源泉","泉水",
+ "开心","心情","情感","感动",
+ "题目","题材","目标","目录","标准","标志","准备","准确","备用","用品","用户",
+ "天空","空气","气球","球队","队员","员工","工作","作业","业余","余地",
+ "阳光","光明","明白","白色","色彩","彩虹","桥梁",
+ "朋友","友谊",
+ "健康","康复",
+ "诚实","实用","用心","心理",
+ "勇敢","敢于",
+ "智慧","慧眼","眼睛",
+ "梦想",
+ "知识","识别","别人","人类",
+ "成长","长期","期待","待遇","遇见",
+ "勤奋","奋斗","斗争","议论","论文","文化","化学",
+ "海洋","洋流","流水","水波","波浪","浪花","花朵","儿童","童年",
+ "速度","度过","过年","年货","货物",
+ "世界","界限","限制","制造",
+ "音乐","乐趣","趣味","味道","道路","路口",
+ "电脑","脑子",
+ "时间","间断","断面",
+ "科学","学术","术语","语言","言语","语文",
+ "风景","景色",
+ "春天","天气","气候","候鸟","鸟儿"
+];
+const WORDS=[...new Set(WORDS_RAW)];
+
+const LINK_EMOJIS=["🍎","🍌","🍇","🍓","🍑","🍒","🥝","🍍","🥥","🍉","🍊","🥭"];
+const TYPE_WORDS=["学习","进步","坚持","努力","专注","知识","智慧","成长","梦想","勇敢","天空","海洋","阳光","彩虹","朋友","快乐","健康","勤奋","诚实","善良","apple","study","happy","world","dream","focus","learn","smart","brave","peace"];
+
+/* ================= 状态（保留原学分：合并默认值） ================= */
+const KEY="studyGame_v1";
+const DEFAULT_STATE={
+  coins:30, unlocked:{}, hints:0,
+  best:{},              // 各游戏最佳成绩
+  daily:null,           // {date, tasks:[{id,progress,claimed}]}
+  stats:{quizAnswered:0},// 统计（今日答题等由daily单独算）
+  music:false,          // 背景音乐开关
+  track:'tiger',        // 当前曲目：tiger=战斗神曲(Eye of the Tiger) / march=反转进行曲
+  grade:'all'           // 当前年级：all=全阶段 / pre=学前 / pri=小学 / mid=初中 / high=高中
+};
+/* 年级：lv=难度档（过滤科目用）、count=每轮抽题数、pts=每题答对所得学分 */
+const GRADES=[
+  {key:'all',  name:'全阶段', icon:'🌟', lv:0, count:0,  pts:10}, // count=0 表示抽全部
+  {key:'pre',  name:'学前',   icon:'🧸', lv:1, count:3,  pts:5},
+  {key:'pri',  name:'小学',   icon:'🎒', lv:2, count:5,  pts:10},
+  {key:'mid',  name:'初中',   icon:'📗', lv:3, count:7,  pts:15},
+  {key:'high', name:'高中',   icon:'🏫', lv:4, count:10, pts:20},
+];
+function gradeOf(){ return GRADES.find(g=>g.key===state.grade)||GRADES[0]; }
+function deepMerge(def,cur){
+  if(Array.isArray(def)) return cur!==undefined?cur:def;
+  if(typeof def==="object"&&def!==null){
+    const out={...def};
+    if(cur&&typeof cur==="object"){for(const k in cur) out[k]=deepMerge(def[k]!==undefined?def[k]:cur[k],cur[k]);}
+    return out;
+  }
+  return cur!==undefined?cur:def;
+}
+let saved=null; try{saved=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+let state=deepMerge(DEFAULT_STATE, saved||{});
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+
+/* ================= 每日任务定义 ================= */
+const DAILY_POOL=[
+  {id:"quiz5",  icon:"📝", name:"完成 5 道答题",   goal:5,  reward:30,  ev:"quiz"},
+  {id:"quiz10", icon:"📚", name:"完成 10 道答题",  goal:10, reward:55,  ev:"quiz"},
+  {id:"quiz15", icon:"📖", name:"完成 15 道答题",  goal:15, reward:85,  ev:"quiz"},
+  {id:"quiz20", icon:"📔", name:"完成 20 道答题",  goal:20, reward:115, ev:"quiz"},
+  {id:"quiz30", icon:"📕", name:"完成 30 道答题",  goal:30, reward:165, ev:"quiz"},
+  {id:"play2",  icon:"🎮", name:"玩 2 局小游戏",   goal:2,  reward:25,  ev:"play"},
+  {id:"play3",  icon:"🕹️", name:"玩 3 局小游戏",   goal:3,  reward:40,  ev:"play"},
+  {id:"play5",  icon:"🎯", name:"玩 5 局小游戏",   goal:5,  reward:70,  ev:"play"},
+  {id:"play8",  icon:"🎲", name:"玩 8 局小游戏",   goal:8,  reward:110, ev:"play"},
+  {id:"earn50", icon:"⭐", name:"今日赚取 50 学分", goal:50, reward:20,  ev:"earn"},
+  {id:"earn100",icon:"💎", name:"今日赚取 100 学分",goal:100,reward:38,  ev:"earn"},
+  {id:"earn200",icon:"🏆", name:"今日赚取 200 学分",goal:200,reward:72,  ev:"earn"},
+  {id:"unlock1",icon:"🔓", name:"解锁 1 个小游戏",  goal:1,  reward:30,  ev:"unlock"},
+  {id:"unlock2",icon:"🔐", name:"解锁 2 个小游戏",  goal:2,  reward:55,  ev:"unlock"},
+  {id:"win2",   icon:"🏅", name:"赢下 2 局小游戏",  goal:2,  reward:35,  ev:"win"},
+  {id:"win5",   icon:"🥇", name:"赢下 5 局小游戏",  goal:5,  reward:80,  ev:"win"},
+];
+const DAILY_COUNT=10; // 每天随机抽取 10 个任务；做完可再来一批
+function todayStr(){const d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+function drawDaily(n,exclude){
+  const pool=[...DAILY_POOL].filter(d=>!exclude.includes(d.id));
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  let pick=pool.slice(0,Math.min(n,pool.length));
+  while(pick.length<n && DAILY_POOL.length) pick.push(DAILY_POOL[Math.floor(Math.random()*DAILY_POOL.length)]);
+  return pick.map(d=>({id:d.id,progress:0,claimed:false}));
+}
+function ensureDaily(){
+  const today=todayStr();
+  if(!state.daily||state.daily.date!==today){
+    state.daily={date:today,tasks:drawDaily(DAILY_COUNT,[])};
+    save(); return;
+  }
+  // 兼容旧档：任务数少于目标则补齐（保留已做进度）
+  if(state.daily.tasks.length<DAILY_COUNT){
+    const have=state.daily.tasks.map(t=>t.id);
+    state.daily.tasks.push(...drawDaily(DAILY_COUNT-state.daily.tasks.length,have));
+    save();
+  }
+}
+function moreDaily(){
+  ensureDaily();
+  const have=state.daily.tasks.map(t=>t.id);
+  state.daily.tasks.push(...drawDaily(DAILY_COUNT,have));
+  save(); renderDaily(); refreshDailyMini();
+}
+function dailyDef(id){return DAILY_POOL.find(d=>d.id===id);}
+function dailyProgress(evType,amount){
+  ensureDaily();
+  let changed=false;
+  state.daily.tasks.forEach(t=>{
+    const def=dailyDef(t.id);
+    if(def&&def.ev===evType&&!t.claimed&&t.progress<def.goal){t.progress=Math.min(def.goal,t.progress+amount);changed=true;}
+  });
+  if(changed){save(); refreshDailyMini();}
+}
+
+/* ================= 学分/奖励 ================= */
+function addCoins(n,fromEarnTask=true){
+  state.coins+=n; save(); updateCoins();
+  if(n>0) npcGrow(n);
+  if(fromEarnTask&&n>0) dailyProgress("earn",n);
+}
+function recordBest(gameId,score,higherBetter=true){
+  const cur=state.best[gameId];
+  if(cur===undefined || (higherBetter?score>cur:score<cur)){
+    state.best[gameId]=score; save(); return true;
+  }
+  return false;
+}
+
+/* ================= 通用 ================= */
+function $(id){return document.getElementById(id)}
+function go(view){
+  currentView=view;
+  if(mole.spawn){clearInterval(mole.spawn);mole.spawn=null;mole.running=false;}
+  if(tiles.timer){clearTimeout(tiles.timer);tiles.timer=null;tiles.running=false;}
+  if(math.timer){clearInterval(math.timer);math.timer=null;math.active=false;}
+  if(typeof snake!=="undefined"&&snake.timer){clearInterval(snake.timer);snake.timer=null;}
+  if(typeof tap!=="undefined"&&tap.timer){clearInterval(tap.timer);tap.timer=null;}
+  if(typeof breathe!=="undefined"&&breathe.timer){clearInterval(breathe.timer);breathe.timer=null;}
+  // 离开页面时停止火焰/冰雪特效（进入游戏会在 openGame 中按类型重新开启）
+  if(typeof Flame!=="undefined") Flame.stop();
+  if(typeof Ice!=="undefined") Ice.stop();
+  document.querySelectorAll("section.view").forEach(s=>s.classList.remove("active"));
+  $(view).classList.add("active");
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.go===view));
+  const safe=(fn)=>{ try{ fn(); }catch(e){ console.error("[render]",view,e); toast("该页面渲染出错，已跳过"); } };
+  if(view==="home"){safe(renderHome);}
+  if(view==="shop") safe(renderShop);
+  if(view==="arcade") safe(renderArcade);
+  if(view==="rank") safe(renderRank);
+  if(view==="daily") safe(renderDaily);
+  window.scrollTo(0,0);
+}
+function toast(msg){
+  const t=$("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),1600);
+}
+function updateCoins(){
+  const el=$("coinNum"); if(!el) return;
+  const prev=+el.textContent||0;
+  el.textContent=state.coins;
+  if(state.coins!==prev){                 // 学分变动时让金币牌“弹”一下
+    const pill=el.closest(".coins");
+    if(pill){ pill.classList.remove("bump"); void pill.offsetWidth; pill.classList.add("bump"); }
+  }
+}
+
+/* ================= 首页 ================= */
+function renderHome(){
+  updateCoins(); ensureDaily();
+  // —— 年级切换器 ——
+  const g=gradeOf();
+  const gb=$("gradeBar"); gb.innerHTML="";
+  GRADES.forEach(gr=>{
+    const b=document.createElement("button");
+    b.className="grade-btn"+(state.grade===gr.key?" active":"");
+    b.innerHTML=`${gr.icon} ${gr.name}`;
+    b.onclick=()=>setGrade(gr.key);
+    gb.appendChild(b);
+  });
+  $("gradeHint").textContent="当前："+g.name+(g.key==="all"?"（全部科目 · 每题 "+g.pts+" 学分）":"（每轮 "+g.count+" 题 · 每题 "+g.pts+" 学分）");
+  // —— 科目卡片（按年级过滤）——
+  const wrap=$("homeCats"); wrap.innerHTML="";
+  Object.entries(BANK).forEach(([k,v])=>{
+    if(state.grade!=="all" && (v.min||1) > g.lv) return;   // 隐藏不适合当前年级的科目
+    const cnt=(state.grade==="all")?v.questions.length:g.count;
+    const d=document.createElement("div");
+    d.className="tile"; d.onclick=()=>startQuiz(k);
+    d.innerHTML=`<span class="ic">${v.icon}</span><span class="t">${v.name}</span>
+      <span class="d">${cnt} 道题 · 对1得 ${g.pts} 学分</span>`;
+    wrap.appendChild(d);
+  });
+  refreshDailyMini();
+  // 首页展示前2个任务
+  const hd=$("homeDaily"); hd.innerHTML="";
+  state.daily.tasks.slice(0,2).forEach(t=>hd.appendChild(taskEl(t,dailyDef(t.id))));
+}
+function setGrade(key){
+  state.grade=key; save(); renderHome();
+  toast("已切换到「"+gradeOf().name+"」");
+}
+function refreshDailyMini(){
+  ensureDaily();
+  const done=state.daily.tasks.filter(t=>t.claimed).length;
+  const m=$("dailyMini"); if(m) m.textContent=`（已领 ${done}/${state.daily.tasks.length}）`;
+}
+
+/* ================= 答题 ================= */
+// 按年级构造本轮题目：目标题数 = g.count（全阶段=全部）；题库不够时循环打散填充，并避免相邻重复
+function buildRound(catKey, g){
+  let base=BANK[catKey].questions.slice();
+  if(g.key!=="all") base=base.filter(q=>(q.d||1)<=g.lv);   // 只取 <= 当前年级难度的题（难度对应年级）
+  if(base.length===0) base=BANK[catKey].questions.slice();   // 该年级无对应难度题时回退全部，避免空轮次
+  if(g.key==="all"){                                   // 全阶段：直接打乱全部题库
+    for(let i=base.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[base[i],base[j]]=[base[j],base[i]];}
+    return base;
+  }
+  const out=[]; let pool=[];
+  const refill=()=>{ pool=base.slice(); for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];} };
+  refill();
+  let guard=0;
+  while(out.length<g.count && guard++ < g.count*30){     // guard 防极端死循环
+    if(pool.length===0) refill();
+    const q=pool.pop();
+    if(q===undefined) break;
+    if(out.length>0 && out[out.length-1]===q){ if(pool.length>0){pool.unshift(q); continue;} else break; } // 避免同一题紧挨着重复
+    out.push(q);
+  }
+  while(out.length<g.count && base.length>0){ out.push(base[out.length % base.length]); } // 极端补足
+  return out;
+}
+let quiz={list:[],i:0,score:0,right:0,pts:10};
+function startQuiz(catKey){
+  const g=gradeOf();
+  const list=buildRound(catKey,g);
+  quiz={list,i:0,score:0,right:0,cat:BANK[catKey],pts:g.pts};
+  go("quiz"); renderQuestion();
+  // 体育类（体育/奥运体育）用火焰特效；其余需要冷静思考的科目用冰雪特效
+  if(catKey==="sports"||catKey==="olympic"){ Ice.stop(); Flame.start(4600); }
+  else { Flame.stop(); Ice.start(4600); }
+}
+let curHintUsed=false;
+function renderQuestion(){
+  curHintUsed=false;
+  const q=quiz.list[quiz.i], letters=["A","B","C","D"];
+  $("quizCard").innerHTML=`
+    <div class="q-meta">
+      <span class="pill">${quiz.cat.icon} ${quiz.cat.name}</span>
+      <span>第 ${quiz.i+1} / ${quiz.list.length} 题</span>
+    </div>
+    <div class="q-text">${q.q}</div>
+    <div class="opts" id="opts">
+      ${q.o.map((opt,idx)=>`<div class="opt" data-i="${idx}"><span class="k">${letters[idx]}</span><span>${opt}</span></div>`).join("")}
+    </div>
+    <div class="explain" id="explain"></div>
+    <div class="next-row">
+      ${state.hints>0?`<button class="btn ghost" id="hintBtn" style="margin-right:auto" onclick="useHint()">💡 用提示卡(${state.hints})</button>`:""}
+      <button class="btn" id="nextBtn" disabled>${quiz.i===quiz.list.length-1?"查看结果 →":"下一题 →"}</button>
+    </div>`;
+  $("quizCard").querySelectorAll(".opt").forEach(el=>el.onclick=()=>answer(+el.dataset.i,el));
+}
+function useHint(){
+  if(state.hints<=0||curHintUsed) return;
+  state.hints--; save(); updateCoins(); curHintUsed=true;
+  const q=quiz.list[quiz.i], opts=$("opts").querySelectorAll(".opt");
+  opts[q.a].style.borderColor="var(--gold)"; opts[q.a].style.background="#fff8e6";
+  const hb=$("hintBtn"); if(hb) hb.remove();
+  toast("已高亮正确答案");
+}
+function answer(idx,el){
+  const q=quiz.list[quiz.i];
+  if(el.classList.contains("disabled")) return;
+  $("opts").querySelectorAll(".opt").forEach(o=>o.classList.add("disabled"));
+  if(idx===q.a){el.classList.add("right"); quiz.right++; quiz.score+=quiz.pts;}
+  else{el.classList.add("wrong"); $("opts").querySelectorAll(".opt")[q.a].classList.add("right");}
+  const ex=$("explain"); ex.textContent="💡 "+q.tip; ex.classList.add("show");
+  $("nextBtn").disabled=false;
+  dailyProgress("quiz",1);
+}
+document.addEventListener("click",e=>{
+  if(e.target&&e.target.id==="nextBtn"){ if($("nextBtn").disabled)return;
+    if(quiz.i<quiz.list.length-1){quiz.i++; renderQuestion();} else finishQuiz();
+  }
+});
+// 贪吃蛇方向键控制
+document.addEventListener("keydown",e=>{
+  if(currentView!=="game-snake"||!snake.alive) return;
+  if(e.key==="ArrowUp"){snakeDir(0,-1);e.preventDefault();}
+  else if(e.key==="ArrowDown"){snakeDir(0,1);e.preventDefault();}
+  else if(e.key==="ArrowLeft"){snakeDir(-1,0);e.preventDefault();}
+  else if(e.key==="ArrowRight"){snakeDir(1,0);e.preventDefault();}
+});
+function finishQuiz(){
+  const gained=quiz.score; addCoins(gained);
+  const rate=Math.round(quiz.right/quiz.list.length*100);
+  $("quizCard").innerHTML=`
+    <div class="result">
+      <div class="big">${quiz.right===quiz.list.length?"🏆":"🎉"}</div>
+      <h2>${quiz.right===quiz.list.length?"全对！太棒了":"本轮结束"}</h2>
+      <p>答对 ${quiz.right} / ${quiz.list.length} 题（正确率 ${rate}%）</p>
+      <div class="earn">⭐ 获得 ${gained} 学分</div>
+      <div class="next-row" style="justify-content:center;margin-top:18px">
+        <button class="btn" onclick="go('shop')">去商店兑换 →</button>
+        <button class="btn ghost" style="margin-left:10px" onclick="go('home')">返回首页</button>
+      </div>
+    </div>`;
+}
+
+/* ================= 商店 ================= */
+function renderShop(){
+  updateCoins();
+  const list=$("shopList"); list.innerHTML="";
+  SHOP.forEach(item=>{
+    const have = item.type==="game" ? state.unlocked[item.id] : false;
+    const canBuy = state.coins>=item.cost && !have;
+    const div=document.createElement("div"); div.className="shop-item";
+    div.innerHTML=`
+      <div class="ic">${item.icon}</div>
+      <div class="info"><div class="n">${item.name}</div><div class="s">${item.desc}</div></div>
+      ${have?`<div class="owned">✓ 已拥有</div>`
+        :`<button class="buy" ${canBuy?"":"disabled"}>${item.type==="item"?"购买":(item.cost===0?"免费领取":"解锁")}${item.cost>0?` · ⭐${item.cost}`:""}</button>`}`;
+    const btn=div.querySelector(".buy"); if(btn) btn.onclick=()=>buy(item);
+    list.appendChild(div);
+  });
+}
+function buy(item){
+  if(state.coins<item.cost) return;
+  if(item.type==="game" && state.unlocked[item.id]) return;
+  state.coins-=item.cost;
+  if(item.type==="game"){state.unlocked[item.id]=true; dailyProgress("unlock",1); npcSlack(75);} else state.hints=(state.hints||0)+1;
+  save(); updateCoins(); renderShop();
+  toast(item.type==="game"?`已解锁「${item.name}」🎉`:`已购买「${item.name}」`);
+}
+
+/* ================= 游戏中心 ================= */
+function renderArcade(){
+  const list=$("arcadeList"); list.innerHTML="";
+  GAMES.forEach(g=>{
+    const unlocked=state.unlocked[g.id];
+    const div=document.createElement("div");
+    div.className="tile"+(unlocked?"":" locked");
+    const best=state.best[g.id];
+    div.innerHTML=`<span class="ic">${g.icon}</span><span class="t">${g.name}</span>
+      <span class="d">${g.desc}${best!==undefined?` · 最佳 ${best}`:""}</span>`;
+    if(unlocked){ div.onclick=()=>openGame(g.id); }
+    else{
+      const lock=document.createElement("div"); lock.className="lock";
+      lock.innerHTML=`<div class="lk">🔒</div><div>去商店解锁</div>`;
+      lock.onclick=(e)=>{e.stopPropagation();go("shop");}; div.appendChild(lock);
+    }
+    list.appendChild(div);
+  });
+}
+function openGame(id){
+  go("game-"+id);
+  dailyProgress("play",1);
+  if(id==="memory") startMemory();
+  if(id==="puzzle") startPuzzle();
+  if(id==="reaction") resetReaction();
+  if(id==="idiom") startIdiom();
+  if(id==="link") startLink();
+  if(id==="typing") resetTyping();
+  if(id==="guess") startGuess();
+  if(id==="schulte") startSchulte();
+  if(id==="simon") startSimon();
+  if(id==="math") startMath();
+  if(id==="find") startFind();
+  if(id==="mole") startMole();
+  if(id==="rps") startRps();
+  if(id==="tiles") startTiles();
+  if(id==="ttt") startTtt();
+  if(id==="snake") startSnake();
+  if(id==="tap") startTap();
+  if(id==="color") startColor();
+  if(id==="breathe") startBreathe();
+  applyGameFx(id);
+}
+// 根据游戏类型开启持续特效：激情/动作类→火焰，冷静思考类→冰雪
+function applyGameFx(id){
+  const g=GAMES.find(x=>x.id===id);
+  if(!g||!g.fx) return;
+  if(g.fx==="fire"){ Ice.stop(); Flame.start(1e9); }
+  else { Flame.stop(); Ice.start(1e9); }
+}
+
+/* ================= 记忆翻牌 ================= */
+const EMOJIS=["🍎","🍌","🍇","🍓","🍑","🍒","🥝","🍍"];
+let mem={};
+function startMemory(){
+  let d=[...EMOJIS,...EMOJIS];
+  for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+  mem={deck:d,first:null,lock:false,flipped:new Set(),matched:0,cards:[],moves:0};
+  const board=$("memBoard"); board.innerHTML="";
+  d.forEach((e,idx)=>{
+    const c=document.createElement("div"); c.className="mem-card"; c.dataset.i=idx;
+    c.innerHTML=`<span class="back">❓</span><span class="face">${e}</span>`;
+    c.onclick=()=>flipMem(c,idx); board.appendChild(c); mem.cards.push(c);
+  });
+  $("memStat").textContent="找出全部 8 对";
+}
+function flipMem(el,idx){
+  if(mem.lock||mem.flipped.has(idx)) return;
+  el.classList.add("flipped");
+  if(mem.first===null){mem.first=idx; return;}
+  mem.moves++;
+  const f=mem.first;
+  if(mem.deck[f]===mem.deck[idx]){
+    el.classList.add("matched"); mem.cards[f].classList.add("matched");
+    mem.flipped.add(f); mem.flipped.add(idx); mem.first=null; mem.matched++;
+    if(mem.matched===EMOJIS.length){
+      $("memStat").textContent="🎉 全部配对成功！";
+      addCoins(15);
+      const nb=recordBest("memory",mem.moves,false);
+      toast("完成 +15 学分"+(nb?" · 新纪录！":"")+" ⭐");
+    }
+  }else{
+    mem.lock=true; const a=mem.cards[f];
+    setTimeout(()=>{el.classList.remove("flipped");a.classList.remove("flipped");mem.lock=false;mem.first=null;},750);
+  }
+}
+
+/* ================= 滑块拼图 ================= */
+const goalPuz=[1,2,3,4,5,6,7,8,0];
+let puz={board:[],moves:0};
+function startPuzzle(){
+  let b=[1,2,3,4,5,6,7,8,0], blank=8;
+  for(let s=0;s<120;s++){
+    const r=Math.floor(blank/3),c=blank%3,nb=[];
+    if(r>0)nb.push(blank-3); if(r<2)nb.push(blank+3); if(c>0)nb.push(blank-1); if(c<2)nb.push(blank+1);
+    const pick=nb[Math.floor(Math.random()*nb.length)];
+    [b[blank],b[pick]]=[b[pick],b[blank]]; blank=pick;
+  }
+  if(b.every((v,i)=>v===goalPuz[i])) return startPuzzle();
+  puz={board:b,moves:0}; renderPuzzle();
+}
+function renderPuzzle(){
+  const board=$("puzBoard"); board.innerHTML="";
+  puz.board.forEach((v,i)=>{
+    const c=document.createElement("div");
+    if(v===0){c.className="puz-cell blank";}
+    else{c.className="puz-cell"; c.textContent=v; c.onclick=()=>movePuz(i);}
+    board.appendChild(c);
+  });
+  $("puzMoves").textContent="步数："+puz.moves;
+  if(puz.board.every((v,i)=>v===goalPuz[i])){
+    $("puzStat").textContent="🎉 拼好啦！"; addCoins(20);
+    const nb=recordBest("puzzle",puz.moves,false);
+    toast("通关 +20 学分"+(nb?" · 新纪录！":"")+" ⭐");
+  }
+}
+function movePuz(i){
+  const blank=puz.board.indexOf(0);
+  const r=Math.floor(i/3),c=i%3,br=Math.floor(blank/3),bc=blank%3;
+  if(Math.abs(r-br)+Math.abs(c-bc)===1){
+    [puz.board[i],puz.board[blank]]=[puz.board[blank],puz.board[i]]; puz.moves++; renderPuzzle();
+  }
+}
+
+/* ================= 反应训练 ================= */
+let react={trials:0,times:[]};
+function resetReaction(){
+  react={trials:0,times:[]};
+  $("reactStat").textContent="点击出现的按钮，测反应";
+  $("reactHint").textContent="点击「开始」测一测你的反应速度";
+  $("reactHint").style.display="block";
+  $("reactStart").style.display="inline-block"; $("reactStart").textContent="开始训练";
+  const old=$("reactStage").querySelector(".react-btn"); if(old) old.remove();
+}
+function startReaction(){
+  react={trials:0,times:[]};
+  $("reactStart").style.display="none";
+  $("reactHint").textContent="准备……"; $("reactHint").style.display="block";
+  nextReact();
+}
+function nextReact(){
+  if(react.trials>=5){showReactResult();return;}
+  $("reactHint").textContent="准备……";
+  const old=document.querySelector(".react-btn"); if(old) old.remove();
+  setTimeout(()=>{
+    if(react.trials>=5) return;
+    $("reactHint").style.display="none";
+    const btn=document.createElement("button"); btn.className="react-btn"; btn.textContent="点我！";
+    const stage=$("reactStage");
+    btn.style.left=Math.floor(Math.random()*(stage.clientWidth-100))+"px";
+    btn.style.top=Math.floor(Math.random()*(stage.clientHeight-100))+"px";
+    const t0=performance.now();
+    btn.onclick=()=>{
+      react.times.push(Math.round(performance.now()-t0)); react.trials++;
+      btn.remove(); $("reactStat").textContent=`已完成 ${react.trials} / 5`; nextReact();
+    };
+    stage.appendChild(btn);
+  },900+Math.random()*1800);
+}
+function showReactResult(){
+  const avg=Math.round(react.times.reduce((a,b)=>a+b,0)/react.times.length);
+  $("reactHint").style.display="block";
+  $("reactHint").innerHTML=`训练完成！平均反应 <b style="color:#2b2f42">${avg} ms</b><br><span class="muted">${avg<350?"⚡ 神反应！":avg<500?"👍 不错哦":"继续练习～"}</span>`;
+  $("reactStart").style.display="inline-block"; $("reactStart").textContent="再测一次";
+  const reward=Math.max(5,Math.min(25,Math.round((600-avg)/20))); addCoins(reward);
+  recordBest("reaction",avg,false);
+  toast("训练奖励 +"+reward+" 学分 ⭐");
+}
+
+/* ================= 词语接龙 ================= */
+let idiom={chain:[],usedSet:new Set(),combo:0};
+function startIdiom(){
+  const first=WORDS[Math.floor(Math.random()*WORDS.length)];
+  idiom={chain:[{w:first,me:false}],usedSet:new Set([first]),combo:0};
+  renderIdiom(); $("idiomInput").value="";
+}
+function lastChar(w){return w[w.length-1];}
+function renderIdiom(){
+  const c=$("idiomChain"); c.innerHTML="";
+  idiom.chain.slice(-8).forEach(it=>{
+    const t=document.createElement("span"); t.className="idiom-tag"+(it.me?" me":""); t.textContent=it.w; c.appendChild(t);
+  });
+  const need=lastChar(idiom.chain[idiom.chain.length-1].w);
+  $("idiomInput").placeholder=`输入以「${need}」开头的词语`;
+  $("idiomStat").textContent="连击："+idiom.combo;
+  $("idiomHint").textContent=`要求：词语首字为「${need}」，且词库中有收录。答对 +8 学分，连击越高奖励越多！`;
+}
+function submitIdiom(){
+  const val=$("idiomInput").value.trim();
+  const need=lastChar(idiom.chain[idiom.chain.length-1].w);
+  if(val.length<2){toast("请输入至少 2 个字的词语");return;}
+  if(!/^[\u4e00-\u9fa5]+$/.test(val)){toast("请输入中文词语");return;}
+  if(val[0]!==need){toast(`要以「${need}」开头哦`);return;}
+  if(idiom.usedSet.has(val)){toast("这个词语已经用过啦");return;}
+  if(!WORDS.includes(val)){toast("词库里暂时没有这个词语～");return;}
+  idiom.chain.push({w:val,me:true}); idiom.usedSet.add(val); idiom.combo++;
+  let reward=8+Math.floor(idiom.combo/3)*2; addCoins(reward);
+  recordBest("idiom",idiom.combo,true);
+  $("idiomInput").value="";
+  // 电脑接一个
+  const nextNeed=lastChar(val);
+  const cand=WORDS.filter(w=>w[0]===nextNeed&&!idiom.usedSet.has(w));
+  if(cand.length){
+    const pick=cand[Math.floor(Math.random()*cand.length)];
+    idiom.chain.push({w:pick,me:false}); idiom.usedSet.add(pick);
+    renderIdiom(); toast(`+${reward} 学分！轮到你接「${lastChar(pick)}」`);
+  }else{
+    renderIdiom(); toast(`+${reward} 学分！电脑接不上，你赢啦 🎉`); addCoins(10);
+  }
+}
+function idiomTip(){
+  const need=lastChar(idiom.chain[idiom.chain.length-1].w);
+  const cand=WORDS.filter(w=>w[0]===need&&!idiom.usedSet.has(w));
+  if(cand.length) toast("试试：「"+cand[0]+"」");
+  else toast("这个字没有更多词语了，可以重开");
+}
+$("idiomInput").addEventListener("keydown",e=>{if(e.key==="Enter")submitIdiom();});
+
+/* ================= 连连看 ================= */
+let link={rows:6,cols:6,grid:[],sel:null,left:0};
+function startLink(){
+  link.rows=6; link.cols=6;
+  const pairs=link.rows*link.cols/2;
+  const kinds=LINK_EMOJIS.slice(0,Math.min(LINK_EMOJIS.length,8));
+  let pool=[];
+  for(let i=0;i<pairs;i++){pool.push(kinds[i%kinds.length]); pool.push(kinds[i%kinds.length]);}
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  // 带边界的网格 (rows+2)x(cols+2)，边界为0(空)
+  link.grid=[]; let idx=0;
+  for(let r=0;r<link.rows+2;r++){link.grid[r]=[];for(let c=0;c<link.cols+2;c++){
+    if(r===0||c===0||r===link.rows+1||c===link.cols+1) link.grid[r][c]=null;
+    else link.grid[r][c]=pool[idx++];
+  }}
+  link.sel=null; link.left=link.rows*link.cols;
+  renderLink();
+}
+function renderLink(){
+  const board=$("linkBoard");
+  board.style.gridTemplateColumns=`repeat(${link.cols},minmax(0,42px))`;
+  board.innerHTML="";
+  for(let r=1;r<=link.rows;r++)for(let c=1;c<=link.cols;c++){
+    const v=link.grid[r][c];
+    const cell=document.createElement("div");
+    cell.className="link-cell"+(v===null?" empty":"");
+    cell.dataset.r=r; cell.dataset.c=c;
+    if(v!==null){cell.textContent=v; cell.onclick=()=>clickLink(r,c,cell);}
+    if(link.sel&&link.sel.r===r&&link.sel.c===c) cell.classList.add("sel");
+    board.appendChild(cell);
+  }
+  $("linkStat").textContent="剩余："+link.left;
+}
+function clickLink(r,c,cell){
+  if(link.grid[r][c]===null) return;
+  if(!link.sel){link.sel={r,c}; renderLink(); return;}
+  if(link.sel.r===r&&link.sel.c===c){link.sel=null; renderLink(); return;}
+  const a=link.sel, b={r,c};
+  if(link.grid[a.r][a.c]===link.grid[b.r][b.c] && canConnect(a,b)){
+    drawLine(a,b);
+    link.grid[a.r][a.c]=null; link.grid[b.r][b.c]=null;
+    link.left-=2; link.sel=null;
+    setTimeout(()=>{clearLine(); renderLink();
+      if(link.left===0){$("linkStat").textContent="🎉 全部消除！"; addCoins(30); dailyProgress("win",1);
+        recordBest("link",1,true); toast("通关 +30 学分 ⭐");}
+      else if(!hasMove()){toast("没有可消的了，自动洗牌"); shuffleLink();}
+    },260);
+  }else{
+    link.sel={r,c}; renderLink();
+  }
+}
+// 连通判定：不超过两个折点
+function canConnect(a,b){
+  const g=link.grid;
+  const empty=(r,c)=>g[r]&&g[r][c]===null;
+  // 直线
+  function lineOK(r1,c1,r2,c2){
+    if(r1===r2){const s=Math.min(c1,c2)+1,e=Math.max(c1,c2);for(let c=s;c<e;c++)if(!empty(r1,c))return false;return true;}
+    if(c1===c2){const s=Math.min(r1,r2)+1,e=Math.max(r1,r2);for(let r=s;r<e;r++)if(!empty(r,c1))return false;return true;}
+    return false;
+  }
+  // 0折 直连（相邻或直线无阻）
+  if((a.r===b.r||a.c===b.c)&&lineOK(a.r,a.c,b.r,b.c)) return true;
+  // 1折（拐一次）
+  const corners=[{r:a.r,c:b.c},{r:b.r,c:a.c}];
+  for(const cn of corners){
+    if(empty(cn.r,cn.c)&&lineOK(a.r,a.c,cn.r,cn.c)&&lineOK(cn.r,cn.c,b.r,b.c)) return true;
+  }
+  // 2折（沿行或列扫描找中转）
+  const R=link.rows+2,C=link.cols+2;
+  // 横向延展
+  for(let c=0;c<C;c++){
+    const p1={r:a.r,c}, p2={r:b.r,c};
+    if((c===a.c||empty(p1.r,p1.c))&&(c===b.c||empty(p2.r,p2.c))
+      && lineOK(a.r,a.c,p1.r,p1.c)&&lineOK(p1.r,p1.c,p2.r,p2.c)&&lineOK(p2.r,p2.c,b.r,b.c)) return true;
+  }
+  for(let r=0;r<R;r++){
+    const p1={r,c:a.c}, p2={r,c:b.c};
+    if((r===a.r||empty(p1.r,p1.c))&&(r===b.r||empty(p2.r,p2.c))
+      && lineOK(a.r,a.c,p1.r,p1.c)&&lineOK(p1.r,p1.c,p2.r,p2.c)&&lineOK(p2.r,p2.c,b.r,b.c)) return true;
+  }
+  return false;
+}
+function hasMove(){
+  const cells=[];
+  for(let r=1;r<=link.rows;r++)for(let c=1;c<=link.cols;c++)if(link.grid[r][c]!==null)cells.push({r,c});
+  for(let i=0;i<cells.length;i++)for(let j=i+1;j<cells.length;j++){
+    if(link.grid[cells[i].r][cells[i].c]===link.grid[cells[j].r][cells[j].c]&&canConnect(cells[i],cells[j]))return true;
+  }
+  return false;
+}
+function shuffleLink(){
+  const vals=[];
+  for(let r=1;r<=link.rows;r++)for(let c=1;c<=link.cols;c++)if(link.grid[r][c]!==null)vals.push(link.grid[r][c]);
+  for(let i=vals.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[vals[i],vals[j]]=[vals[j],vals[i]];}
+  let idx=0;
+  for(let r=1;r<=link.rows;r++)for(let c=1;c<=link.cols;c++)if(link.grid[r][c]!==null)link.grid[r][c]=vals[idx++];
+  link.sel=null; renderLink();
+  if(!hasMove()&&link.left>0) shuffleLink();
+}
+function cellCenter(r,c){
+  const board=$("linkBoard");
+  const el=board.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+  if(!el) return null;
+  const br=board.getBoundingClientRect(), er=el.getBoundingClientRect();
+  return {x:er.left-br.left+er.width/2, y:er.top-br.top+er.height/2};
+}
+function drawLine(a,b){
+  const svg=$("linkSvg"); const board=$("linkBoard");
+  svg.setAttribute("width",board.clientWidth); svg.setAttribute("height",board.clientHeight);
+  const p1=cellCenter(a.r,a.c), p2=cellCenter(b.r,b.c);
+  if(!p1||!p2) return;
+  const l=document.createElementNS("http://www.w3.org/2000/svg","line");
+  l.setAttribute("x1",p1.x);l.setAttribute("y1",p1.y);l.setAttribute("x2",p2.x);l.setAttribute("y2",p2.y);
+  l.setAttribute("stroke","#5b6cff");l.setAttribute("stroke-width","4");l.setAttribute("stroke-linecap","round");
+  svg.appendChild(l);
+}
+function clearLine(){$("linkSvg").innerHTML="";}
+
+/* ================= 打字游戏 ================= */
+let typing={active:false,score:0,correct:0,word:"",timer:null,left:30};
+function resetTyping(){
+  typing={active:false,score:0,correct:0,word:"",timer:null,left:30};
+  $("typeTime").textContent="30"; $("typeScore").textContent="0"; $("typeWpm").textContent="0";
+  $("typeWord").textContent="点击开始"; $("typeInput").value=""; $("typeInput").disabled=true;
+  $("typeBtn").textContent="开始"; $("typeStat").textContent="限时 30 秒";
+}
+function startTyping(){
+  if(typing.timer) clearInterval(typing.timer);
+  typing={active:true,score:0,correct:0,word:"",timer:null,left:30};
+  $("typeScore").textContent="0"; $("typeWpm").textContent="0"; $("typeTime").textContent="30";
+  $("typeInput").disabled=false; $("typeInput").value=""; $("typeInput").focus();
+  $("typeBtn").textContent="进行中"; $("typeStat").textContent="快打！";
+  nextTypeWord();
+  typing.timer=setInterval(()=>{
+    typing.left--; $("typeTime").textContent=typing.left;
+    if(typing.left<=0) endTyping();
+  },1000);
+}
+function nextTypeWord(){
+  typing.word=TYPE_WORDS[Math.floor(Math.random()*TYPE_WORDS.length)];
+  $("typeWord").textContent=typing.word;
+}
+$("typeInput").addEventListener("input",()=>{
+  if(!typing.active) return;
+  const v=$("typeInput").value;
+  if(v===typing.word){
+    typing.correct++; typing.score+=typing.word.length*2;
+    $("typeScore").textContent=typing.score; $("typeWpm").textContent=typing.correct;
+    $("typeInput").value=""; nextTypeWord();
+  }
+});
+function endTyping(){
+  clearInterval(typing.timer); typing.active=false;
+  $("typeInput").disabled=true; $("typeBtn").textContent="再来一次";
+  $("typeWord").textContent="⏰ 时间到！";
+  $("typeStat").textContent=`本轮得分 ${typing.score}`;
+  const reward=Math.round(typing.score/4)+5; addCoins(reward);
+  const nb=recordBest("typing",typing.score,true);
+  toast(`打字奖励 +${reward} 学分`+(nb?" · 新纪录！":"")+" ⭐");
+}
+
+/* ================= 快速心算 ================= */
+let math={timer:null,time:30,right:0,active:false,cur:0};
+function startMath(){
+  if(math.timer) clearInterval(math.timer);
+  math={timer:null,time:30,right:0,active:true,cur:0};
+  $("mathInput").value=""; $("mathInput").disabled=false;
+  $("mathStart").textContent="🚀 重新开始";
+  $("mathTime").textContent="30"; $("mathRight").textContent="0";
+  nextMath();
+  math.timer=setInterval(()=>{
+    math.time--; $("mathTime").textContent=math.time;
+    if(math.time<=0) endMath();
+  },1000);
+  $("mathInput").focus();
+}
+function nextMath(){
+  const a=Math.floor(Math.random()*20)+1, b=Math.floor(Math.random()*20)+1;
+  const t=Math.random(); let q,ans;
+  if(t<0.45){q=`${a} + ${b}`;ans=a+b;}
+  else if(t<0.8){const x=Math.max(a,b),y=Math.min(a,b);q=`${x} − ${y}`;ans=x-y;}
+  else{const m=Math.floor(Math.random()*9)+2,n=Math.floor(Math.random()*9)+2;q=`${m} × ${n}`;ans=m*n;}
+  math.cur=ans; $("mathQ").textContent=q+" = ?";
+}
+function submitMath(){
+  if(!math.active) return;
+  const v=parseInt($("mathInput").value,10);
+  if(isNaN(v)) return;
+  if(v===math.cur){math.right++; $("mathRight").textContent=math.right; addCoins(4,false);}
+  $("mathInput").value=""; nextMath();
+}
+function endMath(){
+  math.active=false; clearInterval(math.timer);
+  $("mathInput").disabled=true; $("mathQ").textContent="⏰ 时间到！";
+  $("mathStat").textContent=`本轮答对 ${math.right} 题`;
+  const reward=math.right*2+5; addCoins(reward);
+  const nb=recordBest("math",math.right,true);
+  toast(`心算奖励 +${reward} 学分`+(nb?" · 新纪录！":"")+" ⭐");
+}
+$("mathInput").addEventListener("keydown",e=>{if(e.key==="Enter")submitMath();});
+
+/* ================= 火眼金睛 ================= */
+let find={level:0,active:false};
+const FIND_EMOJIS=["🍎","🍊","🍋","🍉","🍇","🍓","🍑","🍒","🥝","🍍","🥥","🥑","🌸","🌻","🌹","🌷","⭐","🌙","🔥","💧","🐶","🐱","🐰","🐼"];
+function startFind(){
+  find={level:0,active:true};
+  $("findStart").textContent="🚀 重新开始";
+  $("findStat").textContent="找出不一样的图案";
+  nextFind();
+}
+function nextFind(){
+  const board=$("findBoard"); board.innerHTML="";
+  const n=16, pool=[...FIND_EMOJIS].sort(()=>Math.random()-0.5).slice(0,2);
+  const base=pool[0], odd=pool[1], oddIdx=Math.floor(Math.random()*n);
+  for(let i=0;i<n;i++){
+    const cell=document.createElement("div"); cell.className="find-cell";
+    cell.textContent= i===oddIdx?odd:base;
+    cell.onclick=()=>{
+      if(!find.active) return;
+      if(i===oddIdx){
+        find.level++; $("findStat").textContent=`已过 ${find.level} 关`;
+        addCoins(3,false); dailyProgress("win",1); nextFind();
+      }else{
+        find.active=false; const reward=find.level*2+5; addCoins(reward);
+        const nb=recordBest("find",find.level,true);
+        $("findStat").textContent=`结束！共过 ${find.level} 关`;
+        toast(`观察奖励 +${reward} 学分`+(nb?" · 新纪录！":"")+" ⭐");
+      }
+    };
+    board.appendChild(cell);
+  }
+}
+
+/* ================= 打地鼠 ================= */
+let mole={spawn:null,score:0,time:30,running:false,holes:[],init:false,cur:-1};
+function startMole(){
+  const grid=$("moleGrid");
+  if(!mole.init){
+    grid.innerHTML=""; mole.holes=[];
+    for(let i=0;i<9;i++){const b=document.createElement("button");b.className="hole";b.onclick=()=>whack(i);grid.appendChild(b);mole.holes.push(b);}
+    mole.init=true;
+  }
+  mole.score=0; mole.time=30; mole.running=true;
+  $("moleStat").textContent="得分：0 · 剩余 30s";
+  $("moleStart").textContent="🚀 重新开始";
+  if(mole.spawn) clearInterval(mole.spawn);
+  spawnMole();
+  mole.spawn=setInterval(()=>{
+    if(!mole.running) return;
+    mole.time--;
+    if(mole.time<=0){ endMole(); return; }
+    $("moleStat").textContent=`得分：${mole.score} · 剩余 ${mole.time}s`;
+    spawnMole();
+  },800);
+}
+function spawnMole(){
+  mole.holes.forEach(h=>h.classList.remove("up"));
+  const i=Math.floor(Math.random()*9);
+  mole.holes[i].classList.add("up"); mole.cur=i;
+}
+function whack(i){
+  if(!mole.running) return;
+  if(mole.holes[i].classList.contains("up")){
+    mole.score++; mole.holes[i].classList.remove("up");
+    $("moleStat").textContent=`得分：${mole.score} · 剩余 ${mole.time}s`;
+  }
+}
+function endMole(){
+  mole.running=false;
+  if(mole.spawn){clearInterval(mole.spawn);mole.spawn=null;}
+  const reward=Math.floor(mole.score/3)*2; addCoins(reward);
+  const nb=recordBest("mole",mole.score,true);
+  $("moleStat").textContent=`结束！得分 ${mole.score}`;
+  toast(`打地鼠奖励 +${reward} 学分`+(nb?" · 新纪录！":"")+" ⭐");
+}
+
+/* ================= 石头剪刀布 ================= */
+let rps={wins:0,round:0,total:5};
+function startRps(){
+  rps={wins:0,round:0,total:5};
+  $("rpsStat").textContent="胜：0 / 5 局";
+  $("rpsResult").textContent="选一个出吧！";
+}
+function playRps(me){
+  if(rps.round>=rps.total) return;
+  const opts=["✊","✋","✌️"];
+  const cpu=opts[Math.floor(Math.random()*3)];
+  const beats={ "✊":"✌️", "✋":"✊", "✌️":"✋" };
+  let res = (me===cpu)?"平局" : (beats[me]===cpu?"你赢":"你输");
+  if(res==="你赢"){ rps.wins++; dailyProgress("win",1); }
+  rps.round++;
+  $("rpsStat").textContent=`胜：${rps.wins} / ${rps.total} 局（已玩 ${rps.round}）`;
+  $("rpsResult").textContent=`你 ${me}  vs  电脑 ${cpu}  →  ${res}`;
+  if(rps.round>=rps.total){
+    const nb=recordBest("rps",rps.wins,true);
+    const reward=Math.floor(rps.wins/2)*3;
+    addCoins(reward);
+    $("rpsResult").textContent+=` ｜ 最终胜 ${rps.wins} 局  +${reward}⭐`+(nb?" · 新纪录！":"");
+  }
+}
+
+/* ================= 别踩白块 ================= */
+let tiles={timer:null,active:-1,score:0,limit:1200,running:false};
+function startTiles(){
+  tiles.score=0; tiles.limit=1200; tiles.running=true;
+  $("tilesStat").textContent="得分：0";
+  $("tilesStart").textContent="🚀 重新开始";
+  nextTile();
+}
+function nextTile(){
+  if(!tiles.running) return;
+  const c=Math.floor(Math.random()*4);
+  tiles.active=c;
+  [...$("tilesRow").children].forEach((b,i)=>b.classList.toggle("active",i===c));
+  if(tiles.timer) clearTimeout(tiles.timer);
+  tiles.timer=setTimeout(()=>{ if(tiles.running){ tiles.running=false; endTiles(); } },tiles.limit);
+}
+function tapTile(i){
+  if(!tiles.running) return;
+  if(i===tiles.active){
+    tiles.score++; $("tilesStat").textContent="得分："+tiles.score;
+    tiles.limit=Math.max(450,tiles.limit-30);
+    nextTile();
+  } else { tiles.running=false; endTiles(); }
+}
+function endTiles(){
+  if(tiles.timer){clearTimeout(tiles.timer);tiles.timer=null;}
+  const reward=Math.floor(tiles.score/5)*2; addCoins(reward);
+  const nb=recordBest("tiles",tiles.score,true);
+  $("tilesStat").textContent=`结束！得分 ${tiles.score}`;
+  toast(`别踩白块奖励 +${reward} 学分`+(nb?" · 新纪录！":"")+" ⭐");
+}
+
+/* ================= 井字棋 ================= */
+let ttt={board:[],over:false};
+function startTtt(){
+  ttt.board=Array(9).fill("");
+  ttt.over=false;
+  renderTtt();
+  $("tttStat").textContent="你执 ✕，电脑执 ○";
+}
+function renderTtt(){
+  const cells=$("tttBoard").children;
+  for(let i=0;i<9;i++){ cells[i].textContent=ttt.board[i]; cells[i].classList.toggle("taken",!!ttt.board[i]); }
+}
+function tapTtt(i){
+  if(ttt.over||ttt.board[i]) return;
+  ttt.board[i]="✕"; renderTtt();
+  if(checkTtt("✕")) return;
+  if(ttt.board.every(Boolean)){ ttt.over=true; $("tttStat").textContent="平局！"; return; }
+  const ai=aiTtt();
+  ttt.board[ai]="○"; renderTtt();
+  if(checkTtt("○")) return;
+  if(ttt.board.every(Boolean)){ ttt.over=true; $("tttStat").textContent="平局！"; }
+}
+function aiTtt(){
+  const win=(p)=>{ for(let i=0;i<9;i++){ if(!ttt.board[i]){ ttt.board[i]=p; const w=winLine(p); ttt.board[i]=""; if(w) return i; } } return -1; };
+  let m=win("○"); if(m>=0) return m;
+  m=win("✕"); if(m>=0) return m;
+  const empty=[]; ttt.board.forEach((v,i)=>{ if(!v) empty.push(i); });
+  return empty[Math.floor(Math.random()*empty.length)];
+}
+function winLine(p){
+  const L=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  for(const l of L){ if(l.every(i=>ttt.board[i]===p)) return true; }
+  return false;
+}
+function checkTtt(p){
+  if(winLine(p)){
+    ttt.over=true;
+    if(p==="✕"){ const nb=recordBest("ttt",1,true); addCoins(5); dailyProgress("win",1); $("tttStat").textContent="你赢了！+5⭐"+(nb?" · 新纪录！":""); }
+    else { $("tttStat").textContent="电脑赢了"; }
+    return true;
+  }
+  return false;
+}
+
+/* ================= 贪吃蛇 ================= */
+let snake={timer:null,body:[],dir:{x:1,y:0},food:null,score:0,alive:false,cols:20,rows:20,size:16};
+function startSnake(){
+  const cv=$("snakeCanvas");
+  snake.cols=20; snake.rows=20; snake.size=Math.floor(cv.width/snake.cols);
+  snake.body=[{x:8,y:10},{x:7,y:10},{x:6,y:10}];
+  snake.dir={x:1,y:0}; snake.score=0; snake.alive=true;
+  placeFood(); $("snakeStat").textContent="得分：0";
+  drawSnake();
+  if(snake.timer) clearInterval(snake.timer);
+  snake.timer=setInterval(stepSnake,130);
+}
+function placeFood(){
+  let x,y,ok;
+  do{ x=Math.floor(Math.random()*snake.cols); y=Math.floor(Math.random()*snake.rows); ok=true;
+      for(const b of snake.body){ if(b.x===x&&b.y===y){ ok=false; break; } }
+  }while(!ok);
+  snake.food={x,y};
+}
+function snakeDir(x,y){
+  if(!snake.alive) return;
+  if(snake.dir.x===-x && snake.dir.y===-y) return; // 不能直接反向
+  snake.dir={x,y};
+}
+function stepSnake(){
+  if(!snake.alive) return;
+  const head={x:snake.body[0].x+snake.dir.x, y:snake.body[0].y+snake.dir.y};
+  if(head.x<0||head.y<0||head.x>=snake.cols||head.y>=snake.rows){ endSnake(); return; }
+  for(const b of snake.body){ if(b.x===head.x&&b.y===head.y){ endSnake(); return; } }
+  snake.body.unshift(head);
+  if(snake.food && head.x===snake.food.x && head.y===snake.food.y){
+    snake.score++; $("snakeStat").textContent="得分："+snake.score;
+    addCoins(2); placeFood();
+  } else { snake.body.pop(); }
+  drawSnake();
+}
+function drawSnake(){
+  const cv=$("snakeCanvas"); const ctx=cv.getContext("2d"); const s=snake.size;
+  ctx.fillStyle="#0c1020"; ctx.fillRect(0,0,cv.width,cv.height);
+  for(const b of snake.body){
+    ctx.fillStyle=(b===snake.body[0])?"#ffd166":"#06d6a0";
+    ctx.fillRect(b.x*s+1,b.y*s+1,s-2,s-2);
+  }
+  if(snake.food){
+    ctx.fillStyle="#ef476f";
+    ctx.beginPath(); ctx.arc(snake.food.x*s+s/2,snake.food.y*s+s/2,s/2-1,0,Math.PI*2); ctx.fill();
+  }
+}
+function endSnake(){
+  snake.alive=false;
+  if(snake.timer){clearInterval(snake.timer);snake.timer=null;}
+  recordBest("snake",snake.score);
+  const cv=$("snakeCanvas"); const ctx=cv.getContext("2d");
+  ctx.fillStyle="rgba(8,12,28,.6)"; ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.fillStyle="#fff"; ctx.font="bold 20px sans-serif"; ctx.textAlign="center";
+  ctx.fillText("结束！得分 "+snake.score, cv.width/2, cv.height/2);
+}
+
+/* ================= 极速狂点 ================= */
+let tap={timer:null,left:0,count:0,run:false};
+function startTap(){
+  tap.left=10; tap.count=0; tap.run=true;
+  $("tapNum").textContent="0"; $("tapStat").textContent="剩余 10 秒";
+  if(tap.timer) clearInterval(tap.timer);
+  tap.timer=setInterval(()=>{
+    tap.left--; $("tapStat").textContent="剩余 "+tap.left+" 秒";
+    if(tap.left<=0) endTap();
+  },1000);
+}
+function tapHit(){
+  if(!tap.run) return;
+  tap.count++;
+  const el=$("tapNum"); el.textContent=tap.count;
+  el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump");
+}
+function endTap(){
+  tap.run=false;
+  if(tap.timer){clearInterval(tap.timer);tap.timer=null;}
+  const gained=Math.floor(tap.count/3);
+  if(gained>0) addCoins(gained);
+  recordBest("tap",tap.count);
+  $("tapStat").textContent="结束！点了 "+tap.count+" 下，+"+gained+"⭐";
+}
+
+/* ================= 颜色侦探 ================= */
+let color={level:1,odd:0,locked:false};
+function startColor(){
+  color.level=1; color.locked=false; $("colorStat").textContent="第 1 关";
+  renderColor();
+}
+function renderColor(){
+  const n=Math.min(7,3+Math.floor((color.level-1)/2));
+  const total=n*n;
+  color.odd=Math.floor(Math.random()*total);
+  const baseH=Math.floor(Math.random()*360);
+  const baseL=55;
+  const diff=Math.max(5,32-color.level*2);
+  const board=$("colorBoard");
+  board.style.gridTemplateColumns="repeat("+n+",1fr)";
+  board.innerHTML="";
+  for(let i=0;i<total;i++){
+    const cell=document.createElement("div"); cell.className="color-cell";
+    if(i===color.odd){
+      const dl=(Math.random()<0.5?diff:-diff);
+      cell.style.background="hsl("+baseH+",62%,"+(baseL+dl)+"%)";
+    } else {
+      cell.style.background="hsl("+baseH+",62%,"+baseL+"%)";
+    }
+    cell.onclick=()=>pickColor(i);
+    board.appendChild(cell);
+  }
+}
+function pickColor(i){
+  if(color.locked) return;
+  if(i===color.odd){
+    color.level++; $("colorStat").textContent="第 "+color.level+" 关";
+    addCoins(3); renderColor();
+  } else {
+    color.locked=true;
+    const passed=color.level-1;
+    recordBest("color",passed);
+    $("colorStat").textContent="点错了！通过 "+passed+" 关";
+  }
+}
+
+/* ================= 静心呼吸 ================= */
+let breathe={timer:null,phase:"idle",score:0,target:10,done:0};
+function startBreathe(){
+  breathe.phase="in"; breathe.score=0; breathe.done=0;
+  $("breatheStat").textContent="开始放松…";
+  $("breathePhase").textContent="🌬️ 吸气";
+  setCircle(true);
+  if(breathe.timer) clearInterval(breathe.timer);
+  breathe.timer=setInterval(()=>{
+    if(breathe.phase==="in"){ breathe.phase="out"; $("breathePhase").textContent="😮‍💨 呼气"; setCircle(false); }
+    else { breathe.phase="in"; $("breathePhase").textContent="🌬️ 吸气"; setCircle(true); }
+  },3000);
+}
+function setCircle(big){ const c=$("breatheCircle"); if(c) c.classList.toggle("big",big); }
+function breatheTap(phase){
+  if(breathe.phase==="idle"||!breathe.timer) return;
+  if(phase===breathe.phase){
+    breathe.score++; breathe.done++;
+    const c=$("breatheCircle"); if(c){ c.classList.add("ok"); setTimeout(()=>c.classList.remove("ok"),180); }
+    $("breatheStat").textContent="准！已跟 "+breathe.done+" 次";
+  } else {
+    breathe.done++;
+    $("breatheStat").textContent="节奏没对上，继续～";
+  }
+  if(breathe.done>=breathe.target) endBreathe();
+}
+function endBreathe(){
+  if(breathe.timer){clearInterval(breathe.timer);breathe.timer=null;}
+  const gained=Math.max(0,Math.floor(breathe.score/3));
+  if(gained>0) addCoins(gained);
+  recordBest("breathe",breathe.score);
+  $("breathePhase").textContent="结束！跟准 "+breathe.score+" 次，+"+gained+"⭐";
+}
+
+/* ================= 猜数字 ================= */
+let guess={target:0,tries:0,over:false};
+function startGuess(){
+  guess={target:Math.floor(Math.random()*100)+1,tries:0,over:false};
+  $("guessMsg").textContent="我想了一个 1–100 之间的数，来猜猜看！";
+  $("guessStat").textContent="已猜 0 次";
+  $("guessInput").value=""; $("guessInput").disabled=false; $("guessBtn").textContent="猜！";
+}
+function submitGuess(){
+  if(guess.over){ startGuess(); return; }
+  const v=parseInt($("guessInput").value,10);
+  if(isNaN(v)||v<1||v>100){toast("请输入 1–100 的整数");return;}
+  guess.tries++;
+  if(v===guess.target){
+    guess.over=true;
+    $("guessInput").disabled=true; $("guessBtn").textContent="再玩一局";
+    $("guessMsg").textContent=`🎉 猜中啦！用了 ${guess.tries} 次。`+(guess.tries<=5?" 太厉害了！":guess.tries<=8?" 不错哦！":" 继续努力～");
+    $("guessStat").textContent=`共 ${guess.tries} 次`;
+    recordBest("guess",guess.tries,false);
+    const rw=Math.max(5,30-guess.tries*2); addCoins(rw); dailyProgress("win",1);
+    toast(`猜数字奖励 +${rw} 学分 ⭐`);
+  }else if(v<guess.target){
+    $("guessMsg").textContent="太小了，再大一点 🔼";
+  }else{
+    $("guessMsg").textContent="太大了，再小一点 🔽";
+  }
+  $("guessStat").textContent=`已猜 ${guess.tries} 次`;
+  $("guessInput").value=""; try{$("guessInput").focus();}catch(e){}
+}
+
+/* ================= 舒尔特方格 ================= */
+let sch={nums:[],next:1,start:0,timer:null,over:false};
+function startSchulte(){
+  clearInterval(sch.timer);
+  const n=25, arr=Array.from({length:n},(_,i)=>i+1);
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  sch={nums:arr,next:1,start:Date.now(),timer:null,over:false};
+  const board=$("schBoard"); board.innerHTML="";
+  arr.forEach(v=>{
+    const c=document.createElement("div"); c.className="sch-cell"; c.textContent=v; c.dataset.v=v;
+    c.onclick=()=>clickSch(c,v); board.appendChild(c);
+  });
+  sch.start=Date.now();
+  $("schStat").textContent="按顺序点击 1 → 25";
+  sch.timer=setInterval(()=>{
+    const s=((Date.now()-sch.start)/1000).toFixed(1);
+    $("schStat").textContent="用时 "+s+" 秒 · 下一个："+sch.next;
+  },100);
+}
+function clickSch(el,v){
+  if(sch.over) return;
+  if(v===sch.next){
+    el.classList.add("hit"); el.onclick=null; sch.next++;
+    if(sch.next>25){
+      sch.over=true; clearInterval(sch.timer);
+      const sec=((Date.now()-sch.start)/1000).toFixed(1);
+      $("schStat").textContent="🎉 完成！用时 "+sec+" 秒";
+      recordBest("schulte",parseFloat(sec),false);
+      const rw=Math.max(5,Math.round(60-parseFloat(sec)*2)); addCoins(rw);
+      toast(`舒尔特奖励 +${rw} 学分 ⭐`);
+      setTimeout(startSchulte,1300);
+    }
+  }else{
+    el.classList.add("miss"); setTimeout(()=>el.classList.remove("miss"),300);
+  }
+}
+
+/* ================= 数字记忆 ================= */
+let sim={seq:[],player:0,lock:false,btns:[]};
+const SIM_BTNS=["🔴","🟦","🟩","🟨"];
+const SIM_COLORS=["#ff6b6b","#4d96ff","#3ddc84","#ffd93d"];
+function startSimon(){
+  sim={seq:[],player:0,lock:false,btns:[]};
+  $("simStat").textContent="看清楚闪烁顺序，然后照着点";
+  const board=$("simBoard"); board.innerHTML="";
+  for(let i=0;i<4;i++){
+    const b=document.createElement("div"); b.className="sim-btn"; b.textContent=SIM_BTNS[i];
+    b.style.background=SIM_COLORS[i]; b.onclick=()=>clickSim(i); board.appendChild(b); sim.btns.push(b);
+  }
+  setTimeout(nextSimon,600);
+}
+function nextSimon(){
+  sim.seq.push(Math.floor(Math.random()*4));
+  sim.player=0; sim.lock=true;
+  $("simStat").textContent="记住顺序…（长度 "+sim.seq.length+"）";
+  let i=0;
+  const play=()=>{
+    if(i>=sim.seq.length){ sim.lock=false; $("simStat").textContent="轮到你了！重复刚才的顺序"; return; }
+    const el=sim.btns[sim.seq[i]];
+    el.classList.add("lit"); setTimeout(()=>el.classList.remove("lit"),350);
+    i++; setTimeout(play,620);
+  };
+  play();
+}
+function clickSim(i){
+  if(sim.lock) return;
+  const el=sim.btns[i]; el.classList.add("lit"); setTimeout(()=>el.classList.remove("lit"),200);
+  if(i===sim.seq[sim.player]){
+    sim.player++;
+    if(sim.player>=sim.seq.length){
+      const len=sim.seq.length;
+      recordBest("simon",len,true);
+      addCoins(5+len*2);
+      $("simStat").textContent="✅ 正确！长度 "+len+"，继续…";
+      setTimeout(nextSimon,700);
+    }
+  }else{
+    sim.lock=true;
+    $("simStat").textContent="❌ 记错了！最长是 "+sim.seq.length+" 位。点「重新开始」再挑战";
+    recordBest("simon",sim.seq.length-1,true);
+  }
+}
+
+/* ================= 排行榜 ================= */
+let rankTab="total";
+let currentView="home";
+// 模拟对手（会随你赚分而慢慢增长，保持挑战性；以你当前学分为基准初始化，原学分不受影响）
+// rate 现在表示“对手目标分 = 你的学分 × rate”（0.5~1.6），
+// 所以有人会略低于你、有人会略高于你，更有挑战；名次依旧随机洗牌。
+function npcTarget(r){ return Math.max(20, Math.round(state.coins * r.rate)); }
+function ensureNpc(){
+  const names=["学霸小明","爱学习的喵","知识大王","努力的阿豪","快乐鸟","新手上路"];
+  if(!state.npc || Array.isArray(state.npc[0])){
+    // 首次或兼容旧存档：每个对手的目标分=你的学分×随机系数，名次随机
+    const c=state.coins;
+    state.npc=names.map(n=>({
+      name:n,
+      rate: +(0.5+Math.random()*1.1).toFixed(3),   // 0.5~1.6
+      score: Math.max(40, Math.round(c*(0.45+Math.random()*0.9)))
+    }));
+    save();
+  }else{
+    state.npc.forEach(r=>{ if(typeof r.rate!=="number") r.rate=+(0.5+Math.random()*1.1).toFixed(3); });
+  }
+  // 一次性追赶：若被掉分拖累到个位数，立刻拉回到接近目标分（千位数级别）
+  if(!state.npcCaughtUp){
+    state.npc.forEach(r=>{
+      const t=npcTarget(r);
+      r.score=Math.max(r.score, Math.round(r.score + (t-r.score)*0.75));
+    });
+    state.npcCaughtUp=true; save();
+  }
+}
+// 你每赚一分，对手们就向自己的目标分“追赶”，并额外吃下本次收益的一大部分（涨得更猛）
+function npcGrow(gain){
+  if(!state.npc||gain<=0) return;
+  state.npc.forEach(r=>{
+    const target=npcTarget(r);
+    const noise=0.6+Math.random()*0.9;             // 每次有波动，名次会洗牌
+    const pull=Math.round((target-r.score)*0.30);   // 向目标分拉近 30%
+    const inc =Math.round(gain*r.rate*noise*2.2);  // 额外获得本次收益的一大部分
+    r.score=Math.max(10, r.score+pull+inc);
+  });
+  save();
+}
+// 你解锁游戏时，对手“嫉妒退步”集体掉分（下限 10 分，之后会慢慢追回来）
+function npcSlack(amount){
+  if(!state.npc||amount<=0) return;
+  state.npc.forEach(r=>{ r.score=Math.max(10, r.score-amount); });
+  save();
+  if(currentView==="rank") renderRank();
+}
+// 每分钟，对手们缓慢“追赶”到自己的目标分（不再掉分，避免一直缩水到个位数）
+setInterval(()=>{
+  if(!state.npc) return;
+  state.npc.forEach(r=>{
+    const t=npcTarget(r);
+    const step=Math.round((t-r.score)*0.20);
+    r.score=Math.max(10, r.score+step);
+  });
+  save();
+  if(currentView==="rank") renderRank();
+}, 60000);
+
+function switchRank(t){rankTab=t;
+  $("rankTabTotal").style.background=t==="total"?"#eef1ff":"#f0f2fa";
+  $("rankTabTotal").style.color=t==="total"?"var(--brand)":"var(--muted)";
+  $("rankTabGame").style.background=t==="game"?"#eef1ff":"#f0f2fa";
+  $("rankTabGame").style.color=t==="game"?"var(--brand)":"var(--muted)";
+  renderRank();
+}
+function renderRank(){
+  ensureNpc();
+  const list=$("rankList"); list.innerHTML="";
+  if(rankTab==="total"){
+    const all=state.npc.map(r=>[r.name,r.score]).concat([["我（你）",state.coins,true]]).sort((a,b)=>b[1]-a[1]);
+    all.forEach((row,i)=>{
+      const d=document.createElement("div"); d.className="rank-row"+(row[2]?" me":"");
+      d.innerHTML=`<div class="no ${i<3?'g'+(i+1):''}">${i+1}</div>
+        <div class="nm">${row[0]}</div><div class="sc">⭐ ${row[1]}</div>`;
+      list.appendChild(d);
+    });
+  }else{
+    // 各游戏最佳成绩展示
+    const map={memory:"记忆翻牌(步数,越少越好)",puzzle:"滑块拼图(步数)",reaction:"反应训练(ms)",idiom:"词语接龙(最高连击)",link:"连连看(通关次数)",typing:"打字游戏(最高分)",guess:"猜数字(最少步数)",schulte:"舒尔特(秒,越少越好)",simon:"数字记忆(最长序列)",math:"快速心算(最高答对)",find:"火眼金睛(最高关数)",mole:"打地鼠(最高分)",rps:"石头剪刀布(胜局)",tiles:"别踩白块(最高分)",ttt:"井字棋(胜局)"};
+    let any=false;
+    Object.keys(map).forEach(k=>{
+      if(state.best[k]!==undefined){any=true;
+        const d=document.createElement("div"); d.className="rank-row";
+        const g=GAMES.find(x=>x.id===k);
+        d.innerHTML=`<div class="no">${g.icon}</div><div class="nm">${map[k]}</div><div class="sc">${state.best[k]}</div>`;
+        list.appendChild(d);
+      }
+    });
+    if(!any){list.innerHTML=`<div class="card center muted">还没有游戏成绩，快去游戏中心挑战吧！</div>`;}
+  }
+}
+
+/* ================= 每日任务 ================= */
+function taskEl(t,def){
+  const done=t.progress>=def.goal;
+  const div=document.createElement("div"); div.className="task-item";
+  div.innerHTML=`<div class="ic">${def.icon}</div>
+    <div class="info"><div class="n">${def.name}</div>
+      <div class="p">进度 ${Math.min(t.progress,def.goal)}/${def.goal} · 奖励 ⭐${def.reward}</div>
+      <div class="bar"><i style="width:${Math.min(100,t.progress/def.goal*100)}%"></i></div>
+    </div>
+    <button class="act ${t.claimed?'done':(done?'claim':'wip')}">${t.claimed?'已领取':(done?'领取':'进行中')}</button>`;
+  const btn=div.querySelector(".act");
+  if(!t.claimed&&done){btn.onclick=()=>claimTask(t.id);}
+  return div;
+}
+function renderDaily(){
+  ensureDaily();
+  $("dailyReset").textContent="（每日 0 点刷新）";
+  const list=$("dailyList"); list.innerHTML="";
+  state.daily.tasks.forEach(t=>list.appendChild(taskEl(t,dailyDef(t.id))));
+  const allDone=state.daily.tasks.length>0 && state.daily.tasks.every(t=>t.claimed);
+  if(allDone){
+    const b=document.createElement("button");
+    b.className="btn"; b.textContent="📦 再领一批（10 个）新任务";
+    b.onclick=moreDaily;
+    list.appendChild(b);
+  }
+}
+function claimTask(id){
+  ensureDaily();
+  const t=state.daily.tasks.find(x=>x.id===id);
+  if(!t) return;
+  const def=dailyDef(id);
+  if(t.claimed||t.progress<def.goal) return;
+  t.claimed=true; save();
+  addCoins(def.reward,false);
+  toast(`领取成功 +${def.reward} 学分 ⭐`);
+  renderDaily(); refreshDailyMini();
+}
+
+/* ================= 导航 & 启动 ================= */
+// 恢复存档：打开 index.html?restore 会把学分设回 2000、解锁全部游戏（仅执行一次，随后自动清除参数）
+if(location.search.indexOf("restore")>=0){
+  state.coins=2000;
+  SHOP.forEach(it=>{ if(it.type==="game") state.unlocked[it.id]=true; });
+  save();
+  location.search="";
+}
+/* ================= 背景音乐（Web Audio 合成，无需外部文件，可切换两首） ================= */
+const Music=(function(){
+  const NOTE={
+    'C3':130.81,'D3':146.83,'E3':164.81,'F3':174.61,'G3':196.00,'A3':220.00,'B3':246.94,
+    'C4':261.63,'D4':293.66,'E4':329.63,'F4':349.23,'G4':392.00,'A4':440.00,'B4':493.88,
+    'C5':523.25,'D5':587.33,'E5':659.25,'F5':698.46,'G5':783.99,'A5':880.00,'B5':987.77,'C6':1046.50,
+    'C2':65.41,'D2':73.42,'E2':82.41,'F2':87.31,'G2':98.00,'A2':110.00
+  };
+  // 两首曲目：tiger =《Eye of the Tiger》迈克·泰森战斗神曲；march = 反转进行曲（旋律每遍正弹/反转交替）
+  const TRACKS={
+    tiger:{
+      name:'战斗曲', bpm:126, mode:'rock', leadType:'sawtooth', fifth:true,
+      lead:['E4','E4','E4','E4','G4','A4','G4','E4','E4','E4','E4','E4','G4','A4','B4','A4'],
+      bass:['E3','C3','D3','E3']            // Em–C–D–Em
+    },
+    march:{
+      name:'反转曲', bpm:120, mode:'march', leadType:'square', reverse:true, fifth:true,
+      lead:['C5','E5','G5','C6','B5','G5','E5','C5','D5','F5','A5','F5','E5','C5','G4','C5'],
+      bass:['C3','G3','C3','G3']            // I–V–I–V，进行曲 oom-pah
+    },
+    metal:{
+      name:'狂暴金属', bpm:162, mode:'metal', leadType:'sawtooth', fifth:true,
+      lead:['E4','E4','G4','E4','A4','E4','B4','A4','C5','B4','A4','G4','E4','G4','A4','B4'],
+      bass:['E3','E3','G3','A3']            // 疾速 riff + 双踩底鼓
+    },
+    techno:{
+      name:'电音战鼓', bpm:140, mode:'techno', leadType:'square', fifth:false,
+      lead:['A4','C5','E5','A5','E5','C5','A4','C5','G4','B4','D5','G5','D5','B4','G4','B4'],
+      bass:['A3','A3','F3','G3']            // 四踩底鼓 + 反拍贝斯
+    },
+    punk:{
+      name:'极速朋克', bpm:180, mode:'punk', leadType:'sawtooth', fifth:true,
+      lead:['C5','C5','G4','C5','F5','F5','C5','F5','G5','G5','D5','G5','E5','C5','G4','C5'],
+      bass:['C3','C3','F3','G3']            // 冲刺八分音符
+    },
+    dubstep:{
+      name:'电音轰炸', bpm:148, mode:'dubstep', leadType:'sawtooth', fifth:false,
+      lead:['E4','E4','G4','E4','A4','E4','G4','E4','D4','D4','F4','D4','G4','D4','F4','D4'],
+      bass:['E2','C2','D2','E2']            // 低音wobble（sub bass）
+    },
+    hardcore:{
+      name:'硬核崩塌', bpm:208, mode:'hardcore', leadType:'sawtooth', fifth:true,
+      lead:['A4','A4','A4','C5','A4','G4','A4','C5','E5','E5','D5','C5','A4','G4','A4','C5'],
+      bass:['A2','A2','F2','G2']            // 崩塌式八分贝斯
+    },
+    boss:{
+      name:'终极BOSS战', bpm:176, mode:'boss', leadType:'sawtooth', fifth:true,
+      lead:['E4','G4','B4','E5','D5','B4','G4','E4','C5','E5','G5','E5','B4','G4','E4','D4'],
+      bass:['E2','E2','C2','D2']            // 史诗强力五和弦
+    },
+    war:{
+      name:'燃战歌', bpm:168, mode:'boss', leadType:'square', fifth:true,
+      lead:['G4','G4','G4','D5','B4','G4','B4','D5','C5','C5','G4','C5','E5','D5','C5','G4'],
+      bass:['G2','G2','D2','C2']            // 战歌进行
+    }
+  };
+  Object.values(TRACKS).forEach(t=>{ if(t.reverse) t.revLead=[...t.lead].reverse(); });
+  const ORDER=['tiger','march','metal','techno','punk','dubstep','hardcore','boss','war'];   // 翻转按钮循环顺序
+  const NAMES={}; for(const k in TRACKS) NAMES[k]=TRACKS[k].name;
+  let current='tiger';
+  let ctx=null, master=null, lp=null, noiseBuf=null, timer=null;
+  let step=0, loop=0, totalStep=0, nextTime=0, playing=false;
+  const sd=()=>(60/TRACKS[current].bpm)/4;   // 当前曲目十六分音符时长
+
+  function ensure(){
+    if(ctx) return;
+    const AC=window.AudioContext||window.webkitAudioContext;
+    ctx=new AC();
+    master=ctx.createGain(); master.gain.value=0.5;
+    lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=3200; lp.Q.value=0.7; // 低通让音色更厚（像失真电吉他/铜管）
+    master.connect(lp); lp.connect(ctx.destination);
+    const len=Math.floor(ctx.sampleRate*0.2);
+    noiseBuf=ctx.createBuffer(1,len,ctx.sampleRate);
+    const d=noiseBuf.getChannelData(0);
+    for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+  }
+  function tone(freq,t,dur,type,vol){
+    if(!freq) return;
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type=type; o.frequency.setValueAtTime(freq,t);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.linearRampToValueAtTime(vol,t+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(master);
+    o.start(t); o.stop(t+dur+0.03);
+  }
+  function kick(t){
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(45,t+0.12);
+    g.gain.setValueAtTime(0.5,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.18);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t+0.2);
+  }
+  function snare(t){
+    const s=ctx.createBufferSource(); s.buffer=noiseBuf;
+    const g=ctx.createGain(); g.gain.setValueAtTime(0.18,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
+    const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1800; bp.Q.value=0.8;
+    s.connect(bp); bp.connect(g); g.connect(master); s.start(t); s.stop(t+0.14);
+  }
+  function hat(t,vol){
+    const s=ctx.createBufferSource(); s.buffer=noiseBuf;
+    const g=ctx.createGain(); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.05);
+    const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=7000;
+    s.connect(hp); hp.connect(g); g.connect(master); s.start(t); s.stop(t+0.06);
+  }
+  function wob(t,freq,dur,vol){            // dubstep 低音wobble（sub bass + LFO 频率抖动）
+    if(!freq) return;
+    const o=ctx.createOscillator(), g=ctx.createGain(), lp2=ctx.createBiquadFilter();
+    o.type='sawtooth'; o.frequency.setValueAtTime(freq,t);
+    lp2.type='lowpass'; lp2.frequency.value=900; lp2.Q.value=6;     // 低通让低音更厚
+    const lfo=ctx.createOscillator(), lg=ctx.createGain();
+    lfo.type='sine'; lfo.frequency.setValueAtTime(7,t); lfo.frequency.linearRampToValueAtTime(5.5,t+dur);
+    lg.gain.value=freq*0.85;               // 抖动深度 ~±0.85 八度
+    lfo.connect(lg); lg.connect(o.frequency);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.linearRampToValueAtTime(vol,t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(lp2); lp2.connect(g); g.connect(master);
+    o.start(t); lfo.start(t); o.stop(t+dur+0.03); lfo.stop(t+dur+0.03);
+  }
+  function scheduler(){
+    const tr=TRACKS[current], D=sd();
+    while(nextTime < ctx.currentTime+0.12){
+      const t=nextTime, s=step%16, beat=Math.floor(s/4)%tr.bass.length;
+      const seq = (tr.reverse && (loop%2===1)) ? tr.revLead : tr.lead;  // 反转曲：偶数遍正弹、奇数遍倒弹
+      const lf=NOTE[seq[s]];
+      if(lf){
+        tone(lf, t, D*0.6, tr.leadType, 0.16);           // 主音
+        if(tr.fifth) tone(lf*1.5, t, D*0.6, tr.leadType, 0.07);  // 上方五度叠音（强力五和弦）
+      }
+      // —— 贝斯 ——
+      if(tr.mode==='march'){
+        if(s%4===0) tone(NOTE[tr.bass[beat]],     t, D*1.8, 'square', 0.18);  // oom（根音）
+        if(s%4===2) tone(NOTE[tr.bass[beat]]*1.5, t, D*1.1, 'square', 0.11);  // pah（五度）
+      }else if(tr.mode==='techno'){
+        if(s%2===1) tone(NOTE[tr.bass[beat]], t, D*0.8, 'square', 0.17);      // 反拍电贝斯
+      }else if(tr.mode==='metal'||tr.mode==='punk'){
+        tone(NOTE[tr.bass[beat]], t, D*0.9, 'square', 0.15);                  // 疾速八分贝斯
+      }else if(tr.mode!=='dubstep'){
+        if(s%4===0) tone(NOTE[tr.bass[beat]], t, D*3.8, 'square', 0.20);      // 贝斯根音
+      }
+      // —— 鼓组 ——
+      switch(tr.mode){
+        case 'march':
+          if(s===0||s===8) kick(t);
+          if(s===4||s===12) snare(t);
+          if(s%2===0) hat(t,0.04);
+          break;
+        case 'metal':                              // 双踩底鼓 + 密集踩镲，最凶
+          if(s%2===0) kick(t);
+          if(s===2||s===6||s===10||s===14) kick(t);
+          if(s===4||s===12) snare(t);
+          hat(t,0.05);
+          break;
+        case 'techno':                             // 四踩底鼓 + 反拍开镲
+          if(s%4===0) kick(t);
+          if(s===4||s===12) snare(t);
+          if(s%4===2) hat(t,0.06);
+          break;
+        case 'punk':                               // 冲刺底鼓 + 八分踩镲
+          if(s===0||s===4||s===8||s===12) kick(t);
+          if(s===4||s===12) snare(t);
+          hat(t,0.045); hat(t+D*0.5,0.03);
+          break;
+        case 'dubstep':                            // 半拍落鼓 + sub wobble（炸裂轰炸感）
+          if(s===0||s===8) kick(t);
+          if(s===4||s===12) snare(t);
+          wob(t, NOTE[tr.bass[beat]], D*3.8, 0.24);
+          hat(t,0.05);
+          break;
+        case 'hardcore':                           // 208 BPM 无情连踩（最崩）
+          if(s%2===0) kick(t);
+          if(s===2||s===6||s===10||s===14) kick(t);
+          if(s===4||s===12) snare(t);
+          hat(t,0.05); hat(t+D*0.5,0.03);
+          break;
+        case 'boss':                               // 史诗 BOSS：每拍踩鼓 + 双踩 + 强力五和弦
+          if(s%4===0) kick(t);
+          if(s===0||s===8) kick(t);
+          if(s===4||s===12) snare(t);
+          hat(t,0.05); hat(t+D*0.5,0.03);
+          break;
+        default:                                   // rock（战斗曲）
+          if(s===0||s===8) kick(t);
+          if(s===4||s===12) snare(t);
+          hat(t,0.045); hat(t+D*0.5,0.03);
+      }
+      step++; totalStep++; if(step%16===15) loop++;
+      nextTime+=D;
+    }
+  }
+  return {
+    start(track){
+      ensure(); if(ctx.state==='suspended') ctx.resume();
+      if(track) current=track;
+      if(playing) return;           // 已在播放：切换 current 即无缝换曲
+      playing=true; step=0; loop=0; totalStep=0; nextTime=ctx.currentTime+0.06;
+      timer=setInterval(scheduler,25);
+    },
+    stop(){ playing=false; if(timer){clearInterval(timer); timer=null;} },
+    get playing(){return playing;},
+    get current(){return current;},
+    names:NAMES, order:ORDER
+  };
+})();
+
+/* ================= 外圈火焰奔腾特效（开始学习时触发） ================= */
+const Flame=(function(){
+  let cv,ctx,W=0,H=0,parts=[],raf=null,t0=0,dur=0,dpr=1;
+  function init(){
+    if(cv) return;
+    cv=$("flameCanvas"); ctx=cv.getContext("2d");
+    resize(); window.addEventListener("resize",resize);
+  }
+  function resize(){
+    if(!cv) return;
+    dpr=Math.min(2,window.devicePixelRatio||1);
+    W=cv.clientWidth; H=cv.clientHeight;
+    cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  // 沿屏幕四边“喷火”，火焰向屏内/上方奔腾
+  function spawn(n){
+    for(let i=0;i<n;i++){
+      const e=Math.floor(Math.random()*4); let x,y,vx,vy;
+      if(e===0){x=rnd(0,W);y=H-2;vx=rnd(-.4,.4);vy=rnd(-1.6,-.7);}      // 底边：向上窜
+      else if(e===1){x=rnd(0,W);y=2;vx=rnd(-.4,.4);vy=rnd(.5,1.4);}     // 顶边：向下窜
+      else if(e===2){x=2;y=rnd(0,H);vx=rnd(.5,1.4);vy=rnd(-.4,.4);}     // 左边：向右窜
+      else {x=W-2;y=rnd(0,H);vx=rnd(-1.4,-.5);vy=rnd(-.4,.4);}         // 右边：向左窜
+      parts.push({x,y,vx,vy,r:rnd(10,26),hue:rnd(0,32),life:rnd(.55,1.15),age:0});
+    }
+  }
+  function tick(t){
+    if(!t0) t0=t;
+    const el=t-t0;
+    ctx.clearRect(0,0,W,H);
+    if(el<dur) spawn(7);
+    parts.forEach(p=>{ p.age+=1/60; p.x+=p.vx; p.y+=p.vy; p.vy*=0.985; p.vx*=0.992; });
+    parts=parts.filter(p=>p.age<p.life);
+    parts.forEach(p=>{
+      const k=1-p.age/p.life, r=p.r*(0.55+0.45*k);
+      const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r);
+      g.addColorStop(0,`hsla(${p.hue+45},100%,72%,${0.95*k})`);
+      g.addColorStop(.35,`hsla(${p.hue+22},100%,55%,${0.6*k})`);
+      g.addColorStop(1,`hsla(${p.hue},100%,45%,0)`);
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
+    });
+    if(el<dur || parts.length){ raf=requestAnimationFrame(tick); }
+    else { stop(); }
+  }
+  function start(ms){
+    init(); dur=ms||4200; t0=0; parts=[];
+    const f=$("flames"); if(f){ f.classList.add("on"); f.classList.remove("ice-on"); }
+    if(!raf) raf=requestAnimationFrame(tick);
+  }
+  function stop(){
+    if(raf){cancelAnimationFrame(raf); raf=null;}
+    const f=$("flames"); if(f) f.classList.remove("on");
+    if(ctx) ctx.clearRect(0,0,W,H);
+    parts=[];
+  }
+  return {start,stop};
+})();
+
+/* ================= 冰雪特效（冷静思考类科目：开始学习时触发） ================= */
+const Ice=(function(){
+  let cv,ctx,W=0,H=0,parts=[],raf=null,t0=0,dur=0,dpr=1;
+  function init(){
+    if(cv) return;
+    cv=$("iceCanvas"); ctx=cv.getContext("2d");
+    resize(); window.addEventListener("resize",resize);
+  }
+  function resize(){
+    if(!cv) return;
+    dpr=Math.min(2,window.devicePixelRatio||1);
+    W=cv.clientWidth; H=cv.clientHeight;
+    cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  // 沿屏幕四边“飘”入：顶边飘落、底边上飘、左右边向内飘，整体冷静柔和
+  function spawn(n){
+    for(let i=0;i<n;i++){
+      const e=Math.floor(Math.random()*4); let x,y,vx,vy;
+      if(e===0){x=rnd(0,W);y=2;vx=rnd(-.3,.3);vy=rnd(.4,1.0);}        // 顶边：飘落
+      else if(e===1){x=rnd(0,W);y=H-2;vx=rnd(-.3,.3);vy=rnd(-1.0,-.4);} // 底边：上飘
+      else if(e===2){x=2;y=rnd(0,H);vx=rnd(.4,1.0);vy=rnd(-.3,.3);}   // 左边：右飘
+      else {x=W-2;y=rnd(0,H);vx=rnd(-1.0,-.4);vy=rnd(-.3,.3);}        // 右边：左飘
+      parts.push({x,y,vx,vy,r:rnd(7,20),life:rnd(1.5,2.8),age:0,
+        sway:rnd(0,Math.PI*2),swaySpd:rnd(.5,1.5),
+        crystal:Math.random()<0.35, rot:rnd(0,Math.PI),rotSpd:rnd(-.04,.04)});
+    }
+  }
+  // 柔光雪点：白→淡蓝→透明
+  function snow(p){
+    const k=1-p.age/p.life, r=p.r*(0.6+0.4*k);
+    const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r);
+    g.addColorStop(0,`hsla(196,100%,96%,${0.9*k})`);
+    g.addColorStop(.4,`hsla(205,95%,80%,${0.5*k})`);
+    g.addColorStop(1,`hsla(210,90%,70%,0)`);
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
+  }
+  // 六角冰晶：旋转 + 分叉
+  function crystal(p){
+    const k=1-p.age/p.life, r=p.r*(0.7+0.3*k);
+    ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+    ctx.strokeStyle=`hsla(200,100%,92%,${0.85*k})`;
+    ctx.lineWidth=Math.max(1,r*0.12); ctx.lineCap="round";
+    for(let a=0;a<6;a++){
+      ctx.rotate(Math.PI/3);
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-r); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,-r*0.55); ctx.lineTo(r*0.22,-r*0.82); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,-r*0.55); ctx.lineTo(-r*0.22,-r*0.82); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  function tick(t){
+    if(!t0) t0=t;
+    const el=t-t0;
+    ctx.clearRect(0,0,W,H);
+    if(el<dur) spawn(5);
+    parts.forEach(p=>{
+      p.age+=1/60; p.sway+=p.swaySpd/60;
+      p.x+=p.vx+Math.sin(p.sway)*0.4;
+      p.y+=p.vy; p.vy*=0.992; p.vx*=0.995; p.rot+=p.rotSpd;
+    });
+    parts=parts.filter(p=>p.age<p.life);
+    parts.forEach(p=>{ if(p.crystal) crystal(p); else snow(p); });
+    if(el<dur || parts.length){ raf=requestAnimationFrame(tick); }
+    else { stop(); }
+  }
+  function start(ms){
+    init(); dur=ms||4200; t0=0; parts=[];
+    const f=$("flames"); if(f){ f.classList.add("on","ice-on"); }
+    if(!raf) raf=requestAnimationFrame(tick);
+  }
+  function stop(){
+    if(raf){cancelAnimationFrame(raf); raf=null;}
+    const f=$("flames"); if(f) f.classList.remove("on","ice-on");
+    if(ctx) ctx.clearRect(0,0,W,H);
+    parts=[];
+  }
+  return {start,stop};
+})();
+
+function applyMusic(){
+  if(state.music) Music.start(state.track||'tiger'); else Music.stop();
+  // 播放中给页面加上“燥起来”的视觉状态（背景光晕加速、更亮）
+  document.body.classList.toggle("music-on", !!state.music);
+}
+function refreshMusicUI(){
+  const off=$("musicOff"), flip=$("musicFlip"), lbl=$("flipLabel");
+  off.classList.toggle("off-state", !state.music);   // 「关」激活时高亮
+  flip.classList.toggle("off-state", !state.music);  // 关着时曲目按钮变灰
+  lbl.textContent = Music.names[state.track] || "战斗曲";
+}
+// 单独的「关」按钮：停掉音乐
+function musicOff(){
+  state.music=false; save(); refreshMusicUI(); applyMusic();
+}
+// 曲目一键循环：关着时点一下先开（沿用当前曲目），开着时点一下切到下一首（战斗曲→反转曲→狂暴金属→电音战鼓→极速朋克→…）
+function flipTrack(){
+  if(!state.music){ state.music=true; }
+  else {
+    const ord=Music.order, i=ord.indexOf(state.track);
+    state.track = ord[(i+1)%ord.length];
+  }
+  save(); refreshMusicUI(); applyMusic();
+}
+// 浏览器禁止自动播放：若存档里音乐是开着的，则在首次用户交互时启动当前曲目
+if(state.music){
+  const kick=()=>{ if(!Music.playing) applyMusic(); };
+  document.addEventListener('pointerdown',kick,{once:true});
+  document.addEventListener('keydown',kick,{once:true});
+}
+
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>go(b.dataset.go));
+ensureNpc(); ensureDaily(); updateCoins(); refreshMusicUI(); renderHome();
+</script>
+</body>
+</html>

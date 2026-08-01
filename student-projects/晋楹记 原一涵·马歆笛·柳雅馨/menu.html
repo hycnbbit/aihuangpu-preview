@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>晋楹记 · 山西古建榫卯</title>
+<style>
+  :root{
+    --zhu:#8B1A1A;      /* 朱红 主色 */
+    --he:#5C3317;       /* 深褐 辅色 */
+    --mi:#F5F5DC;       /* 米黄 背景点缀 */
+    --jin:#FFD700;      /* 金 点缀 */
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    font-family:"STKaiti","KaiTi","楷体","STSong","SimSun","Songti SC","宋体",serif;
+    color:var(--mi);
+    overflow:hidden;
+    background:
+      radial-gradient(ellipse at 50% 38%, #6b3a1d 0%, #3a1d0d 42%, #160a05 100%);
+    position:relative;
+  }
+
+  /* ---------- 背景层 ---------- */
+  .bg-tower{
+    position:fixed; inset:0; margin:auto;
+    height:88vh; width:auto;
+    opacity:.16;
+    pointer-events:none;
+    filter:drop-shadow(0 0 6px rgba(255,215,0,.15));
+    animation:towerFloat 9s ease-in-out infinite;
+  }
+  .bg-tower path,.bg-tower line,.bg-tower circle{
+    fill:none; stroke:var(--jin); stroke-width:1.4; stroke-linecap:round;
+  }
+  @keyframes towerFloat{ 0%,100%{ transform:translateY(0); opacity:.16 } 50%{ transform:translateY(-10px); opacity:.22 } }
+
+  /* 底部木纹台基 */
+  .bg-base{
+    position:fixed; left:0; right:0; bottom:0; height:74px;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.25) 0 2px, transparent 2px 9px),
+      linear-gradient(180deg, #4a2814, #2c160a);
+    border-top:3px solid var(--jin);
+    box-shadow:0 -10px 30px rgba(0,0,0,.6), inset 0 6px 14px rgba(0,0,0,.45);
+    pointer-events:none;
+  }
+  .bg-base::after{
+    content:""; position:absolute; left:0; right:0; top:8px; height:1px;
+    background:repeating-linear-gradient(90deg, rgba(255,215,0,.35) 0 14px, transparent 14px 30px);
+  }
+
+  /* ---------- 角落信息 ---------- */
+  .corner{ position:fixed; z-index:5; user-select:none; }
+  .corner.tl{ left:22px; top:18px; font-size:15px; letter-spacing:3px; color:var(--mi); opacity:.85;
+    text-shadow:0 1px 2px #000; }
+  .corner.tl small{ display:block; font-size:11px; letter-spacing:1px; color:var(--jin); opacity:.7; margin-top:2px; }
+  .corner.tr{ right:20px; top:16px; display:flex; align-items:center; gap:8px; }
+  .ring{ width:54px; height:54px; transform:rotate(-90deg); }
+  .ring .bg{ fill:none; stroke:rgba(255,215,0,.18); stroke-width:5; }
+  .ring .fg{ fill:none; stroke:var(--jin); stroke-width:5; stroke-linecap:round;
+    stroke-dasharray:98 65.4; /* 60% of 2πr(26)=163.4 */ filter:drop-shadow(0 0 4px rgba(255,215,0,.5)); }
+  .corner.tr .pct{ font-size:14px; color:var(--jin); text-shadow:0 1px 2px #000; }
+
+  .luban{
+    position:fixed; right:22px; bottom:90px; z-index:6;
+    width:48px; height:48px; border-radius:12px; cursor:pointer;
+    background:rgba(92,51,23,.55); border:1.5px solid var(--jin);
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .2s, background .2s; box-shadow:0 4px 12px rgba(0,0,0,.4);
+  }
+  .luban:hover{ background:rgba(139,26,26,.7); transform:translateY(-2px); }
+  .luban svg{ width:30px; height:30px; }
+  .luban svg rect{ fill:rgba(92,51,23,.6); stroke:var(--jin); stroke-width:1.6; }
+  .luban.off{ opacity:.5; }
+  .luban.off svg rect{ stroke:#999; }
+
+  /* ---------- 主舞台 ---------- */
+  .stage{
+    position:relative; z-index:4; height:100%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding-bottom:40px;
+  }
+  .title{
+    font-size:clamp(64px, 13vw, 148px);
+    color:var(--zhu); font-weight:700; letter-spacing:14px; padding-left:14px;
+    text-shadow:
+      0 2px 0 var(--he),
+      0 4px 2px rgba(0,0,0,.5),
+      0 6px 10px rgba(0,0,0,.55),
+      0 -1px 0 rgba(255,215,0,.35),
+      0 -2px 6px rgba(255,215,0,.18);
+    animation:titleIn 1s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @keyframes titleIn{ from{ opacity:0; transform:translateY(26px) scale(.96); filter:blur(6px);} to{opacity:1; transform:none; filter:blur(0);} }
+  .subtitle{
+    margin-top:10px; font-size:clamp(14px,2.4vw,20px); letter-spacing:6px;
+    color:var(--mi); opacity:.9; text-shadow:0 1px 3px #000;
+    animation:titleIn 1s cubic-bezier(.2,.8,.2,1) .25s both;
+  }
+  .subtitle b{ color:var(--jin); font-weight:400; }
+
+  /* ---------- 菜单按钮 ---------- */
+  .menu{ margin-top:46px; display:flex; flex-direction:column; gap:16px; width:300px; }
+  .mbtn{
+    position:relative; cursor:pointer; border:none; outline:none;
+    font-family:inherit; font-size:21px; letter-spacing:6px; padding-left:6px;
+    color:var(--mi); background:linear-gradient(180deg, #a82323, var(--zhu));
+    border:1.5px solid var(--jin); border-radius:10px;
+    padding:14px 0; box-shadow:0 5px 0 #5a0f0f, 0 8px 16px rgba(0,0,0,.5);
+    transition:transform .15s, box-shadow .15s, filter .15s;
+    opacity:0; transform:translateX(-80px);
+    animation:slideInLeft .55s cubic-bezier(.2,.8,.2,1) forwards;
+    animation-delay:calc(.35s + var(--i)*.13s);
+  }
+  .mbtn:hover{ filter:brightness(1.12); }
+  .mbtn.pressed{ animation:press .3s ease; }
+  @keyframes slideInLeft{ to{ opacity:1; transform:translateX(0); } }
+  @keyframes press{ 0%{ transform:translateY(0); } 30%{ transform:translateY(6px) scale(.985);} 60%{ transform:translateY(-2px);} 100%{ transform:translateY(0);} }
+
+  .hint{ margin-top:26px; font-size:12px; letter-spacing:2px; color:rgba(245,245,220,.5); }
+</style>
+</head>
+<body>
+
+  <!-- 背景：应县木塔半透明线稿 -->
+  <svg class="bg-tower" viewBox="0 0 240 640" aria-hidden="true">
+    <path d="M8 600 Q120 580 232 600"/>
+    <line x1="50" y1="600" x2="50" y2="494"/><line x1="190" y1="600" x2="190" y2="494"/>
+    <line x1="19" y1="494" x2="221" y2="494"/>
+    <path d="M24 494 Q120 476 216 494"/>
+    <line x1="60" y1="494" x2="60" y2="388"/><line x1="180" y1="494" x2="180" y2="388"/>
+    <line x1="30" y1="388" x2="210" y2="388"/>
+    <path d="M38 388 Q120 372 202 388"/>
+    <line x1="69" y1="388" x2="69" y2="282"/><line x1="171" y1="388" x2="171" y2="282"/>
+    <line x1="44" y1="282" x2="196" y2="282"/>
+    <path d="M52 282 Q120 268 188 282"/>
+    <line x1="78" y1="282" x2="78" y2="176"/><line x1="162" y1="282" x2="162" y2="176"/>
+    <line x1="58" y1="176" x2="182" y2="176"/>
+    <path d="M66 176 Q120 162 174 176"/>
+    <line x1="86" y1="176" x2="86" y2="70"/><line x1="154" y1="176" x2="154" y2="70"/>
+    <line x1="120" y1="70" x2="120" y2="26"/>
+    <circle cx="120" cy="60" r="5"/><circle cx="120" cy="50" r="4"/><circle cx="120" cy="41" r="3"/>
+    <circle cx="120" cy="30" r="6"/>
+  </svg>
+
+  <div class="bg-base"></div>
+
+  <!-- 角落信息 -->
+  <div class="corner tl">山西 · 古建巡礼<small>SHANXI · ANCIENT ARCHITECTURE</small></div>
+  <div class="corner tr">
+    <svg class="ring" viewBox="0 0 60 60">
+      <circle class="bg" cx="30" cy="30" r="26"/>
+      <circle class="fg" cx="30" cy="30" r="26"/>
+    </svg>
+    <span class="pct">60%</span>
+  </div>
+  <div class="luban" id="luban" title="音效开关" onclick="toggleAudio()">
+    <svg viewBox="0 0 40 40">
+      <rect x="14" y="5" width="12" height="30" rx="2"/>
+      <rect x="5" y="14" width="30" height="12" rx="2"/>
+      <rect x="9" y="9" width="22" height="22" rx="2" transform="rotate(45 20 20)"/>
+    </svg>
+  </div>
+
+  <!-- 主舞台 -->
+  <main class="stage">
+    <h1 class="title">晋楹记</h1>
+    <p class="subtitle">山西古建筑 · <b>榫卯拼装</b> · 古建巡礼</p>
+    <nav class="menu">
+      <button class="mbtn" style="--i:0" onclick="enter('index.html')">开始游戏</button>
+      <button class="mbtn" style="--i:1" onclick="enter('index.html#build')">古建拼装</button>
+      <button class="mbtn" style="--i:2" onclick="enter('index.html#museum')">藏品图鉴</button>
+      <button class="mbtn" style="--i:3" onclick="enter('index.html#profile')">我的成就</button>
+    </nav>
+    <p class="hint">提示：先到「闯关区」答题获取专属榫卯，再到「古建拼装」复刻古建</p>
+  </main>
+
+<script>
+/* ================= 音效引擎（Web Audio 程序化合成，离线可用） ================= */
+let actx=null, audioOn=true, ambientStarted=false;
+
+function ensureCtx(){
+  if(actx) { if(actx.state==='suspended') actx.resume(); return; }
+  try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return; }
+  startAmbient();
+}
+
+function startAmbient(){
+  if(ambientStarted) return; ambientStarted=true;
+  scheduleChime(); scheduleBird(); scheduleCreak();
+}
+function scheduleChime(){ if(!actx||!audioOn) return; playChime(); setTimeout(scheduleChime, 1800+Math.random()*2600); }
+function playChime(){
+  if(!actx) return; const t=actx.currentTime;
+  const freqs=[1245,1660,2090,2480]; const f=freqs[(Math.random()*freqs.length)|0];
+  const o=actx.createOscillator(), g=actx.createGain();
+  o.type='sine'; o.frequency.value=f;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.12,t+.01);
+  g.gain.exponentialRampToValueAtTime(.0001,t+1.6);
+  o.connect(g).connect(actx.destination); o.start(t); o.stop(t+1.7);
+}
+function scheduleBird(){ if(!actx||!audioOn) return; if(Math.random()<.6) playBird(); setTimeout(scheduleBird, 5000+Math.random()*6000); }
+function playBird(){
+  if(!actx) return; const t=actx.currentTime;
+  const o=actx.createOscillator(), g=actx.createGain();
+  o.type='sine';
+  o.frequency.setValueAtTime(2200,t);
+  o.frequency.exponentialRampToValueAtTime(3100,t+.07);
+  o.frequency.exponentialRampToValueAtTime(1700,t+.18);
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.05,t+.02);
+  g.gain.exponentialRampToValueAtTime(.0001,t+.26);
+  o.connect(g).connect(actx.destination); o.start(t); o.stop(t+.3);
+}
+function scheduleCreak(){ if(!actx||!audioOn) return; if(Math.random()<.5) playCreak(); setTimeout(scheduleCreak, 4000+Math.random()*7000); }
+function playCreak(){
+  if(!actx) return; const t=actx.currentTime;
+  const o=actx.createOscillator(), g=actx.createGain(), f=actx.createBiquadFilter();
+  o.type='sawtooth'; o.frequency.setValueAtTime(85,t); o.frequency.linearRampToValueAtTime(140,t+.4);
+  f.type='lowpass'; f.frequency.value=420;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.045,t+.05); g.gain.linearRampToValueAtTime(.0001,t+.46);
+  o.connect(f).connect(g).connect(actx.destination); o.start(t); o.stop(t+.5);
+}
+
+function toggleAudio(){
+  ensureCtx();
+  audioOn=!audioOn;
+  document.getElementById('luban').classList.toggle('off', !audioOn);
+  if(audioOn) startAmbient();
+}
+
+/* 首次任意交互即解锁音频（浏览器自动播放策略要求手势） */
+document.addEventListener('pointerdown', ensureCtx, { once:false });
+
+/* 点击按钮回弹动画（页面加载时绑定一次，避免重复监听） */
+document.querySelectorAll('.mbtn').forEach(b=>{
+  b.addEventListener('click', ()=>{ b.classList.remove('pressed'); void b.offsetWidth; b.classList.add('pressed'); });
+});
+/* 进入游戏 */
+function enter(target){
+  ensureCtx();
+  setTimeout(()=>{ location.href=target; }, 200);
+}
+</script>
+</body>
+</html>

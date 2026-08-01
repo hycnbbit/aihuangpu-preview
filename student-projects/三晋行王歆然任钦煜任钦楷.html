@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>三晋行 · 山西文旅闯关（北→南 · 综合版）</title>
+<style>
+  :root{
+    --paper:#f1e7d0; --paper2:#f7f0e1; --ink:#332e26; --ink-soft:#6f6657;
+    --jade:#3a5d6e; --jade-deep:#274554; --vermillion:#9e2b25; --gold:#c79a3e; --line:#c7bb9e;
+    --ink-line:#5a5043;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;outline:none;}
+  *:focus{outline:none!important;}
+  html,body{margin:0;height:100%;}
+  body{font-family:"Songti SC","STSong","SimSun","Noto Serif CJK SC",serif;
+    background:#e5eaed;color:var(--ink);display:flex;justify-content:center;align-items:flex-start;min-height:100%;}
+  #app{width:100%;max-width:480px;min-height:100vh;background:var(--paper);position:relative;overflow:hidden;}
+  .pad{padding:18px 18px 30px;}
+  .fade{animation:fade .5s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .panel.flash{animation:flash .5s ease;}
+  @keyframes flash{0%{background:rgba(63,98,83,.18);}100%{background:rgba(255,255,255,.6);}}
+  button{font-family:inherit;cursor:pointer;border:none;outline:none;}
+  .btn{display:inline-block;padding:12px 24px;border-radius:30px;background:var(--jade);color:#f7f0e1;border:1.5px solid var(--jade-deep);box-shadow:0 3px 8px rgba(39,69,84,.28);
+    font-size:15px;letter-spacing:2px;box-shadow:0 3px 8px rgba(39,69,84,.28);transition:transform .15s;border:none;outline:none;
+    position:relative;z-index:3;pointer-events:auto;cursor:pointer;}
+  .btn:active{transform:scale(.96);}
+  .btn.hollow{background:transparent;color:var(--jade-deep);border:1.5px solid var(--jade);box-shadow:none;}
+  .btn.red{background:var(--vermillion);box-shadow:0 3px 8px rgba(158,43,37,.3);border:1.5px solid #7d211c;}
+  .btn:disabled{opacity:.45;box-shadow:none;}
+
+  .topbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:10px 14px;background:linear-gradient(90deg,var(--jade),var(--jade-deep));color:#f5efe2;}
+  .topbar .brand{font-weight:800;letter-spacing:2px;font-size:15px;flex-shrink:0;}
+  .topbar .hud{font-size:12px;font-weight:700;display:flex;gap:10px;align-items:center;}
+  .topbar .hud b{color:#ffe6b8;}
+  .topbar .pkbtn{font-size:12px;border:1.5px solid #f5efe2;background:transparent;color:#f5efe2;padding:4px 10px;border-radius:16px;}
+
+  .title-wrap{text-align:center;padding:34px 14px 24px;}
+  .en{font-size:12px;letter-spacing:4px;color:var(--ink-soft);}
+  .big{font-size:40px;letter-spacing:8px;color:var(--vermillion);font-weight:800;margin:8px 0 4px;}
+  .ty{font-size:17px;letter-spacing:4px;color:var(--jade-deep);font-weight:700;}
+  .sub{font-size:13px;color:var(--ink-soft);margin-top:16px;line-height:1.9;}
+  .tr-wrap{display:inline-block;}
+  .tr-ico{width:64px;height:84px;}
+
+  .qbar{height:8px;background:rgba(255,255,255,.55);border-radius:8px;overflow:hidden;margin:10px 0 14px;}
+  .qbar>div{height:100%;background:linear-gradient(90deg,var(--gold),var(--vermillion));transition:width .35s;}
+
+  .banner{height:120px;border-radius:12px;border:1.5px solid var(--line);background-size:cover;background-position:center;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:0 2px 6px rgba(51,46,38,.15);}
+  .banner .cap{position:absolute;left:14px;bottom:10px;font-size:21px;font-weight:800;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.55);letter-spacing:2px;}
+  .banner .lv{position:absolute;right:14px;bottom:10px;font-size:12px;color:#fff;background:rgba(0,0,0,.4);padding:2px 10px;border-radius:12px;}
+  .story{font-size:14px;line-height:1.9;color:var(--ink-soft);margin-bottom:12px;background:rgba(255,255,255,.55);padding:11px 13px;border-radius:10px;}
+  .panel{background:rgba(255,252,245,.7);border:1.5px solid var(--line);border-radius:10px;padding:11px 13px;font-size:13px;line-height:1.85;margin-bottom:14px;}
+  .panel .pt{color:var(--vermillion);font-weight:600;display:block;margin-bottom:4px;letter-spacing:1px;}
+  .row{display:grid;grid-template-columns:auto 1fr;gap:14px;margin-top:18px;width:100%;border:none;align-items:center;}
+
+  .q{font-size:16px;font-weight:600;line-height:1.65;margin-bottom:14px;background:rgba(255,252,245,.9);padding:12px 14px;border-radius:10px;border:2px solid var(--line);color:var(--ink);}
+  .opt{display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:12px 14px;border:2px solid var(--line);border-radius:10px;background:#fff;margin-bottom:10px;font-size:15px;cursor:pointer;font-family:inherit;}
+  .opt .ok{width:24px;height:24px;flex:0 0 24px;border-radius:6px;background:var(--paper2);display:grid;place-items:center;font-weight:800;color:var(--ink-soft);font-size:13px;}
+  .opt.sel{border-color:var(--vermillion);background:rgba(181,64,47,.06);}
+  .opt.ok{border-color:var(--jade);background:rgba(63,98,83,.1);}
+  .opt.no{border-color:var(--vermillion);background:rgba(181,64,47,.1);}
+  .opt.ok .ok{background:var(--jade);color:#fff;}
+  .opt.disabled{pointer-events:none;}
+  .stepinfo{font-size:12px;color:var(--ink-soft);margin-bottom:6px;letter-spacing:1px;}
+
+  .slots{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .slot{flex:1;min-width:58px;height:46px;border:2px dashed var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--ink-soft);background:rgba(255,255,255,.45);text-align:center;padding:4px;}
+  .slot.full{border-style:solid;border-color:var(--jade);color:var(--ink);background:rgba(63,98,83,.1);}
+  .src{display:flex;gap:8px;flex-wrap:wrap;}
+  .src button{padding:10px 12px;border:1.5px solid var(--jade);border-radius:8px;background:#fff;font-size:13px;cursor:pointer;font-family:inherit;}
+
+  .cols{display:flex;gap:14px;}
+  .col{flex:1;min-width:0;}
+  .col .h{font-size:13px;color:var(--ink-soft);margin-bottom:6px;text-align:center;letter-spacing:1px;}
+  .tile{padding:12px 8px;border:1.5px solid var(--line);border-radius:8px;background:#fff;margin-bottom:8px;font-size:14px;cursor:pointer;text-align:center;}
+  .tile.sel{border-color:var(--vermillion);background:rgba(181,64,47,.06);}
+  .tile.matched{border-color:var(--jade);background:rgba(63,98,83,.12);color:var(--jade-deep);}
+  .tile.dim{opacity:.55;}
+
+  .luban-frame{margin-top:4px;}
+  .luban-frame .ft{font-size:13px;color:var(--ink-soft);margin-bottom:10px;text-align:center;line-height:1.6;}
+  .luban-frame.all .ft{color:var(--jade-deep);font-weight:600;}
+  .luban-core{position:relative;width:240px;height:240px;margin:0 auto;}
+  .luban-core .slot{position:absolute;border:2px dashed var(--line);border-radius:6px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.4);overflow:hidden;}
+  .luban-core .slot .glyph{position:absolute;left:50%;top:50%;width:64px;}
+  .luban-core .slot .ph{position:relative;font-size:11px;color:var(--ink-soft);z-index:2;background:rgba(255,255,255,.7);padding:0 4px;border-radius:6px;}
+  .luban-core .slot.done{border-style:solid;border-color:var(--jade);background:rgba(63,98,83,.06);}
+  .luban-core .slot.done .ph{color:var(--jade-deep);}
+  .luban-core .slot.wrong{border-color:var(--vermillion);animation:shake .4s;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  .luban-tray{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:16px;}
+  .luban-tray .piece{width:84px;border:1.5px solid var(--line);border-radius:8px;padding:6px;background:#fff;cursor:grab;text-align:center;touch-action:none;user-select:none;}
+  .luban-tray .piece .glyph{width:64px;margin:0 auto;}
+  .luban-tray .piece .nm{font-size:11px;margin-top:4px;color:var(--ink-soft);}
+  .luban-tray .piece:active{cursor:grabbing;}
+  .ghost{position:fixed;z-index:99;pointer-events:none;width:84px;transform:translate(-50%,-50%);opacity:.92;}
+  .ghost .glyph{width:64px;margin:0 auto;}
+  .ghost .nm{font-size:11px;text-align:center;color:#fff;background:rgba(46,74,62,.85);border-radius:6px;margin-top:2px;}
+
+  .journey{position:relative;padding-left:34px;margin-top:8px;}
+  .journey::before{content:"";position:absolute;left:11px;top:8px;bottom:8px;width:3px;background:linear-gradient(var(--jade),var(--gold));border-radius:2px;}
+  .jtop{display:flex;gap:12px;align-items:center;margin-bottom:8px;}
+  .jtitle{font-size:19px;letter-spacing:3px;color:var(--vermillion);font-weight:700;}
+  .jsub{font-size:12px;color:var(--ink-soft);}
+  .jregion{margin:16px 0 6px -34px;font-size:13px;letter-spacing:5px;color:var(--vermillion);font-weight:600;}
+  .jregion::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--vermillion);display:inline-block;margin-right:6px;vertical-align:middle;}
+  .stop{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:8px;border:2px solid var(--line);border-radius:12px;background:rgba(255,252,245,.6);cursor:pointer;}
+  .stop.locked{opacity:.5;filter:grayscale(.4);cursor:not-allowed;}
+  .stop.cleared{border-color:var(--jade);background:rgba(63,98,83,.08);}
+  .stop.frontier{box-shadow:0 0 0 2px var(--vermillion);border-color:var(--vermillion);}
+  .stop .dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--line);flex:0 0 12px;}
+  .stop.cleared .dot{background:var(--jade);border-color:var(--jade);}
+  .stop .no{width:30px;height:30px;border-radius:50%;background:var(--vermillion);color:#fff;font-size:14px;display:grid;place-items:center;flex:0 0 30px;}
+  .stop.cleared .no{background:var(--jade);}
+  .stop .info{flex:1;min-width:0;}
+  .stop .nm{font-weight:700;font-size:15px;}
+  .stop .ti{font-size:12px;color:var(--ink-soft);}
+  .stop .st{font-size:16px;}
+  .stop .rg{font-size:10px;margin-left:6px;padding:1px 6px;border-radius:10px;background:var(--gold);color:#fff;letter-spacing:0;}
+  .stop .flag{position:absolute;right:10px;top:-11px;background:var(--vermillion);color:#fff;font-size:11px;padding:1px 8px;border-radius:10px;}
+
+  .ending{text-align:center;padding:30px 14px;}
+  .seal-stamp{width:80px;height:80px;border:3px solid var(--vermillion);border-radius:10px;color:var(--vermillion);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;margin:0 auto 14px;transform:rotate(-6deg);}
+  .scroll{font-size:14px;line-height:2;letter-spacing:1px;max-width:330px;margin:10px auto;}
+  .scroll.small{font-size:12px;color:var(--ink-soft);}
+
+  /* 山西地图（表里山河长卷） */
+  .sx-banner{text-align:center;font-weight:800;font-size:15px;color:#fff;background:linear-gradient(90deg,var(--vermillion),var(--gold));
+    border-radius:14px;padding:10px 14px;margin:4px 0 6px;letter-spacing:1px;box-shadow:0 4px 14px rgba(158,43,37,.25);}
+  .sxmap{position:relative;width:100%;max-width:560px;margin:14px auto 0;aspect-ratio:1000/760;}
+  .sxmap svg{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 6px 14px rgba(91,122,58,.3));}
+  .sxpin{position:absolute;transform:translate(-50%,-50%);text-align:center;cursor:pointer;z-index:2;}
+  .sxpin .badge{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:18px;
+    background:var(--vermillion);border:2.5px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,.25);transition:transform .12s;}
+  .sxpin.cleared .badge{background:var(--jade);}
+  .sxpin.cleared{animation:floaty 2.6s ease-in-out infinite;}
+  .sxpin.locked{opacity:.45;filter:grayscale(.6);cursor:not-allowed;}
+  .sxpin.locked .badge{background:#b3ac9c;border-color:#e9e3d4;}
+  .sxpin .lbl{font-size:10px;margin-top:2px;color:var(--ink);background:rgba(255,255,255,.82);border-radius:6px;
+    padding:0 4px;white-space:nowrap;font-weight:700;line-height:1.5;border:1px solid rgba(0,0,0,.06);}
+  .sxpin:not(.locked):active .badge{transform:scale(.9);}
+  @keyframes floaty{0%,100%{transform:translate(-50%,-50%);}50%{transform:translate(-50%,calc(-50% - 5px));}}
+
+  /* PK */
+  .pk-title{text-align:center;font-size:22px;letter-spacing:3px;color:var(--vermillion);font-weight:700;margin-bottom:4px;}
+  .pk-sub{text-align:center;font-size:13px;color:var(--ink-soft);margin-bottom:14px;}
+  .form-row{margin:14px 0;text-align:left;}
+  .form-row label{display:block;font-weight:800;font-size:14px;margin-bottom:6px;color:var(--ink-soft);}
+  .pk-input{font-family:inherit;font-size:15px;padding:10px 12px;border:2px solid var(--line);border-radius:10px;width:100%;text-align:center;font-weight:700;background:#fff;}
+  .seg{display:inline-flex;border:2px solid var(--line);border-radius:30px;overflow:hidden;}
+  .seg button{border:none;background:#fff;font-family:inherit;font-weight:800;padding:8px 16px;cursor:pointer;color:var(--ink-soft);font-size:14px;}
+  .seg button.on{background:var(--gold);color:#fff;}
+  .center{text-align:center;}
+  .vscard{flex:1;min-width:140px;background:rgba(255,255,255,.6);border:2px solid var(--line);border-radius:16px;padding:16px;margin:6px;}
+  .vscard.a{border-color:#3a5d6e;} .vscard.b{border-color:#9e2b25;}
+  .vs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .vs .pn{font-weight:900;font-size:16px;} .vs .ps{font-size:40px;font-weight:900;margin-top:6px;} .vs .pc{font-size:12px;color:var(--ink-soft);}
+  .pkwin{text-align:center;font-size:24px;font-weight:900;color:var(--vermillion);margin:16px 0;letter-spacing:2px;}
+  .split-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;font-weight:700;}
+  .split-panels{display:flex;gap:0;margin-top:8px;}
+  .spanel{flex:1;padding:0 8px;min-width:0;}
+  .spanel-div{width:2px;background:var(--line);margin:0 4px;flex:0 0 2px;}
+  .phead{font-weight:900;font-size:14px;text-align:center;margin-bottom:8px;color:var(--vermillion);}
+  .pq{font-size:14px;font-weight:700;line-height:1.5;background:rgba(255,252,245,.9);border:2px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;min-height:58px;}
+  .sopts{display:grid;gap:8px;}
+  .sopt{display:flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;}
+  .sopt .ok{width:22px;height:22px;flex:0 0 22px;border-radius:6px;background:var(--paper2);display:grid;place-items:center;font-weight:800;color:var(--ink-soft);font-size:12px;}
+  .sopt.correct{border-color:var(--jade);background:rgba(63,98,83,.1);}
+  .sopt.correct .ok{background:var(--jade);color:#fff;}
+  .sopt.wrong{border-color:var(--vermillion);background:rgba(181,64,47,.1);}
+  .sopt.disabled{pointer-events:none;}
+  .pcol-status{text-align:center;margin-top:8px;font-weight:800;min-height:18px;font-size:13px;}
+  .pcol-status.ok{color:var(--jade);} .pcol-status.no{color:var(--vermillion);}
+  .feedback{margin-top:8px;background:rgba(255,255,255,.7);border-left:3px solid var(--gold);border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.7;color:var(--ink-soft);display:none;}
+  .feedback.show{display:block;}
+  .split-foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;}
+
+  .toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-80px);
+    background:var(--vermillion);color:#fff;padding:11px 22px;border-radius:30px;font-weight:800;font-size:14px;
+    box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99;transition:.4s;opacity:0;pointer-events:none;letter-spacing:1px;}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ 场景水墨背景（取自晋游记，按景点主题） ============ */
+const SCENES = {
+  mountain:`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400' preserveAspectRatio='xMidYMax slice'>
+<defs><linearGradient id='m1' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#9fe0ff'/><stop offset='1' stop-color='#e6f9ff'/></linearGradient></defs>
+<rect width='800' height='400' fill='url(#m1)'/>
+<g fill='#fff' stroke='#3b2f2a' stroke-width='3'><circle cx='150' cy='80' r='30'/><circle cx='190' cy='66' r='38'/><circle cx='238' cy='84' r='28'/></g>
+<path d='M0 400 L0 250 Q150 160 320 250 Q470 150 620 250 Q740 190 800 240 L800 400 Z' fill='#7ed957' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<path d='M0 400 L0 330 Q160 255 320 330 Q470 225 620 330 Q740 265 800 315 L800 400 Z' fill='#52c234' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/></svg>`,
+  clifftemple:`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400' preserveAspectRatio='xMidYMax slice'>
+<defs><linearGradient id='c1' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#9fe0ff'/><stop offset='1' stop-color='#e6f9ff'/></linearGradient></defs>
+<rect width='800' height='400' fill='url(#c1)'/>
+<path d='M0 400 L0 200 L800 200 L800 400 Z' fill='#c08a5e' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<rect x='345' y='200' width='110' height='64' fill='#ff5a5f' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<path d='M312 202 L400 152 L488 202 Z' fill='#ffb13b' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/></svg>`,
+  temple:`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400' preserveAspectRatio='xMidYMax slice'>
+<defs><linearGradient id='t1' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#9fe0ff'/><stop offset='1' stop-color='#e6f9ff'/></linearGradient></defs>
+<rect width='800' height='400' fill='url(#t1)'/>
+<rect x='250' y='240' width='300' height='120' fill='#ff5a5f' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<path d='M222 240 L400 192 L578 240 Z' fill='#ffb13b' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<path d='M255 198 L400 158 L545 198 Z' fill='#ff8a3b' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<rect x='380' y='118' width='40' height='44' fill='#3fb96a' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/></svg>`,
+  pagoda:`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400' preserveAspectRatio='xMidYMax slice'>
+<defs><linearGradient id='p1' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#ffc6e0'/><stop offset='1' stop-color='#e6f9ff'/></linearGradient></defs>
+<rect width='800' height='400' fill='url(#p1)'/>
+<rect x='378' y='200' width='44' height='160' fill='#ff5a5f' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<path d='M348 202 L400 174 L452 202 Z' fill='#23c4b6' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<path d='M354 182 L400 158 L446 182 Z' fill='#ffb13b' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<path d='M360 162 L400 142 L440 162 Z' fill='#23c4b6' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<path d='M366 144 L400 128 L434 144 Z' fill='#ffb13b' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<path d='M372 128 L400 114 L428 128 Z' fill='#23c4b6' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<circle cx='400' y='104' r='9' fill='#ffd23f' stroke='#3b2f2a' stroke-width='3'/></svg>`,
+  citywall:`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400' preserveAspectRatio='xMidYMax slice'>
+<defs><linearGradient id='w1' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#9fe0ff'/><stop offset='1' stop-color='#e6f9ff'/></linearGradient></defs>
+<rect width='800' height='400' fill='url(#w1)'/>
+<rect x='0' y='280' width='800' height='120' fill='#b9bdc4' stroke='#3b2f2a' stroke-width='4'/>
+<g fill='#9aa0a8' stroke='#3b2f2a' stroke-width='3'><rect x='40' y='258' width='40' height='22'/><rect x='120' y='258' width='40' height='22'/><rect x='200' y='258' width='40' height='22'/><rect x='280' y='258' width='40' height='22'/><rect x='360' y='258' width='40' height='22'/><rect x='440' y='258' width='40' height='22'/><rect x='520' y='258' width='40' height='22'/><rect x='600' y='258' width='40' height='22'/><rect x='680' y='258' width='40' height='22'/></g>
+<rect x='350' y='200' width='100' height='80' fill='#ff5a5f' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<path d='M328 200 L400 162 L472 200 Z' fill='#ffb13b' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/></svg>`,
+  courtyard:`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400' preserveAspectRatio='xMidYMax slice'>
+<defs><linearGradient id='y1' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#9fe0ff'/><stop offset='1' stop-color='#f0fbff'/></linearGradient></defs>
+<rect width='800' height='400' fill='url(#y1)'/>
+<rect x='250' y='240' width='300' height='120' fill='#cfd6dc' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<path d='M222 240 L400 196 L578 240 Z' fill='#9aa0a8' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<path d='M255 198 L400 162 L545 198 Z' fill='#b9bdc4' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<rect x='290' y='258' width='16' height='102' fill='#3b2f2a'/><rect x='494' y='258' width='16' height='102' fill='#3b2f2a'/><rect x='392' y='240' width='16' height='120' fill='#3b2f2a'/></svg>`,
+  cave:`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400' preserveAspectRatio='xMidYMax slice'>
+<rect width='800' height='400' fill='#ffcf8a'/>
+<path d='M0 400 L0 200 L800 200 L800 400 Z' fill='#c8763f' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<g fill='#8a4f25' stroke='#3b2f2a' stroke-width='3'><path d='M110 400 L110 280 a50 50 0 0 1 100 0 L210 400 Z'/><path d='M330 400 L330 260 a55 55 0 0 1 110 0 L440 400 Z'/><path d='M550 400 L550 280 a50 50 0 0 1 100 0 L650 400 Z'/></g>
+<g stroke='#3b2f2a' stroke-width='3'><circle cx='160' cy='330' r='18' fill='#ffd23f'/><rect x='148' y='348' width='24' height='52' fill='#ffb13b'/>
+<circle cx='400' cy='316' r='24' fill='#52c234'/><rect x='384' y='340' width='32' height='60' fill='#3fb96a'/>
+<circle cx='640' cy='330' r='18' fill='#ff5a5f'/><rect x='628' y='348' width='24' height='52' fill='#e8464c'/></g></svg>`,
+  buddha:`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400' preserveAspectRatio='xMidYMax slice'>
+<defs><linearGradient id='b1' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#9fe0ff'/><stop offset='1' stop-color='#e6f9ff'/></linearGradient></defs>
+<rect width='800' height='400' fill='url(#b1)'/>
+<path d='M170 400 L170 170 Q400 90 630 170 L630 400 Z' fill='#52c234' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<path d='M250 400 L250 150 Q400 100 550 150 L550 400 Z' fill='#d98a3b' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<circle cx='400' cy='205' r='50' fill='#ffd23f' stroke='#3b2f2a' stroke-width='4'/>
+<path d='M330 380 Q330 235 400 210 Q470 235 470 380 Z' fill='#d98a3b' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/></svg>`,
+  waterfall:`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400' preserveAspectRatio='xMidYMax slice'>
+<defs><linearGradient id='f1' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#9fe0ff'/><stop offset='1' stop-color='#e6f9ff'/></linearGradient></defs>
+<rect width='800' height='400' fill='url(#f1)'/>
+<path d='M0 400 L0 200 L300 200 L300 150 L500 150 L500 200 L800 200 L800 400 Z' fill='#52c234' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<path d='M0 200 L300 200 L300 400 L0 400 Z' fill='#3fb96a' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<path d='M500 200 L800 200 L800 400 L500 400 Z' fill='#3fb96a' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/>
+<g fill='#4db8ff' stroke='#3b2f2a' stroke-width='3'><rect x='330' y='150' width='40' height='220'/><rect x='382' y='150' width='52' height='220'/><rect x='444' y='150' width='30' height='220'/></g>
+<path d='M300 320 L800 320 L800 400 L300 400 Z' fill='#7ccdf2' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'/></svg>`,
+  tree:`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400' preserveAspectRatio='xMidYMax slice'>
+<defs><linearGradient id='r1' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#9fe0ff'/><stop offset='1' stop-color='#e6f9ff'/></linearGradient></defs>
+<rect width='800' height='400' fill='url(#r1)'/>
+<rect x='392' y='250' width='16' height='150' fill='#6b4a2b' stroke='#3b2f2a' stroke-width='4'/>
+<g fill='#52c234' stroke='#3b2f2a' stroke-width='4' stroke-linejoin='round'><circle cx='400' cy='190' r='95'/><circle cx='318' cy='226' r='58'/><circle cx='482' cy='226' r='58'/><circle cx='400' cy='280' r='62'/></g>
+<g fill='#ff9ec4' stroke='#3b2f2a' stroke-width='2'><circle cx='360' cy='160' r='12'/><circle cx='440' cy='180' r='12'/><circle cx='400' cy='230' r='12'/><circle cx='470' cy='250' r='10'/><circle cx='320' cy='250' r='10'/></g></svg>`
+};
+function svgBg(svg){ return 'url("data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg)))+'")'; }
+
+const $ = id => document.getElementById(id);
+const app = $("app");
+function shuffle(a){ const r=a.slice(); for(let i=r.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; } return r; }
+function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove("show"),1500); }
+
+function travelerSVG(){
+  return `<svg viewBox="0 0 60 80" class="tr-ico" aria-hidden="true">
+    <path d="M16 17 a14 7 0 0 1 28 0 Z" fill="#b08d57"/>
+    <circle cx="30" cy="18" r="8" fill="#ead9bf"/>
+    <rect x="24" y="25" width="12" height="27" rx="5" fill="#3f6253"/>
+    <line x1="46" y1="9" x2="46" y2="46" stroke="#6b573a" stroke-width="3" stroke-linecap="round"/>
+    <path d="M41 8 q6 -7 13 0 q-1 9 -13 7 Z" fill="#b5402f"/>
+    <line x1="22" y1="51" x2="18" y2="74" stroke="#2c2a26" stroke-width="4" stroke-linecap="round"/>
+    <line x1="38" y1="51" x2="42" y2="74" stroke="#2c2a26" stroke-width="4" stroke-linecap="round"/>
+  </svg>`;
+}
+
+/* ============ 关卡数据：北→南 32 关，四机制融合 ============ */
+/* mech: 不写=纯问答(每关5题)；"order"=排序；"match"=配对；"luban"=鲁班锁拖拽 */
+const LEVELS = [
+  { id:"yungang", name:"云冈石窟", region:"北", scbg:"cave", title:"武周山千佛",
+    story:"旅人自塞北而来，风沙渐息。武周山崖壁千佛列坐，第20窟大佛低眉含笑——云冈到了。",
+    hint:"云冈在大同，北魏皇家开凿，中国规模最大的古代石窟群之一。",
+    quiz:[
+      {q:"云冈石窟位于山西哪座城市？",o:["大同","太原","晋城","运城"],a:0,e:"云冈石窟位于<b>大同市</b>武周山南麓，开凿于北魏。"},
+      {q:"云冈石窟主要开凿于哪个朝代？",o:["唐代","北魏","明代","西汉"],a:1,e:"云冈石窟主要开凿于<b>北魏</b>，由高僧昙曜主持开凿「昙曜五窟」。"},
+      {q:"下列哪一尊是云冈最具代表性的标志性造像？",o:["乐山大佛","第20窟露天大佛","龙门卢舍那","敦煌九层楼"],a:1,e:"<b>第20窟露天大佛</b>高约13.7米，是云冈的形象代表。"},
+      {q:"云冈石窟于哪一年列入《世界遗产名录》？",o:["1987年","2001年","2008年","2014年"],a:1,e:"云冈石窟于<b>2001年</b>列入世界文化遗产。"},
+      {q:"云冈最早的「昙曜五窟」由哪位高僧主持开凿？",o:["玄奘","昙曜","法显","鸠摩罗什"],a:1,e:"北魏高僧<b>昙曜</b>主持开凿了云冈最早、最具皇家气派的「昙曜五窟」。"}
+    ]},
+  { id:"xuankong", name:"悬空寺", region:"北", scbg:"clifftemple", title:"恒山奇构",
+    story:"恒山金龙峡，木柱凌空、栈道相连，一寺巧悬绝壁——这便是令李白题下「壮观」的悬空寺。",
+    hint:"悬空寺在恒山，佛道儒三教合一，始建于北魏。",
+    quiz:[
+      {q:"悬空寺建在哪座名山的峭壁之上？",o:["华山","泰山","恒山","嵩山"],a:2,e:"悬空寺建于北岳<b>恒山</b>金龙峡翠屏峰悬崖，始建于北魏。"},
+      {q:"悬空寺最独特之处在于同时供奉哪三教的塑像？",o:["佛、道、儒","佛、道、基督","儒、道、法","佛、儒、墨"],a:0,e:"悬空寺是罕见的<b>佛、道、儒</b>三教合一寺庙。"},
+      {q:"李白游历悬空寺后，曾在崖壁题下哪两个字？",o:["壮观","奇险","天下","飞阁"],a:0,e:"相传李白挥笔写下「<b>壮观</b>」二字。"},
+      {q:"悬空寺始建于哪个朝代？",o:["唐代","北魏","宋代","元代"],a:1,e:"悬空寺始建于<b>北魏</b>后期，至今逾1500年。"},
+      {q:"悬空寺位于山西哪个县境内？",o:["浑源县","应县","繁峙县","广灵县"],a:0,e:"悬空寺位于大同市<b>浑源县</b>城南的恒山金龙峡。"}
+    ]},
+  { id:"hengshan", name:"北岳恒山", region:"北", scbg:"mountain", title:"塞北名山",
+    story:"北岳恒山，群峰耸立、道教圣地，悬空寺嵌于金龙峡绝壁，自古为塞北名山。",
+    hint:"恒山为五岳之北岳，道教名山，主峰天峰岭约2016米。",
+    quiz:[
+      {q:"北岳恒山位于山西哪座城市？",o:["大同市","忻州市","朔州市","阳泉市"],a:0,e:"北岳恒山主体位于大同市<b>浑源县</b>境内。"},
+      {q:"恒山属于中国「五岳」中的哪一方岳？",o:["东岳","西岳","南岳","北岳"],a:3,e:"五岳中，恒山为<b>北岳</b>。"},
+      {q:"恒山是哪一宗教的名山？",o:["佛教","道教","伊斯兰教","基督教"],a:1,e:"恒山是<b>道教</b>名山。"},
+      {q:"恒山主峰天峰岭海拔约多少米？",o:["约1200米","约2016米","约3061米","约1500米"],a:1,e:"恒山主峰天峰岭海拔约<b>2016米</b>。"},
+      {q:"恒山金龙峡中以「奇、悬、巧」闻名、镶嵌于绝壁的寺庙是？",o:["悬空寺","华严寺","善化寺","永安寺"],a:0,e:"恒山金龙峡西岸的<b>悬空寺</b>，是北岳十八景中最负盛名的一景。"}
+    ]},
+  { id:"huayan", name:"大同华严寺", region:"北", scbg:"temple", title:"辽金古刹",
+    story:"辽金皇家寺院，殿宇巍峨、彩塑精绝，薄伽教藏殿的「合掌露齿菩萨」被誉为东方维纳斯。",
+    hint:"华严寺在大同，始建于辽代，大雄宝殿为现存最大辽金佛殿。",
+    quiz:[
+      {q:"华严寺位于山西哪座城市？",o:["大同","朔州","忻州","太原"],a:0,e:"华严寺位于<b>大同</b>古城内。"},
+      {q:"华严寺始建于哪个朝代？",o:["唐代","辽代","明代","清代"],a:1,e:"华严寺始建于<b>辽代</b>，大殿坐西朝东。"},
+      {q:"华严寺以什么艺术珍品闻名于世？",o:["壁画","辽代彩塑","唐三彩","青铜器"],a:1,e:"薄伽教藏殿内保存有<b>辽代彩塑</b>数十尊。"},
+      {q:"华严寺大雄宝殿是我国现存规模最大的哪类古建筑？",o:["唐代木构","辽金时期佛殿","明代城墙","元代道观"],a:1,e:"<b>大雄宝殿</b>面阔九间，是我国现存规模最大的<b>辽金时期佛殿</b>。"},
+      {q:"华严寺薄伽教藏殿中被誉为「东方维纳斯」的彩塑是？",o:["弥勒佛","合掌露齿菩萨","观音像","天王像"],a:1,e:"<b>合掌露齿菩萨</b>被郭沫若赞为「东方维纳斯」。"}
+    ]},
+  { id:"muta", name:"应县木塔", region:"北", scbg:"pagoda", title:"榫卯合龙", mech:"luban",
+    story:"佛宫寺释迦塔，纯木榫卯、巍然千载，是世界上最高大的古代木塔，无一颗铁钉。旅人且来亲手拼合它的鲁班锁骨架。",
+    hint:"把六件木构件拖入轮廓相符的骨架位置；点一下构件可旋转调正朝向，六根都咬合即『榫卯合龙』。",
+    quiz:[
+      {q:"应县木塔位于山西哪座城市？",o:["朔州","大同","忻州","晋中"],a:0,e:"应县木塔位于<b>朔州市应县</b>城内的佛宫寺。"},
+      {q:"应县木塔建于哪个朝代？",o:["唐代","辽代","宋代","元代"],a:1,e:"应县木塔建于<b>辽代</b>清宁二年（公元1056年），距今近千年。"}
+    ],
+    luban:[
+      {key:"tou",name:"透榫",tip:"透榫穿通构件，是鲁班锁的骨干。"},
+      {key:"ban",name:"半榫",tip:"半榫只入一半，与透榫错落咬合。"},
+      {key:"ge",name:"格肩榫",tip:"格肩榫斜肩相交，分散受力。"},
+      {key:"xie",name:"楔钉榫",tip:"楔钉榫以钉锁死，防脱防滑。"},
+      {key:"shi",name:"十字卡榫",tip:"十字卡榫横竖互锁，成其骨架。"},
+      {key:"yan",name:"燕尾榫",tip:"燕尾榫上大下小，越拉越紧。"}
+    ]},
+  { id:"guangwu", name:"广武长城", region:"北", scbg:"citywall", title:"原生态长城",
+    story:"明长城的一段，砖石斑驳、敌楼残立，著名的「月亮门」屹立山脊，见证边塞风云。",
+    hint:"广武长城在朔州，明代修筑，与雁门关互为表里，未经大修故称原生态长城。",
+    quiz:[
+      {q:"广武长城位于山西哪个市？",o:["朔州","大同","忻州","吕梁"],a:0,e:"广武长城位于<b>朔州市山阴县</b>。"},
+      {q:"广武长城是以下哪个朝代修筑的长城？",o:["秦代","汉代","明代","清代"],a:2,e:"现存的广武长城为<b>明代</b>修筑，与雁门关互为表里。"},
+      {q:"广武长城附近最著名的标志性残损建筑是？",o:["钟楼","月亮门（残存敌楼）","牌坊","烽燧"],a:1,e:"残存的圆形敌楼券门被摄影爱好者称为「<b>月亮门</b>」。"},
+      {q:"广武分为新旧两座城，与哪座著名关隘互为表里？",o:["居庸关","雁门关","山海关","嘉峪关"],a:1,e:"广武城是<b>雁门关</b>的外围防御据点。"},
+      {q:"广武长城因未经大规模重修、保存原始风貌，常被称为？",o:["砖长城","原生态长城","土长城","水上长城"],a:1,e:"广武长城被誉为「<b>原生态长城</b>」。"}
+    ]},
+  { id:"wutai", name:"五台山", region:"北", scbg:"mountain", title:"文殊道场",
+    story:"清凉圣境，五峰环抱、寺庙如云，文殊菩萨道场，青庙黄庙并存，晨钟暮鼓不绝。",
+    hint:"五台山是文殊菩萨道场，中国四大佛教名山之首，位于忻州，北台叶斗峰约3061米。",
+    quiz:[
+      {q:"五台山是中国佛教四大名山之一，它是哪位菩萨的道场？",o:["观音菩萨","文殊菩萨","普贤菩萨","地藏菩萨"],a:1,e:"五台山为<b>文殊菩萨</b>道场，象征智慧。"},
+      {q:"五台山之名来源于其地貌特征，指的是？",o:["五条河流","五座平顶山峰","五所古寺","五色土"],a:1,e:"五台山由<b>五座平顶山峰</b>环抱而成。"},
+      {q:"五台山因夏季气候凉爽，自古又被称为？",o:["清凉山","避暑山","云霄山","太华山"],a:0,e:"五台山古称「<b>清凉山</b>」，是避暑与朝圣胜地。"},
+      {q:"五台山位于山西哪座城市？",o:["太原","忻州","大同","晋中"],a:1,e:"五台山位于<b>忻州市</b>五台县境内。"},
+      {q:"五台山最高峰北台叶斗峰海拔约多少米，号称「华北屋脊」？",o:["约1500米","约2016米","约3061米","约1000米"],a:2,e:"北台叶斗峰海拔约<b>3061米</b>，有「华北屋脊」之称。"}
+    ]},
+  { id:"yanmen", name:"雁门关", region:"北", scbg:"citywall", title:"天下九塞",
+    story:"长城名关，扼守中原与塞北咽喉，杨家将在此浴血，李贺曾为它写下千古绝唱。",
+    hint:"雁门关在忻州代县，是长城最重要关隘之一，与杨家将、李贺《雁门太守行》相关。",
+    quiz:[
+      {q:"雁门关位于山西哪座县？",o:["代县","宁武县","繁峙县","河曲县"],a:0,e:"雁门关位于<b>忻州市代县</b>以北的雁门山上。"},
+      {q:"有「天下九塞，雁门为首」之称，它是长城上的什么？",o:["普通村落","重要关隘","商港","渔港"],a:1,e:"雁门关是长城上<b>最重要的关隘之一</b>。"},
+      {q:"雁门关与哪位历史名将的忠勇故事密切相关？",o:["岳飞","杨继业（杨家将）","韩信","卫青"],a:1,e:"北宋<b>杨继业（杨家将）</b>镇守雁门、抗辽殉国。"},
+      {q:"唐代诗人李贺的哪首诗与雁门关有关？",o:["登鹳雀楼","雁门太守行","出塞","凉州词"],a:1,e:"李贺《<b>雁门太守行</b>》名句「黑云压城城欲摧」写的正是雁门战事。"},
+      {q:"雁门关是历史上哪两个区域之间的交通要冲？",o:["中原与塞北","江南与岭南","关中与巴蜀","山东与河南"],a:0,e:"雁门关是<b>中原与塞北</b>的咽喉要道。"}
+    ]},
+  { id:"bingdong", name:"宁武万年冰洞", region:"北", scbg:"cave", title:"冰火奇观",
+    story:"形成于百万年前的地下冰晶世界，盛夏结冰、终年不化，与近旁「千年火山」同现奇景。",
+    hint:"宁武万年冰洞在忻州宁武县管涔山，形成于第四纪冰川期，与地热景观形成「冰火两重天」。",
+    quiz:[
+      {q:"宁武万年冰洞位于山西哪座市？",o:["忻州","大同","吕梁","晋城"],a:0,e:"万年冰洞位于<b>忻州市宁武县</b>的管涔山中。"},
+      {q:"万年冰洞形成于哪个地质时代？",o:["新生代第四纪（约300万年前）","白垩纪","侏罗纪","二叠纪"],a:0,e:"冰洞形成于<b>第四纪冰川期（约300万年前）</b>。"},
+      {q:"万年冰洞最奇特之处是？",o:["夏天也结冰、终年不化","冬天才结冰","四季无冰","会喷火"],a:0,e:"洞外盛夏酷暑，洞内却<b>冰柱林立、终年不化</b>。"},
+      {q:"宁武冰洞与不远处的什么景观形成「冰火两重天」？",o:["温泉","千年火山（火龙沟）","瀑布","盐湖"],a:1,e:"冰洞与<b>千年火山（地热）</b>相邻，冷热并存。"},
+      {q:"万年冰洞位于哪座山中？",o:["管涔山","恒山","吕梁山","太行山"],a:0,e:"万年冰洞坐落于<b>管涔山</b>深处。"}
+    ]},
+  { id:"luya", name:"芦芽山", region:"北", scbg:"tree", title:"省鸟家园",
+    story:"管涔山主峰，峰尖似芦芽破土，原始林海间栖息着山西「省鸟」褐马鸡，佛光云海频现。",
+    hint:"芦芽山在忻州宁武，主峰约2736米，是褐马鸡（山西「省鸟」）的重要栖息地。",
+    quiz:[
+      {q:"芦芽山位于山西哪里？",o:["忻州宁武","大同","运城","晋城"],a:0,e:"芦芽山位于<b>忻州市宁武县</b>，是管涔山的主峰。"},
+      {q:"芦芽山主峰海拔约多少米？",o:["约1500米","约2736米","约3061米","约1000米"],a:1,e:"芦芽山主峰海拔约<b>2736米</b>。"},
+      {q:"芦芽山以保护哪种珍稀动物闻名（也是山西「省鸟」）？",o:["熊猫","褐马鸡","朱鹮","金丝猴"],a:1,e:"芦芽山是<b>褐马鸡</b>的重要栖息地，褐马鸡为山西「省鸟」。"},
+      {q:"芦芽山属于哪座山脉？",o:["吕梁山脉北段（管涔山）","秦岭","太行山","阴山"],a:0,e:"芦芽山属<b>吕梁山脉北段的管涔山</b>。"},
+      {q:"芦芽山主峰山尖形似什么，因而得名「芦芽」？",o:["竹笋","芦苇的嫩芽","宝塔","笔锋"],a:1,e:"主峰怪石如尖笋，状似<b>芦苇的嫩芽</b>，故得名「芦芽山」。"}
+    ]},
+
+  { id:"pingyao", name:"平遥古城", region:"中", scbg:"citywall", title:"龟城票号",
+    story:"保存完好的明清县城，青砖城墙巍然环绕，票号林立，「日昇昌」开中国金融之先河。",
+    hint:"平遥在晋中，1997年列入世界遗产，城墙形似龟城，周长约6公里。",
+    quiz:[
+      {q:"平遥古城位于山西哪座城市？",o:["太原","晋中","吕梁","临汾"],a:1,e:"平遥古城位于<b>晋中市平遥县</b>。"},
+      {q:"平遥古城于哪一年列入《世界遗产名录》？",o:["1987年","1997年","2004年","2011年"],a:1,e:"平遥古城于<b>1997年</b>列入世界文化遗产。"},
+      {q:"平遥古城的城墙平面被形象地称作什么形状？",o:["八卦城","龟城","方胜城","莲花城"],a:1,e:"平遥古城因布局形似乌龟，被称为「<b>龟城</b>」。"},
+      {q:"平遥在古代以什么产业闻名全国？",o:["丝绸","票号金融","造船","制瓷"],a:1,e:"清代平遥是中国的金融中心，县内票号云集。"},
+      {q:"平遥城墙周长大约是多少？",o:["约3公里","约6公里","约12公里","约20公里"],a:1,e:"平遥城墙周长约<b>6.4公里</b>，形如龟首龟尾四肢。"}
+    ]},
+  { id:"rishengchang", name:"日昇昌票号", region:"中", scbg:"courtyard", title:"金融鼻祖",
+    story:"中国第一家票号诞生地，一封汇票通兑天下，开中国近代金融业之先河。",
+    hint:"日昇昌在平遥，清道光年间由雷履泰创办，是中国第一家专营汇兑的票号。",
+    quiz:[
+      {q:"公认的中国第一家专营汇兑的票号是？",o:["日昇昌","乔家票号","大德通","协同庆"],a:0,e:"<b>日昇昌</b>是中国第一家票号，专营汇兑、存款、放款。"},
+      {q:"日昇昌票号位于哪座古城？",o:["平遥","祁县","太谷","介休"],a:0,e:"日昇昌旧址位于<b>平遥古城</b>西大街。"},
+      {q:"日昇昌票号创立于哪个朝代？",o:["明代","清道光年间","元代","宋代"],a:1,e:"日昇昌由平遥商人雷履泰于<b>清道光年间</b>创办。"},
+      {q:"日昇昌票号主要经营什么业务？",o:["海运","汇兑与存放款","丝绸贸易","盐运"],a:1,e:"票号相当于早期银行，主营<b>异地汇兑</b>以及存款、放款。"},
+      {q:"日昇昌票号的首创人是谁？",o:["雷履泰","乔致庸","王炽","范蠡"],a:0,e:"日昇昌由掌柜<b>雷履泰</b>创意设立，被尊为「中国票号始祖」。"}
+    ]},
+  { id:"shuanglin", name:"双林寺", region:"中", scbg:"temple", title:"彩塑宝库",
+    story:"「东方彩塑艺术宝库」，两千余尊彩塑满壁生辉，韦驮像英气逼人，堪称一绝。",
+    hint:"双林寺在平遥，有宋明彩塑约2000余尊，韦驮像被称为「全国韦驮之冠」。",
+    quiz:[
+      {q:"双林寺以什么艺术闻名天下？",o:["壁画","彩塑","书法","青铜"],a:1,e:"双林寺保存宋明彩塑<b>两千余尊</b>，被誉为「东方彩塑艺术宝库」。"},
+      {q:"双林寺位于山西哪里？",o:["平遥","五台","解州","芮城"],a:0,e:"双林寺位于<b>平遥</b>县城西南的桥头村。"},
+      {q:"双林寺彩塑数量大约有多少尊？",o:["约200尊","约2000尊","约20000尊","约20尊"],a:1,e:"寺内彩塑现存<b>约2000余尊</b>。"},
+      {q:"双林寺中被誉为「全国韦驮之冠」的塑像是？",o:["观音像","韦驮像","罗汉像","天王像"],a:1,e:"双林寺的<b>韦驮像</b>被称「全国韦驮之冠」。"},
+      {q:"双林寺与平遥古城、镇国寺共同构成什么称号？",o:["一城两寺","三大古寺","晋中三宝","平遥三绝"],a:0,e:"平遥以古城为核心，外加<b>镇国寺、双林寺</b>，合称「一城两寺」。"}
+    ]},
+  { id:"qiao", name:"乔家大院", region:"中", scbg:"courtyard", title:"晋商大院",
+    story:"祁县乔氏宅第，青砖灰瓦、院落层叠，「囍」字布局，一部《乔家大院》使其名扬四海。",
+    hint:"乔家大院在晋中祁县，是清代乔氏宅第，以双「喜」字布局著称。",
+    quiz:[
+      {q:"乔家大院位于山西哪个县？",o:["祁县","平遥县","灵石县","太谷县"],a:0,e:"乔家大院位于<b>晋中市祁县</b>东观镇乔家堡村。"},
+      {q:"乔家大院是清代哪一家族的宅第？",o:["王家","乔家（乔致庸家族）","常家","渠家"],a:1,e:"乔家大院是清代<b>乔氏</b>家族（以乔致庸为代表）的宅第。"},
+      {q:"乔家大院的整体布局呈什么字形？",o:["回字","双「喜」字（囍）","品字","王字"],a:1,e:"乔家大院以<b>双「喜」字（囍）</b>为布局构思。"},
+      {q:"下列哪部影视作品曾在乔家大院取景并使其声名远扬？",o:["大红灯笼高高挂","红楼梦","西游记","白鹿原"],a:0,e:"张艺谋电影《<b>大红灯笼高高挂</b>》在乔家大院取景。"},
+      {q:"乔家大院是哪种类型建筑的代表？",o:["皇家园林","晋商大院","客家土楼","徽派民居"],a:1,e:"乔家大院是<b>晋商大院</b>民居的典型代表。"}
+    ]},
+  { id:"wang", name:"王家大院", region:"中", scbg:"courtyard", title:"民间故宫",
+    story:"灵石王氏巨宅，依山而建、气势恢宏，有「王家归来不看院」之誉，堪称民间故宫。",
+    hint:"王家大院在晋中灵石县，是清代王氏家族宅第，依黄土山坡层叠而建。",
+    quiz:[
+      {q:"王家大院位于山西哪座县？",o:["灵石县","祁县","平遥县","榆次区"],a:0,e:"王家大院位于<b>晋中市灵石县</b>静升镇。"},
+      {q:"王家大院是清代哪一家族的宅院？",o:["乔氏","王氏家族","雷氏","渠氏"],a:1,e:"王家大院是灵石<b>王氏家族</b>宅第。"},
+      {q:"王家大院规模宏大，素有「王家归来不看院」及什么别称？",o:["皇家园林","民间故宫","江南第一院","水乡名宅"],a:1,e:"王家大院被誉为「<b>民间故宫</b>」「中国民居艺术馆」。"},
+      {q:"王家大院主要由高家崖、红门堡两组建筑群依什么而建？",o:["临河","山坡","平地","湖心"],a:1,e:"王家大院依<b>黄土山坡</b>层叠而筑。"},
+      {q:"王家大院属于哪一类建筑？",o:["晋商大院","寺庙","长城","石窟"],a:0,e:"王家大院是<b>晋商大院</b>的巅峰之作。"}
+    ]},
+  { id:"chang", name:"常家庄园", region:"中", scbg:"courtyard", title:"儒商世家",
+    story:"榆次常氏宅园，以园林、楹联称绝，是清代对俄茶叶贸易领袖的儒商故里。",
+    hint:"常家庄园在晋中榆次，常家以经营茶叶致富，是对俄贸易儒商世家。",
+    quiz:[
+      {q:"常家庄园位于山西哪里？",o:["晋中榆次","祁县","灵石","太谷"],a:0,e:"常家庄园位于<b>晋中市榆次区</b>东阳镇车辋村。"},
+      {q:"常家庄园是清代哪一家族的庄园？",o:["乔家","常氏家族","王家","渠家"],a:1,e:"常家庄园是榆次<b>常氏</b>家族的宅园。"},
+      {q:"常家以经营什么商品致富，成为对俄贸易劲旅？",o:["盐","茶叶","丝绸","瓷器"],a:1,e:"常家以经营<b>茶叶</b>起家，开辟万里茶路。"},
+      {q:"常家庄园在北方民居中以什么景观见长？",o:["喷泉","园林与楹联","玻璃幕墙","雪景"],a:1,e:"常家庄园园林精巧、楹联荟萃，有「<b>北方民居中园林之最</b>」之誉。"},
+      {q:"常氏被称为什么类型的世家？",o:["武将世家","儒商世家","皇亲国戚","工匠世家"],a:1,e:"常家重教兴学，被誉为「<b>儒商世家</b>」。"}
+    ]},
+  { id:"zhangbi", name:"张壁古堡", region:"中", scbg:"citywall", title:"袖珍城池",
+    story:"介休袖珍古堡，地上明堡、地下千米地道，军事宗教民居合一，暗藏千年玄机。",
+    hint:"张壁古堡在晋中介休，地上明堡、地下暗道三层立体，被称为袖珍古城堡。",
+    quiz:[
+      {q:"张壁古堡位于山西哪里？",o:["介休","平遥","灵石","祁县"],a:0,e:"张壁古堡位于<b>晋中市介休市</b>龙凤镇。"},
+      {q:"张壁古堡最独特的结构是？",o:["空中楼阁","地上明堡、地下暗道","水上城","双层城墙"],a:1,e:"张壁古堡「<b>地上明堡、地下暗道</b>」，地下有庞大的隋唐地道网。"},
+      {q:"张壁古堡融合了哪些功能于一体？",o:["军事、居住、宗教","纯商业","纯军事","纯宗教"],a:0,e:"古堡集<b>军事防御、居住、宗教</b>于一体。"},
+      {q:"张壁古堡地下分布着庞大的什么？",o:["水库","地道网","矿洞","密室"],a:1,e:"堡下千米<b>地道网</b>三层立体，攻防兼备。"},
+      {q:"张壁古堡常被称作什么类型的遗存？",o:["袖珍古城堡","大型皇宫","边境长城","石窟群"],a:0,e:"张壁古堡被称为「<b>袖珍古城堡</b>」。"}
+    ]},
+  { id:"mianshan", name:"绵山", region:"中", scbg:"mountain", title:"寒食之源",
+    story:"介休名山，介子推隐于此、寒食节由此而来，清明寒食文化与奇特岩洞景观并存。",
+    hint:"绵山在晋中介休，是寒食节发源地；介子推「割股奉君」，山属太岳山余脉。",
+    quiz:[
+      {q:"绵山位于山西哪里？",o:["介休","平遥","灵石","盂县"],a:0,e:"绵山位于<b>晋中市介休市</b>东南，是太岳山支脉。"},
+      {q:"绵山与哪位历史人物「割股奉君」的典故有关？",o:["介子推","屈原","伍子胥","管仲"],a:0,e:"春秋时介子推随晋文公流亡「<b>割股奉君</b>」，后隐居绵山。"},
+      {q:"寒食节源于民间纪念谁？",o:["介子推","屈原","李白","关羽"],a:0,e:"为悼念<b>介子推</b>，民间禁火寒食，形成寒食节。"},
+      {q:"绵山风景区以什么文化为主题闻名？",o:["海洋文化","清明寒食文化","茶文化","酒文化"],a:1,e:"绵山是<b>清明寒食文化</b>的发源地。"},
+      {q:"绵山属于哪座山脉的余脉？",o:["太行山","太岳山","吕梁山","恒山"],a:1,e:"绵山是<b>太岳山</b>的支脉。"}
+    ]},
+  { id:"jinci", name:"晋祠", region:"中", scbg:"temple", title:"鱼沼飞梁", mech:"match",
+    story:"祠庙园林合一的瑰宝，圣母殿宋代彩塑传神，难老泉水常年不息。旅人且把四件构件连到正确的功用上，复原宋金规制。",
+    hint:"点左边构件，再点右边功能即可配对；四对全连对即「规制复原」。",
+    quiz:[
+      {q:"晋祠最初是为纪念哪位历史人物而建？",o:["晋文公","唐叔虞","李世民","关羽"],a:1,e:"晋祠为纪念晋国开国诸侯<b>唐叔虞</b>及其母邑姜而建。"},
+      {q:"晋祠三绝之一的「难老泉」以什么闻名？",o:["泉水会变色","泉水四季常温、终年不息","泉底有金鱼","泉水味咸"],a:1,e:"「<b>难老泉</b>」泉水常年恒温、终年不息。"}
+    ],
+    left:["难老泉","献殿","鱼沼飞梁","圣母殿"],
+    right:["千年活水","不砌墙的敞厅","水中十字桥","宋代木构巅峰"],
+    pairs:{0:0,1:1,2:2,3:3} },
+  { id:"tianlong", name:"天龙山石窟", region:"中", scbg:"cave", title:"山林石窟",
+    story:"太原西山深处的石窟群，造像秀美典雅，2021年流失佛首终归故里的故事轰动一时。",
+    hint:"天龙山石窟在太原，开凿于北朝至隋唐，2021年回归的是第8窟佛首。",
+    quiz:[
+      {q:"天龙山石窟位于山西哪座城市？",o:["太原","大同","洛阳","天水"],a:0,e:"天龙山石窟位于<b>太原</b>市西南的天龙山。"},
+      {q:"天龙山石窟主要开凿于哪些朝代？",o:["商周","北朝至隋唐","宋代","清代"],a:1,e:"天龙山石窟始凿于<b>北朝（东魏、北齐）</b>，盛于隋唐。"},
+      {q:"天龙山石窟造像以什么艺术风格著称？",o:["粗犷","秀美典雅","写实荒诞","抽象"],a:1,e:"天龙山造像比例匀称、<b>秀美典雅</b>，称「天龙山式」。"},
+      {q:"2021年从海外回归、原属天龙山石窟的文物是？",o:["佛首","经卷","石碑","壁画"],a:0,e:"2021年回归的是天龙山石窟<b>第8窟北壁主尊佛首</b>。"},
+      {q:"天龙山石窟以什么与自然景观结合而独具意境？",o:["海滨","山林与石窟","沙漠","雪山"],a:1,e:"天龙山石窟隐于<b>山林</b>之间，意境清远。"}
+    ]},
+  { id:"mengshan", name:"蒙山大佛", region:"中", scbg:"buddha", title:"千年大佛",
+    story:"开凿于北齐的巨型摩崖石刻，史载高约63米，湮没山林数百年后于1980年代重见天日。",
+    hint:"蒙山大佛在太原晋源区，开凿于北齐，比乐山大佛还早。",
+    quiz:[
+      {q:"蒙山大佛位于山西哪座城市？",o:["太原","大同","临汾","运城"],a:0,e:"蒙山大佛位于<b>太原</b>市晋源区蒙山。"},
+      {q:"蒙山大佛开凿于哪个朝代？",o:["唐代","北齐","元代","清代"],a:1,e:"蒙山大佛开凿于<b>北齐</b>天保年间。"},
+      {q:"史载蒙山大佛的高度约多少？",o:["约20米","约63米","约100米","约10米"],a:1,e:"据史载蒙山大佛高约<b>63米（200尺）</b>。"},
+      {q:"大佛湮没山林后于20世纪哪一时期被重新发现？",o:["1920年代","1980年代","1950年代","2010年代"],a:1,e:"蒙山大佛于<b>1980年代（1983年）</b>经探查重新确认。"},
+      {q:"与四川乐山大佛相比，蒙山大佛的开凿时间？",o:["更晚","更早","同时","不详"],a:1,e:"蒙山大佛开凿于北齐，比唐代开凿的<b>乐山大佛更早</b>。"}
+    ]},
+  { id:"yongzuo", name:"永祚寺双塔", region:"中", scbg:"pagoda", title:"城市标志",
+    story:"太原地标「双塔」，明代砖塔凌霄对峙，寺内明代牡丹闻名，自古为并州胜景。",
+    hint:"永祚寺双塔在太原，建于明代，又称「凌霄双塔」，寺内紫霞仙牡丹闻名。",
+    quiz:[
+      {q:"永祚寺双塔位于山西哪座城市？",o:["太原","大同","平遥","运城"],a:0,e:"永祚寺双塔位于<b>太原</b>市迎泽区郝庄村。"},
+      {q:"永祚寺双塔建于哪个朝代？",o:["唐代","明代","元代","清代"],a:1,e:"双塔建于<b>明代</b>万历年间。"},
+      {q:"永祚寺双塔又被俗称作什么？",o:["大雁塔","凌霄双塔","六和塔","铁塔"],a:1,e:"双塔又称「<b>凌霄双塔</b>」，是太原最著名的城市标志。"},
+      {q:"永祚寺内以什么植物与双塔并称一景？",o:["牡丹","荷花","梅花","菊花"],a:0,e:"寺内明代<b>牡丹</b>名品「紫霞仙」与双塔并称太原胜景。"},
+      {q:"永祚寺双塔被视为哪座城市的标志？",o:["大同","太原","临汾","晋中"],a:1,e:"双塔是<b>太原</b>的城市象征。"}
+    ]},
+  { id:"fenjiu", name:"杏花村汾酒", region:"中", scbg:"courtyard", title:"清香工序", mech:"order",
+    story:"汾阳杏花村，清香型白酒之源。汾酒酿造有严谨工序，旅人且将五道工序依先后排定。",
+    hint:"把五道工序按「制曲→润粮蒸糁→地缸发酵→清蒸二次清蒸馏→陶坛陈酿」的顺序排好。",
+    quiz:[
+      {q:"汾酒属于中国白酒哪种香型？",o:["浓香型","清香型","酱香型","米香型"],a:1,e:"汾酒是<b>清香型</b>白酒的代表，号称「清香之祖」。"},
+      {q:"杏花村汾酒产地在山西哪里？",o:["汾阳","汾西","临汾","汾河下游"],a:0,e:"杏花村汾酒产自<b>汾阳</b>（吕梁市），自古「汾阳杏花村」。"}
+    ],
+    items:["制曲","润粮蒸糁","地缸发酵","清蒸二次清蒸馏","陶坛陈酿"],
+    answer:[0,1,2,3,4] },
+
+  { id:"hukou", name:"壶口瀑布", region:"南", scbg:"waterfall", title:"黄河奇观",
+    story:"黄河奔腾至此骤然收束，如壶注水、水雾腾空，怒涛声震十里，是中国第二大瀑布。",
+    hint:"壶口瀑布横跨山西吉县与陕西宜川，是中国第二大瀑布，印在50元人民币背面。",
+    quiz:[
+      {q:"壶口瀑布位于黄河之上，横跨山西与哪个省？",o:["陕西","河南","内蒙古","甘肃"],a:0,e:"壶口瀑布横跨山西<b>吉县</b>与<b>陕西</b>宜川县之间。"},
+      {q:"「壶口」之名的由来是因为？",o:["形似茶壶把手","黄河至此收窄如壶口倾注","岸边有巨壶石","古代设酒壶关卡"],a:1,e:"黄河宽阔河面到此<b>骤然收窄</b>，如自壶口倾泻，故名「壶口」。"},
+      {q:"壶口瀑布是中国第几大瀑布？",o:["第一大瀑布","第二大瀑布","第三大瀑布","第五大瀑布"],a:1,e:"壶口瀑布是中国<b>第二大瀑布</b>，也是世界最大黄色瀑布。"},
+      {q:"壶口瀑布位于山西哪座市？",o:["临汾","运城","长治","阳泉"],a:0,e:"山西一侧的壶口瀑布位于<b>临汾市吉县</b>。"},
+      {q:"壶口瀑布的景观被印在哪种面额人民币的背面？",o:["10元","20元","50元","100元"],a:2,e:"壶口瀑布图案印在<b>50元</b>人民币背面。"}
+    ]},
+  { id:"dahuaishu", name:"洪洞大槐树", region:"南", scbg:"tree", title:"根祖圣地",
+    story:"「问我祖先在何处，山西洪洞大槐树」，明代大移民的出发地，全球华人寻根之所。",
+    hint:"洪洞大槐树在临汾，是明初大移民出发地，民谚「问我祖先在何处，山西洪洞大槐树」。",
+    quiz:[
+      {q:"洪洞大槐树位于山西哪座市？",o:["临汾","运城","长治","晋城"],a:0,e:"洪洞大槐树位于<b>临汾市洪洞县</b>，是著名寻根祭祖之地。"},
+      {q:"洪洞大槐树是明代哪一重大历史事件的出发地？",o:["科举考试","大槐树移民（洪洞大移民）","开凿运河","修筑长城"],a:1,e:"明初自洪洞大槐树迁民<b>数百万人</b>遍布十八省。"},
+      {q:"民谚「问我祖先在何处，山西洪洞大槐树」说的是什么？",o:["经商","明代大移民","朝圣","科举"],a:1,e:"这句民谚说的正是<b>明代大移民</b>。"},
+      {q:"明代大移民主要发生在哪个朝代？",o:["唐代","明初","清代","元代"],a:1,e:"大移民发生于<b>明初（洪武、永乐年间）</b>。"},
+      {q:"洪洞大槐树寻根祭祖园纪念的是？",o:["皇家园林","中原汉人移民故地","战场","盐池"],a:1,e:"祭祖园纪念<b>明初大移民的故土</b>。"}
+    ]},
+  { id:"feihong", name:"广胜寺飞虹塔", region:"南", scbg:"pagoda", title:"琉璃宝塔",
+    story:"洪洞广胜寺的琉璃宝塔，五彩斑斓、流光溢彩，寺内曾惊现稀世国宝《赵城金藏》。",
+    hint:"飞虹塔在临汾洪洞广胜寺，通体五彩琉璃，曾藏《赵城金藏》，现存为明代建。",
+    quiz:[
+      {q:"飞虹塔位于山西哪里？",o:["洪洞（临汾）","平遥","五台","芮城"],a:0,e:"飞虹塔位于<b>临汾市洪洞县</b>广胜寺内。"},
+      {q:"飞虹塔以什么工艺著称于世？",o:["木雕","五彩琉璃","铜铸","石雕"],a:1,e:"飞虹塔通体饰以<b>五彩琉璃</b>，阳光下流光溢彩。"},
+      {q:"飞虹塔属于哪一类古塔？",o:["土塔","琉璃宝塔","铁塔","木塔"],a:1,e:"飞虹塔是<b>琉璃宝塔</b>，现存最精美、最高的琉璃塔之一。"},
+      {q:"广胜寺曾发现哪一部闻名世界的佛教大藏经？",o:["敦煌遗书","赵城金藏","房山石经","龙藏"],a:1,e:"广胜寺曾秘藏<b>《赵城金藏》</b>，是国家图书馆镇馆之宝之一。"},
+      {q:"现存的飞虹塔主要建于哪个朝代？",o:["唐代","明代","元代","清代"],a:1,e:"现存飞虹塔建于<b>明代</b>嘉靖、隆庆年间。"}
+    ]},
+  { id:"yaomiao", name:"尧庙", region:"南", scbg:"temple", title:"尧都圣境",
+    story:"临汾为「尧都」，尧庙祭祀上古贤君唐尧，五凤楼巍峨，「尧天舜日」传颂太平。",
+    hint:"尧庙在临汾，祭祀唐尧；临汾古称平阳，被誉为「尧都」「华夏第一都」。",
+    quiz:[
+      {q:"尧庙位于山西哪座城市？",o:["临汾","运城","太原","大同"],a:0,e:"尧庙位于<b>临汾市</b>，古称平阳，传为尧的都城。"},
+      {q:"尧庙是祭祀哪位上古帝王的祠庙？",o:["舜","尧（唐尧）","禹","黄帝"],a:1,e:"尧庙祭祀上古贤君<b>尧（唐尧）</b>。"},
+      {q:"临汾因尧都故地被称作什么？",o:["龙城","尧都 / 华夏第一都","煤都","盐都"],a:1,e:"临汾被誉为「<b>尧都</b>」「华夏第一都」。"},
+      {q:"成语「尧天舜日」常用来比喻什么？",o:["战乱","太平盛世","灾荒","离别"],a:1,e:"<b>「尧天舜日」</b>比喻<b>太平盛世</b>。"},
+      {q:"尧庙中具象征意义的著名楼阁是？",o:["钟楼","五凤楼","鼓楼","望江楼"],a:1,e:"尧庙内有<b>五凤楼</b>等建筑，气势恢宏。"}
+    ]},
+  { id:"guandi", name:"解州关帝庙", region:"南", scbg:"temple", title:"武庙之冠",
+    story:"关公故里，天下武庙之祖，殿宇宏阔、气度森严，海内外关帝信众朝拜的圣地。",
+    hint:"解州关帝庙在运城，祭祀关羽，号称「武庙之冠」「关庙之祖」，始建于隋代。",
+    quiz:[
+      {q:"解州关帝庙位于山西哪座市？",o:["运城","临汾","大同","晋城"],a:0,e:"解州关帝庙位于<b>运城市解州镇</b>。"},
+      {q:"解州关帝庙是祭祀谁的庙宇？",o:["岳飞","关羽（关公）","张飞","赵云"],a:1,e:"关帝庙祭祀三国名将<b>关羽（关公）</b>。"},
+      {q:"解州是关公的什么所在？",o:["战场","故里（故乡）","封地","隐居地"],a:1,e:"解州是<b>关公的故里</b>，故被尊为「关庙之祖」。"},
+      {q:"解州关帝庙号称什么？",o:["文庙之首","武庙之冠 / 关庙之祖","道观之最","佛寺之尊"],a:1,e:"解州关帝庙号称「<b>武庙之冠</b>」「关庙之祖」。"},
+      {q:"解州关帝庙始建于哪个朝代？",o:["隋代","唐代","元代","清代"],a:0,e:"解州关帝庙创始于<b>隋代</b>，历代重修扩建。"}
+    ]},
+  { id:"guanque", name:"鹳雀楼", region:"南", scbg:"pagoda", title:"四大名楼",
+    story:"永济黄河畔的千古名楼，王之涣登楼一吟，成就「欲穷千里目，更上一层楼」的绝唱。",
+    hint:"鹳雀楼在运城永济黄河畔，因王之涣《登鹳雀楼》闻名，与黄鹤楼等并称四大名楼。",
+    quiz:[
+      {q:"鹳雀楼位于山西哪座市？",o:["运城（永济）","临汾","太原","大同"],a:0,e:"鹳雀楼位于<b>运城市永济市</b>黄河东岸。"},
+      {q:"鹳雀楼因哪首唐诗闻名天下？",o:["登鹳雀楼","春晓","静夜思","登岳阳楼"],a:0,e:"王之涣《<b>登鹳雀楼</b>》使鹳雀楼名扬千古。"},
+      {q:"「欲穷千里目，更上一层楼」出自哪座楼的相关诗作？",o:["黄鹤楼","鹳雀楼","滕王阁","岳阳楼"],a:1,e:"这两句千古名句写的正是<b>鹳雀楼</b>。"},
+      {q:"鹳雀楼位于哪条河畔？",o:["长江","黄河","汾河","渭河"],a:1,e:"鹳雀楼濒临<b>黄河</b>。"},
+      {q:"鹳雀楼与黄鹤楼、岳阳楼、滕王阁并称什么？",o:["江南三楼","中国四大名楼","北方双楼","唐宋二楼"],a:1,e:"鹳雀楼与黄鹤楼、岳阳楼、滕王阁并称<b>「中国四大名楼」</b>。"}
+    ]},
+  { id:"yongle", name:"永乐宫", region:"南", scbg:"temple", title:"壁画圣地",
+    story:"芮城道观，元代壁画冠绝天下，《朝元图》群仙朝谒、衣袂翩然，因水库工程整体搬迁。",
+    hint:"永乐宫在运城芮城，以元代壁画《朝元图》闻名，为纪念吕洞宾，因三门峡水库整体搬迁。",
+    quiz:[
+      {q:"永乐宫位于山西哪座县？",o:["芮城（运城）","平陆","夏县","垣曲"],a:0,e:"永乐宫位于<b>运城市芮城县</b>。"},
+      {q:"永乐宫以什么艺术闻名天下？",o:["书法","元代壁画","刺绣","青铜器"],a:1,e:"永乐宫以<b>元代壁画</b>著称，三清殿《朝元图》气势恢宏。"},
+      {q:"永乐宫是为纪念哪位道教人物而建？",o:["丘处机","吕洞宾（吕祖）","张三丰","王重阳"],a:1,e:"永乐宫为纪念<b>吕洞宾（吕祖）</b>而建。"},
+      {q:"永乐宫原址因什么工程而整体搬迁保护？",o:["南水北调","三门峡水库","西气东输","高铁"],a:1,e:"为配合<b>三门峡水库</b>建设，永乐宫于1950—60年代整体搬迁。"},
+      {q:"永乐宫壁画《朝元图》描绘的是什么场景？",o:["市井生活","众神仙朝谒元始天尊","战争场面","山水风光"],a:1,e:"《朝元图》绘<b>近300位神仙朝谒元始天尊</b>。"}
+    ]},
+  { id:"xiangfu", name:"皇城相府", region:"南", scbg:"courtyard", title:"相门府邸",
+    story:"阳城陈氏堡寨，《康熙字典》总裁官陈廷敬的故里，御书「午亭山村」，明清官宅之范。",
+    hint:"皇城相府在晋城阳城，是陈廷敬故居；他主持编撰《康熙字典》，康熙御书「午亭山村」。",
+    quiz:[
+      {q:"皇城相府位于山西哪座县？",o:["阳城（晋城）","沁水","高平","陵川"],a:0,e:"皇城相府位于<b>晋城市阳城县</b>北留镇皇城村。"},
+      {q:"皇城相府是清代哪位名臣的故居？",o:["和珅","陈廷敬","纪晓岚","刘墉"],a:1,e:"皇城相府是清代文渊阁大学士<b>陈廷敬</b>的故里。"},
+      {q:"陈廷敬曾主持编撰哪部大型字书？",o:["说文解字","康熙字典","永乐大典","辞源"],a:1,e:"陈廷敬任《<b>康熙字典</b>》总裁官。"},
+      {q:"皇城相府又被称为什么（康熙御书）？",o:["午亭山村","杏花村","乔家堡","相府园"],a:0,e:"康熙帝曾为陈廷敬题「<b>午亭山村</b>」匾。"},
+      {q:"皇城相府属于哪一类建筑？",o:["皇家宫殿","明清官宦宅邸城堡","寺庙","长城"],a:1,e:"皇城相府是集官宅、民居、堡寨于一体的<b>明清官宦宅邸城堡</b>。"}
+    ]},
+  { id:"mianjin", name:"山西面食", region:"晋", scbg:"courtyard", title:"一碗家乡面", mech:"order",
+    story:"行至三晋尽头，旅人落座面馆。刀削面制作自有章法，且把工序依先后排定，方能尝到那口家乡味。",
+    hint:"把刀削面工序按「和面→揉面醒面→削面入锅→捞面装碗→浇卤调味」的顺序排好。",
+    quiz:[
+      {q:"山西被称为什么？",o:["面食之乡","鱼米之乡","海鲜之都","辣味之省"],a:0,e:"山西素有「<b>面食之乡</b>」之称，面食种类逾千。"},
+      {q:"下列哪一种是山西代表性面食？",o:["刀削面","过桥米线","小笼包","烤冷面"],a:0,e:"<b>刀削面</b>是山西最具代表性的面食之一。"}
+    ],
+    items:["和面","揉面醒面","削面入锅","捞面装碗","浇卤调味"],
+    answer:[0,1,2,3,4] }
+];
+
+const REGION_LABEL={北:"北 · 雁北塞上",中:"中 · 晋中腹地",南:"南 · 河东之地",晋:"晋 · 三晋风味"};
+const REGION_CLASS={北:"n",中:"z",南:"s",晋:"j"};
+
+/* 表里山河长卷：每关在山西地图上的归一化坐标 [x:西→东, y:北→南] 与卡通图标 */
+const GEO={
+  yungang:[0.74,0.07], xuankong:[0.82,0.13], hengshan:[0.81,0.15], huayan:[0.73,0.07],
+  muta:[0.67,0.16], guangwu:[0.64,0.18], wutai:[0.80,0.25], yanmen:[0.63,0.24],
+  bingdong:[0.51,0.26], luya:[0.49,0.27], pingyao:[0.48,0.55], rishengchang:[0.47,0.56],
+  shuanglin:[0.49,0.57], qiao:[0.52,0.52], wang:[0.40,0.61], chang:[0.61,0.50],
+  zhangbi:[0.43,0.59], mianshan:[0.43,0.60], jinci:[0.54,0.48], tianlong:[0.52,0.47],
+  mengshan:[0.49,0.45], yongzuo:[0.57,0.44], fenjiu:[0.40,0.54], hukou:[0.14,0.73],
+  dahuaishu:[0.37,0.71], feihong:[0.37,0.72], yaomiao:[0.34,0.74], guandi:[0.23,0.93],
+  guanque:[0.07,0.94], yongle:[0.15,0.97], xiangfu:[0.53,0.83], mianjin:[0.55,0.50]
+};
+const EMOJI={
+  yungang:"🗿", xuankong:"🏯", hengshan:"⛰️", huayan:"🛕", muta:"🗼", guangwu:"🧱",
+  wutai:"🏔️", yanmen:"🚪", bingdong:"🧊", luya:"🌲", pingyao:"🏘️", rishengchang:"🏦",
+  shuanglin:"🗿", qiao:"🏡", wang:"🏯", chang:"🏡", zhangbi:"🏰", mianshan:"🌄",
+  jinci:"⛩️", tianlong:"🗿", mengshan:"🗿", yongzuo:"🗼", fenjiu:"🍶", hukou:"💦",
+  dahuaishu:"🌳", feihong:"🗼", yaomiao:"⛩️", guandi:"⛩️", guanque:"🏯", yongle:"🏛️",
+  xiangfu:"🏯", mianjin:"🍜"
+};
+
+/* ============ 状态与存档 ============ */
+let STATE={cleared:{},score:0,correctTotal:0};
+const SAVE_KEY="sxwl_merge_v1";
+function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(STATE)); }catch(e){} }
+function load(){ try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY)); if(s&&typeof s==="object") STATE=Object.assign(STATE,s); }catch(e){} }
+function totalQuizSteps(){ let n=0; LEVELS.forEach(L=>{ n+=(L.quiz?L.quiz.length:0); }); return n; }
+
+/* ============ 标题页 ============ */
+function showTitle(){
+  app.innerHTML=`<div class="title-wrap fade">
+    <div class="tr-wrap">${travelerSVG()}</div>
+    <div class="en">SHANXI · WENLV</div>
+    <div class="big">三晋行</div>
+    <div class="ty">三晋大地 · 自 北 向 南 · 闯 关 解 密</div>
+    <div class="sub">扮一位执伞携囊的旅人，自雁北塞上启程，由北向南穿行三十二处山河胜迹。<br/>每到一处，便以谜题为钥——排历史之序、破古建之密、连文脉之对、拼一方鲁班锁。<br/>在答题与解谜间，亲手点亮三晋大地的千年故事。<br/>另有「双人 PK 对战」，与友同屏争雄。</div>
+    <button class="btn" id="start">启程南下</button>
+    <div style="height:10px"></div>
+    <button class="btn hollow" id="pk">⚔️ 双人 PK 对战</button>
+    <div class="sub" style="margin-top:8px">32 关 · 含 150+ 题 · 鲁班锁 / 配对 / 排序 / 单选</div>
+  </div>`;
+  $("start").onclick=()=>{ showGates(); };
+  $("pk").onclick=showPKSetup;
+}
+
+/* ============ 山河长卷（关卡地图） ============ */
+function playable(i){ if(i===0) return !STATE.cleared[LEVELS[0].id]; for(let j=0;j<i;j++){ if(!STATE.cleared[LEVELS[j].id]) return false; } return true; }
+function clearedN(){ return Object.keys(STATE.cleared).length; }
+
+function showGates(){
+  const c=clearedN();
+  let html=`<div class="jtop"><div class="tr-wrap">${travelerSVG()}</div><div>
+      <div class="jtitle">山河长卷 · 自北向南</div>
+      <div class="jsub">一位旅人自雁北启程，逐站南下，破解沿途谜题</div></div></div>`;
+  let lastR=null, frontierSet=false;
+  LEVELS.forEach((L,i)=>{
+    if(L.region!==lastR){ html+=`<div class="jregion">${REGION_LABEL[L.region]||L.region}</div>`; lastR=L.region; }
+    const ok=playable(i), done=STATE.cleared[L.id];
+    const isFrontier=!frontierSet && ok && !done;
+    if(isFrontier) frontierSet=true;
+    const cls="stop"+(ok?"":" locked")+(done?" cleared":"")+(isFrontier?" frontier":"");
+    const st=done?"✓":(ok?"▶":"🔒");
+    const rgCls=REGION_CLASS[L.region]||"";
+    html+=`<div class="${cls}" data-i="${i}"><span class="dot"></span>${isFrontier?'<span class="flag">旅人至此</span>':''}
+      <div class="no">${i+1}</div>
+      <div class="info"><div class="nm">${L.name}<span class="rg">${L.region}</span></div><div class="ti">${L.title}</div></div>
+      <div class="st">${st}</div></div>`;
+  });
+  app.innerHTML=`<div class="topbar">
+      <button class="btn red" id="backTitle" style="display:inline-block;width:auto;padding:8px 16px;font-size:14px;border-radius:16px;letter-spacing:1px;flex-shrink:0;box-shadow:0 4px 12px rgba(158,43,37,.35);">← 返回</button>
+      <div class="brand">三晋行</div>
+      <div class="hud">已通关 <b>${c}</b>/${LEVELS.length} · 🪙 ${STATE.score}</div>
+    </div>
+    <div class="pad fade">
+      <h2 style="font-size:20px;letter-spacing:4px;margin:0">山河关卡</h2>
+      <div class="sub" style="margin-top:4px">自北向南 · 通关上一站，解锁下一站</div>
+      <button class="btn" id="mapOpen" style="width:100%;margin-top:12px;background:var(--gold);box-shadow:0 4px 14px rgba(199,154,62,.35)">🗺️ 查看山西地图</button>
+      <div class="journey" style="margin-top:14px">${html}</div>
+      ${c===LEVELS.length?`<button class="btn red" id="end" style="width:100%;margin-top:10px;box-shadow:0 4px 14px rgba(158,43,37,.35)">🗺️ 展开表里山河长卷（山西地图）</button>`:""}
+      <div style="text-align:center;margin-top:14px"><button class="btn hollow" id="pk2" style="font-size:13px;padding:8px 18px">⚔️ 双人 PK 对战</button></div>
+    </div>`;
+  document.querySelectorAll(".stop").forEach(g=>{ if(playable(+g.dataset.i)) g.onclick=()=>playLevel(+g.dataset.i); });
+  $("mapOpen").onclick=showShanxiMap;
+  if(c===LEVELS.length) $("end").onclick=showShanxiMap;
+  $("pk2").onclick=showPKSetup;
+  $("backTitle").onclick=showTitle;
+}
+
+/* ============ 表里山河长卷（山西地图） ============ */
+function showShanxiMap(){
+  const allDone=clearedN()===LEVELS.length;
+  const sxPath="M 230 110 C 360 80 450 78 540 82 C 640 88 720 100 775 130 C 805 165 815 215 838 300 C 855 380 835 470 808 560 C 788 625 758 675 712 692 C 620 724 540 726 450 715 C 392 708 350 700 312 660 C 280 628 268 588 250 560 C 215 512 175 492 178 462 C 182 425 240 405 262 372 C 286 338 252 300 250 258 C 248 210 240 165 230 110 Z";
+  const river="M 250 560 C 215 512 175 492 178 462 C 182 425 240 405 262 372 C 286 338 252 300 250 258 C 248 210 240 165 230 110";
+  let pins="";
+  LEVELS.forEach((L,i)=>{
+    const g=GEO[L.id]; if(!g) return;
+    const px=178+g[0]*660, py=80+g[1]*646;
+    const cleared=!!STATE.cleared[L.id], unlocked=playable(i);
+    const cls="sxpin"+(cleared?" cleared":"")+(unlocked?"":" locked");
+    const em=EMOJI[L.id]||"📍";
+    pins+=`<div class="${cls}" data-i="${i}" style="left:${(px/1000*100).toFixed(2)}%;top:${(py/760*100).toFixed(2)}%">`
+        +`<div class="badge">${em}</div><div class="lbl">${L.name}</div></div>`;
+  });
+  app.innerHTML=`<div class="topbar">
+      <button class="btn red" id="mapBack" style="display:inline-block;width:auto;padding:8px 16px;font-size:14px;border-radius:16px;letter-spacing:1px;flex-shrink:0;box-shadow:0 4px 12px rgba(158,43,37,.35);">← 返回</button>
+      <div class="brand">山西地图</div>
+      <div class="hud">已点亮 <b>${clearedN()}</b>/${LEVELS.length}</div>
+    </div>
+    <div class="pad fade">
+      ${allDone?`<div class="sx-banner">🎉 表里山河 · 三晋 32 处胜迹全部解锁！</div>`:`<div class="sub" style="text-align:center">已解锁的地点，以卡通图标浮现于山西大地</div>`}
+      <div class="sxmap">
+        <svg viewBox="0 0 1000 760" preserveAspectRatio="xMidYMid meet">
+          <defs><linearGradient id="sxg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cdeab0"/><stop offset="1" stop-color="#a7d488"/></linearGradient></defs>
+          <path d="${sxPath}" fill="url(#sxg)" stroke="#5b7a3a" stroke-width="4" stroke-linejoin="round"/>
+          <path d="${river}" fill="none" stroke="#4aa3df" stroke-width="11" stroke-linecap="round" opacity=".75"/>
+          <g fill="#ffffff" opacity=".85"><ellipse cx="300" cy="180" rx="34" ry="15"/><ellipse cx="352" cy="166" rx="24" ry="12"/><ellipse cx="640" cy="220" rx="30" ry="14"/><ellipse cx="690" cy="206" rx="20" ry="10"/></g>
+        </svg>
+        ${pins}
+      </div>
+      ${allDone?`<button class="btn" id="ending2" style="width:100%;margin-top:12px">📜 通关感言</button>`:""}
+      <div style="text-align:center;margin-top:12px"><button class="btn hollow" id="backGates2" style="font-size:13px;padding:8px 18px">← 返回山河长卷</button></div>
+    </div>`;
+  document.querySelectorAll(".sxpin").forEach(p=>{
+    const i=+p.dataset.i;
+    if(playable(i)) p.onclick=()=>playLevel(i);
+    else { p.title="尚未解锁"; p.onclick=()=>toast("该地点尚未解锁，请先通关前面的关卡"); }
+  });
+  $("mapBack").onclick=showGates;
+  $("backGates2").onclick=showGates;
+  if(allDone) $("ending2").onclick=showEnding;
+}
+
+/* ============ 关卡内：多步 steps ============ */
+let RT={};
+function buildSteps(L){
+  const steps=[];
+  (L.quiz||[]).forEach(q=>steps.push({t:"q",q:q.q,o:q.o,a:q.a,e:q.e}));
+  if(L.mech==="luban") steps.push({t:"luban"});
+  else if(L.mech==="match") steps.push({t:"match"});
+  else if(L.mech==="order") steps.push({t:"order"});
+  return steps;
+}
+function playLevel(i){
+  const L=LEVELS[i];
+  RT={i, steps:buildSteps(L), stepIdx:0, locked:false,
+      sel:null, optOrder:null, picked:[], matched:{}, matchedR:{}, selLeft:null,
+      placed:{}, tray:null, rot:{}, placedRot:{}, matchedAll:false};
+  const regionName=(REGION_LABEL[L.region]||L.region).split(" · ")[1]||L.region;
+  app.innerHTML=`<div class="topbar" style="justify-content:flex-start;gap:10px;padding:10px 14px;">
+      <button class="btn red" id="back" style="display:inline-block;width:auto;padding:8px 15px;font-size:13px;border-radius:16px;letter-spacing:1px;flex-shrink:0;box-shadow:0 4px 12px rgba(181,64,47,.35);">← 返回关卡</button>
+      <span class="badge" style="white-space:nowrap;font-weight:700;color:#f5efe2">第 ${i+1} 站 · ${regionName}</span>
+      <span style="flex:1"></span>
+      <span class="tr-mini" style="width:34px;height:44px">${travelerSVG()}</span></div>
+    <div class="pad fade" style="padding-top:0">
+      <div class="banner" id="banner"><span class="cap">${L.name}</span><span class="lv">${L.title}</span></div>
+      <div class="story">${L.story}</div>
+      <div class="qbar"><div id="bar" style="width:0%"></div></div>
+      <div id="mech"></div>
+      <div class="panel" id="panel"><span class="pt">提示</span>卡住了？点下方「看提示」。</div>
+      <div class="row">
+        <button class="btn hollow" id="hint" style="display:inline-block;width:auto;padding:9px 16px;font-size:12px;border-radius:16px;letter-spacing:1px;">看提示</button>
+        <button class="btn" id="submit" style="display:block;width:100%;box-sizing:border-box;">确认作答</button>
+      </div>
+    </div>`;
+  $("back").onclick=showGates;
+  $("hint").onclick=()=>{ const p=$("panel"); p.innerHTML=`<span class="pt">提示</span>${L.hint}`; p.classList.remove("flash"); void p.offsetWidth; p.classList.add("flash"); };
+  $("submit").onclick=()=>checkStep(L);
+  $("banner").style.backgroundImage=svgBg(SCENES[L.scbg]);
+  updateBar();
+  renderStep(L);
+}
+function updateBar(){
+  const total=RT.steps.length;
+  const pct = total? Math.round((RT.stepIdx)/total*100) : 0;
+  const bar=$("bar"); if(bar) bar.style.width=pct+"%";
+  const sb=$("stepinfo"); if(sb) sb.textContent=`第 ${Math.min(RT.stepIdx+1,total)} / ${total} 步`;
+}
+function setSubmit(text,disabled){ const b=$("submit"); if(b){ b.textContent=text; b.disabled=!!disabled; } }
+function setPanel(prefix,body,kind){
+  const p=$("panel");
+  const color = kind==="ok" ? "var(--jade-deep)" : kind==="no" ? "var(--vermillion)" : "var(--vermillion)";
+  p.innerHTML=`<span class="pt" style="color:${color}">${prefix}</span>${body}`;
+}
+function refreshHUD(){
+  const hud=document.querySelector(".topbar .hud");
+  if(hud) hud.innerHTML=`已通关 <b>${clearedN()}</b>/${LEVELS.length} · 🪙 ${STATE.score}`;
+}
+function renderStep(L){
+  const st=RT.steps[RT.stepIdx];
+  const info=`<div class="stepinfo" id="stepinfo">第 ${RT.stepIdx+1} / ${RT.steps.length} 步${st.t==="q"?" · 单选":st.t==="luban"?" · 鲁班锁":st.t==="match"?" · 配对":st.t==="order"?" · 排序":""}</div>`;
+  if(st.t==="q") renderQuiz(st);
+  else if(st.t==="order") renderOrder(L);
+  else if(st.t==="match") renderMatch(L);
+  else if(st.t==="luban") renderLuban(L);
+  // 在 mech 前插入步骤信息
+  const mech=$("mech");
+  mech.insertAdjacentHTML("afterbegin", info);
+  updateBar();
+  if(st.t!=="q") setSubmit("确认作答", false);
+}
+
+/* ---- 单选步骤 ---- */
+function renderQuiz(st){
+  if(!RT.optOrder) RT.optOrder = shuffle(st.o.map((_,k)=>k));
+  const keys=["A","B","C","D","E"];
+  const html = `<div class="q">${st.q}</div>` + RT.optOrder.map((k,i)=>
+    `<button class="opt" data-k="${k}"><span class="ok">${keys[i]}</span><span>${st.o[k]}</span></button>`).join("");
+  $("mech").innerHTML=html;
+  document.querySelectorAll(".opt").forEach(b=>{
+    b.onclick=()=>{ if(RT.locked) return;
+      document.querySelectorAll(".opt").forEach(x=>x.classList.remove("sel"));
+      b.classList.add("sel"); RT.sel=+b.dataset.k; };
+  });
+}
+/* ---- 排序步骤 ---- */
+function renderOrder(L){
+  if(RT.srcOrder===undefined) RT.srcOrder = shuffle(L.items.map((_,k)=>k));
+  const slotHtml=L.items.map((_,k)=>{
+    const v=RT.picked[k];
+    return `<div class="slot ${v!=null?'full':''}">${v!=null?L.items[v]:'第'+(k+1)+'序'}</div>`;
+  }).join("");
+  const srcHtml=RT.srcOrder.map(k=>`<button data-k="${k}" ${RT.picked.includes(k)?'disabled':''}>${L.items[k]}</button>`).join("");
+  $("mech").innerHTML=`<div class="slots">${slotHtml}</div><div class="src">${srcHtml}</div>`;
+  document.querySelectorAll(".src button").forEach(b=>{
+    b.onclick=()=>{ if(RT.picked.length<L.items.length){ RT.picked.push(+b.dataset.k); renderOrder(L); } };
+  });
+}
+/* ---- 配对步骤 ---- */
+function renderMatch(L){
+  if(!RT.leftOrder) RT.leftOrder = shuffle(L.left.map((_,k)=>k));
+  if(!RT.rightOrder) RT.rightOrder = shuffle(L.right.map((_,k)=>k));
+  const leftHtml=RT.leftOrder.map(k=>`<div class="tile ${RT.matched[k]?'matched dim':''}" data-k="${k}">${L.left[k]}</div>`).join("");
+  const rightHtml=RT.rightOrder.map(k=>`<div class="tile ${RT.matchedR&&RT.matchedR[k]?'matched dim':''}" data-r="${k}">${L.right[k]}</div>`).join("");
+  if(!RT.matchedR) RT.matchedR={};
+  $("mech").innerHTML=`<div class="cols"><div class="col"><div class="h">构件</div>${leftHtml}</div>
+    <div class="col"><div class="h">功能</div>${rightHtml}</div></div>`;
+  document.querySelectorAll(".col:first-child .tile").forEach(t=>{
+    t.onclick=()=>{ const k=+t.dataset.k; if(RT.matched[k])return;
+      document.querySelectorAll(".col:first-child .tile").forEach(x=>x.classList.remove("sel"));
+      t.classList.add("sel"); RT.selLeft=k; };
+  });
+  document.querySelectorAll(".col:nth-child(2) .tile").forEach(t=>{
+    t.onclick=()=>{ const r=+t.dataset.r; if(RT.matchedR[r])return;
+      if(RT.selLeft==null){ toast("先点左边的构件"); return; }
+      if(L.pairs[RT.selLeft]===r){
+        RT.matched[RT.selLeft]=true; RT.matchedR[r]=true;
+        const all=Object.keys(L.pairs).every(k=>RT.matched[k]);
+        renderMatch(L);
+        if(all){ toast("构件归位，规制复原！"); RT.matchedAll=true; setSubmit("确认作答", false); }
+      } else { toast("不对，再想想它们的功用"); document.querySelectorAll(".col:first-child .tile").forEach(x=>x.classList.remove("sel")); RT.selLeft=null; }
+    };
+  });
+}
+/* ---- 鲁班锁步骤 ---- */
+function nameOf(L,key){ const p=L.luban.find(x=>x.key===key); return p?p.name:key; }
+function pieceArt(key, mode){
+  const g = mode==="wood" ? `<g fill="url(#wood)" stroke="rgba(90,60,20,.45)" stroke-width="1">` : `<g fill="none" stroke="var(--jade-deep)" stroke-width="2">`;
+  let inner = `<rect x="4" y="16" width="62" height="15" rx="3"/>`;
+  let extra="";
+  if(key==="tou") extra = `<rect x="29" y="16" width="12" height="15" rx="1"/>`;
+  if(key==="ban") extra = `<path d="M26 16 h18 v-7 h-18 z"/>`;
+  if(key==="ge")  extra = `<path d="M4 16 h16 v-9 h-16 z"/>`;
+  if(key==="xie") extra = `<path d="M30 16 l7 -9 l7 9 z"/>`;
+  if(key==="shi") extra = `<rect x="31" y="5" width="10" height="37" rx="2"/>`;
+  if(key==="yan") extra = `<path d="M27 16 l4 -9 h10 l4 9 z"/>`;
+  let hole="";
+  if(key==="tou" && mode==="wood") hole=`<rect x="29" y="16" width="12" height="15" rx="1" fill="var(--paper)"/>`;
+  return `<svg viewBox="0 0 70 44" preserveAspectRatio="xMidYMid meet">${g}${inner}${extra}</g>${hole}</svg>`;
+}
+function buildGrooves(L){
+  const K=L.luban.map(p=>p.key);
+  const H=[{top:55,left:10,w:220,h:30},{top:105,left:10,w:220,h:30},{top:155,left:10,w:220,h:30}];
+  const V=[{left:55,top:10,w:30,h:220},{left:105,top:10,w:30,h:220},{left:155,top:10,w:30,h:220}];
+  const g=[];
+  H.forEach(p=>g.push(Object.assign({key:K[g.length],side:'h',reqRot:0},p)));
+  V.forEach(p=>g.push(Object.assign({key:K[g.length],side:'v',reqRot:1},p)));
+  return g;
+}
+function renderLuban(L){
+  if(!RT.tray) RT.tray = shuffle(L.luban.map(p=>p.key));
+  if(!RT.rot) RT.rot={};
+  if(!RT.placedRot) RT.placedRot={};
+  RT.grooves = buildGrooves(L);
+  const all = Object.keys(RT.placed).length === L.luban.length;
+  RT.matchedAll = all;
+  const slots = RT.grooves.map((g,i)=>{
+    const done = RT.placed[i]!=null;
+    const key = RT.placed[i];
+    const rot = done ? (RT.placedRot[i]||g.reqRot) : g.reqRot;
+    const inner = done
+      ? `<div class="glyph" style="transform:translate(-50%,-50%) rotate(${rot*90}deg)">${pieceArt(key,'wood')}</div><div class="ph">${nameOf(L,key)}</div>`
+      : `<div class="glyph" style="transform:translate(-50%,-50%) rotate(${g.reqRot*90}deg);opacity:.25">${pieceArt(g.key,'outline')}</div><span class="ph">榫卯</span>`;
+    return `<div class="slot ${done?'done':''}" data-slot="${i}" style="left:${g.left}px;top:${g.top}px;width:${g.w}px;height:${g.h}px">${inner}</div>`;
+  }).join("");
+  const tray = RT.tray.map(key=>`<div class="piece" data-key="${key}"><div class="glyph" style="transform:rotate(${(RT.rot[key]||0)*90}deg)">${pieceArt(key,'wood')}</div><div class="nm">${nameOf(L,key)}</div></div>`).join("");
+  $("mech").innerHTML = `
+    <div class="luban-frame ${all?'all':''}"><div class="ft">${all?'✦ 榫卯合龙 ✦':'把构件拼入鲁班锁骨架 · 拖动就位，点构件可调朝向'}</div>
+    <div class="luban-core">${slots}</div></div>
+    <div class="luban-tray" id="tray">${tray}</div>`;
+  setSubmit("确认作答", !all);
+  bindLuban(L);
+}
+function bindLuban(L){
+  document.querySelectorAll(".piece").forEach(p=>{ p.addEventListener("pointerdown", ev=>startDrag(ev, L, p)); });
+  document.querySelectorAll(".slot.done").forEach(s=>{
+    s.onclick=()=>{ const idx=+s.dataset.slot; const key=RT.placed[idx]; delete RT.placed[idx]; delete RT.placedRot[idx]; RT.tray.push(key); renderLuban(L); };
+  });
+}
+let drag=null;
+function startDrag(ev, L, el){
+  ev.preventDefault();
+  const key=el.dataset.key;
+  drag={key, el, ghost:document.createElement("div"), startX:ev.clientX, startY:ev.clientY};
+  drag.ghost.className="ghost";
+  const rot=RT.rot[key]||0;
+  drag.ghost.innerHTML=`<div class="glyph" style="transform:rotate(${rot*90}deg)">${pieceArt(key,'wood')}</div><div class="nm">${nameOf(L,key)}</div>`;
+  document.body.appendChild(drag.ghost);
+  el.style.opacity=".35";
+  moveGhost(ev);
+  window.addEventListener("pointermove", moveGhost);
+  window.addEventListener("pointerup", endDrag);
+}
+function moveGhost(ev){ if(!drag) return; drag.ghost.style.left=ev.clientX+"px"; drag.ghost.style.top=ev.clientY+"px"; }
+function wrongSlot(slot){ slot.classList.add("wrong"); setTimeout(()=>slot.classList.remove("wrong"),420); }
+function endDrag(ev){
+  window.removeEventListener("pointermove", moveGhost);
+  window.removeEventListener("pointerup", endDrag);
+  if(!drag) return;
+  const key=drag.key;
+  const moved=Math.hypot(ev.clientX-drag.startX, ev.clientY-drag.startY);
+  drag.ghost.remove(); drag=null;
+  const L=LEVELS[RT.i];
+  if(moved<8){ RT.rot[key]=((RT.rot[key]||0)+1)%4; renderLuban(L); return; }
+  const ci=RT.grooves.findIndex(g=>g.key===key);
+  const correctSlot=document.querySelector(`[data-slot="${ci}"]`);
+  const cr=correctSlot.getBoundingClientRect();
+  const inCorrect = ev.clientX>=cr.left && ev.clientX<=cr.right && ev.clientY>=cr.top && ev.clientY<=cr.bottom;
+  if(RT.placed[ci]!=null){ toast("这一根已经合上了"); renderLuban(L); return; }
+  if(!inCorrect){ wrongSlot(correctSlot); toast("拖到轮廓相符的那根骨架位置"); renderLuban(L); return; }
+  if((RT.rot[key]||0)!==RT.grooves[ci].reqRot){ wrongSlot(correctSlot); toast("朝向不对，先点构件旋转调正"); renderLuban(L); return; }
+  RT.placed[ci]=key; RT.placedRot[ci]=RT.grooves[ci].reqRot;
+  RT.tray=RT.tray.filter(k=>k!==key);
+  const tip=L.luban.find(p=>p.key===key).tip;
+  $("panel").innerHTML=`<span class="pt">榫卯 · ${nameOf(L,key)}</span>${tip}`;
+  if(Object.keys(RT.placed).length===L.luban.length) toast("榫卯合龙！点『确认作答』");
+  renderLuban(L);
+}
+
+/* ============ 判定当前步 ============ */
+function checkStep(L){
+  const st=RT.steps[RT.stepIdx];
+  if(st.t==="q") checkQuiz(L,st);
+  else if(st.t==="order"){
+    if(RT.picked.length<L.items.length){ toast("请先排满所有工序"); return; }
+    if(JSON.stringify(RT.picked)===JSON.stringify(L.answer)){ stepDone(L); }
+    else { toast("次序不对，重新排一次"); RT.picked=[]; renderOrder(L); }
+  }
+  else if(st.t==="match"){
+    if(!RT.matchedAll){ toast("把四件构件都连对才算复原"); return; }
+    stepDone(L);
+  }
+  else if(st.t==="luban"){
+    if(!RT.matchedAll){ toast("先把六件构件都合龙"); return; }
+    stepDone(L);
+  }
+}
+function checkQuiz(L,st){
+  if(RT.locked){ stepDone(L); return; }
+  if(RT.sel==null){ toast("请先选择一项"); return; }
+  if(RT.sel===st.a){
+    RT.locked=true;
+    const ok=document.querySelector(`.opt[data-k="${st.a}"]`); if(ok) ok.classList.add("ok");
+    STATE.score+=10; STATE.correctTotal++; save(); refreshHUD();
+    setPanel("✅ 回答正确 · +10 🪙", st.e, "ok");
+    setSubmit("继续 →", false);
+  } else {
+    const sel=document.querySelector(`.opt[data-k="${RT.sel}"]`); if(sel) sel.classList.add("no");
+    const ok=document.querySelector(`.opt[data-k="${st.a}"]`); if(ok) ok.classList.add("ok");
+    setPanel("❌ 答错了 · 解析", st.e, "no");
+    RT.locked=true;
+    setSubmit("继续 →", false);
+  }
+}
+function stepDone(L){
+  const last = RT.stepIdx >= RT.steps.length-1;
+  if(last){ clearLevel(L); return; }
+  RT.stepIdx++; RT.locked=false; RT.sel=null; RT.optOrder=null;
+  RT.picked=[]; RT.srcOrder=undefined; RT.matched={}; RT.matchedR={}; RT.selLeft=null;
+  RT.placed={}; RT.tray=null; RT.rot={}; RT.placedRot={}; RT.matchedAll=false;
+  const p=$("panel"); p.innerHTML=`<span class="pt">提示</span>下一关谜题来了，点「看提示」可求助。`;
+  setSubmit("确认作答", false);
+  renderStep(L);
+}
+
+/* ============ 通关 ============ */
+function clearLevel(L){
+  STATE.cleared[L.id]=true; save();
+  const next=RT.i+1; const last=next>=LEVELS.length;
+  setPanel("✦ 通关 ✦", `你解开了「${L.title}」，山河又亮了一处。`, "ok");
+  const actions=document.createElement("div");
+  actions.className="row"; actions.style.cssText="display:grid;grid-template-columns:auto 1fr;gap:14px;margin-top:18px;width:100%;border:none;";
+  actions.innerHTML = last
+    ? `<button class="btn red" id="fin" style="width:100%">展开山河长卷</button>`
+    : `<button class="btn hollow" id="gates" style="display:inline-block;width:auto;padding:6px 14px;font-size:12px;border-radius:16px;">返回关卡</button><button class="btn red" id="nxt" style="width:100%;box-sizing:border-box;">下一关 →</button>`;
+  document.querySelector(".pad").appendChild(actions);
+  $("submit").disabled=true; $("hint").disabled=true;
+  refreshHUD();
+  if(last) $("fin").onclick=showEnding;
+  else { $("nxt").onclick=()=>playLevel(next); $("gates").onclick=showGates; }
+}
+function showEnding(){
+  const names=LEVELS.map(L=>L.name).join(" · ");
+  const tot=totalQuizSteps();
+  const ratio = tot? STATE.correctTotal/tot : 0;
+  let rank,word;
+  if(STATE.correctTotal===tot){ rank="👑 三晋文旅状元"; word="满分通关！三晋文明尽收眼底，你已是可带团讲解的行走百科。"; }
+  else if(ratio>=0.85){ rank="🏅 三晋文旅达人"; word="表现出色！你深谙三晋文化精髓，找个周末真去山西走一遭。"; }
+  else if(ratio>=0.6){ rank="🎋 三晋游学之士"; word="不错的成绩！你对山西已有相当积累，再多逛几处便是行家。"; }
+  else { rank="🌱 三晋初游客"; word="闯关成功便是缘分！山西的故事还很长，欢迎再来重走一遍。"; }
+  app.innerHTML=`<div class="ending fade"><div class="seal-stamp">晋</div>
+    <h2 style="font-size:22px;letter-spacing:6px">表里山河长卷</h2>
+    <div class="scroll">三十二关皆破。<br/>一位旅人自雁北启程，逐站南下，<br/>以谜题为钥，一一打开了山西的山河：</div>
+    <div class="scroll small">${names}</div>
+    <div class="scroll" style="color:var(--vermillion)">🪙 金币 ${STATE.score} · ✅ 答对 ${STATE.correctTotal}/${tot}</div>
+    <div class="scroll" style="color:var(--gold);font-weight:800;font-size:18px">${rank}</div>
+    <div class="scroll">${word}</div>
+    <div class="scroll" style="color:var(--vermillion)">地上文物看山西，<br/>一梁一柱皆山河。</div>
+    <button class="btn hollow" id="again">重走一遍</button></div>`;
+  $("again").onclick=()=>{ STATE.cleared={}; STATE.score=0; STATE.correctTotal=0; save(); showGates(); };
+}
+
+/* ============ 双人 PK 对战 ============ */
+let PK={};
+function allQuizPool(){
+  const pool=[];
+  LEVELS.forEach(L=>{ (L.quiz||[]).forEach(q=>pool.push(Object.assign({},q,{src:L.name}))); });
+  return pool;
+}
+function showPKSetup(){
+  app.innerHTML=`<div class="pad fade">
+    <div class="pk-title">⚔️ 双人 PK 对战</div>
+    <div class="pk-sub">同设备轮流作答 · 同套题目 · 比分高者胜</div>
+    <div style="max-width:420px;margin:0 auto">
+      <div class="form-row"><label>🔵 玩家一 昵称</label><input class="pk-input" id="pkNameA" maxlength="8" value="玩家一"></div>
+      <div class="form-row"><label>🔴 玩家二 昵称</label><input class="pk-input" id="pkNameB" maxlength="8" value="玩家二"></div>
+      <div class="form-row center"><label style="text-align:center">对战题数</label>
+        <div class="seg" id="pkSeg"><button data-n="5" onclick="PKsetCount(5,this)">5 题</button><button data-n="10" class="on" onclick="PKsetCount(10,this)">10 题</button><button data-n="15" onclick="PKsetCount(15,this)">15 题</button></div></div>
+      <div class="form-row center"><label style="text-align:center">对战方式</label>
+        <div class="seg" id="pkModeSeg"><button data-m="turn" onclick="PKsetMode('turn',this)">轮流作答</button><button data-m="split" class="on" onclick="PKsetMode('split',this)">同屏同时</button></div></div>
+      <div class="center" style="margin-top:18px">
+        <button class="btn" onclick="PKstart()">🔥 开始对战</button>
+        <div style="height:10px"></div>
+        <button class="btn hollow" onclick="showTitle()">← 返回</button>
+      </div>
+      <div class="pk-sub" style="font-size:12px;margin-top:16px">「轮流作答」两人各抽不同题；「同屏同时」一块屏幕左右分两区，同一道题两人同时答。</div>
+    </div></div>`;
+  PK.count=10; PK.mode="split";
+}
+function PKsetCount(n,el){ PK.count=n; document.querySelectorAll("#pkSeg button").forEach(b=>b.classList.remove("on")); el.classList.add("on"); }
+function PKsetMode(m,el){ PK.mode=m; document.querySelectorAll("#pkModeSeg button").forEach(b=>b.classList.remove("on")); el.classList.add("on"); }
+function PKstart(){
+  const na=$("pkNameA").value.trim()||"玩家一";
+  const nb=$("pkNameB").value.trim()||"玩家二";
+  const pool=allQuizPool();
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  if(PK.mode==="split"){ PKsplitStart(na,nb,pool); return; }
+  PK={active:true,names:[na,nb],total:Math.min(PK.count||10,Math.floor(pool.length/2)),scores:[0,0],perCorrect:[0,0],player:0,qIdx:0,poolA:pool.slice(0,Math.floor(pool.length/2)),poolB:pool.slice(Math.floor(pool.length/2),pool.length)};
+  PKshowHandoff();
+}
+function PKshowHandoff(){
+  const p=PK.player; const color=p===0?"🔵":"🔴";
+  app.innerHTML=`<div class="pad fade center">
+    <div class="tr-wrap" style="margin-bottom:10px">${travelerSVG()}</div>
+    <div class="pk-title" style="font-size:26px">${color} ${PK.names[p]}</div>
+    <div class="pk-sub">${p===0?"两人题目各不相同，互不干扰，放心作答！":"轮到 "+PK.names[p]+" 啦～两人题目不同，直接开答即可。"}</div>
+    <button class="btn" onclick="PKstartBlock()">✅ 开始答题</button>
+    <div style="height:10px"></div>
+    <button class="btn hollow" onclick="showTitle()">← 返回</button>
+  </div>`;
+}
+function PKstartBlock(){ renderPKQuiz(); }
+function PKq(){ return PK.player===0 ? PK.poolA[PK.qIdx] : PK.poolB[PK.qIdx]; }
+function renderPKQuiz(){
+  const p=PK.player; const q=PKq();
+  app.innerHTML=`<div class="topbar">
+      <button class="btn red" id="pkBack" style="display:inline-block;width:auto;padding:7px 13px;font-size:12px;border-radius:16px;flex-shrink:0;box-shadow:0 4px 12px rgba(181,64,47,.35);">← 返回</button>
+      <div class="brand">${(p===0?"🔵 ":"🔴 ")+PK.names[p]}</div>
+      <div class="hud">🪙 ${PK.scores[p]} · 第 ${PK.qIdx+1}/${PK.total} 题</div>
+    </div>
+    <div class="pad fade">
+      <div class="q">${q.q}</div>
+      <div id="optsBox"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="row"><button class="btn" id="nextBtn" style="width:100%" onclick="PKnext()">继续 →</button></div>
+    </div>`;
+  const keys=["A","B","C","D","E"];
+  const box=$("optsBox");
+  q.o.forEach((op,idx)=>{
+    const d=document.createElement("button"); d.className="opt"; d.innerHTML=`<span class="ok">${keys[idx]}</span><span>${op}</span>`;
+    d.onclick=()=>PKanswer(idx,d);
+    box.appendChild(d);
+  });
+  $("nextBtn").style.display="none";
+  $("pkBack").onclick=showTitle;
+}
+function PKanswer(idx,el){
+  const q=PKq();
+  document.querySelectorAll(".opt").forEach(o=>o.classList.add("disabled"));
+  const fb=$("feedback");
+  if(idx===q.a){
+    el.classList.add("ok"); PK.scores[PK.player]+=10; PK.perCorrect[PK.player]++;
+    toast("答对啦！+10 🪙"); fb.innerHTML="✅ <b>回答正确！</b> "+q.e;
+  } else {
+    el.classList.add("no");
+    const ok=document.querySelectorAll(".opt")[q.a]; if(ok) ok.classList.add("ok");
+    fb.innerHTML="❌ <b>答错了。</b> "+q.e;
+  }
+  fb.classList.add("show");
+  $("nextBtn").style.display="block";
+}
+function PKnext(){
+  if(PK.qIdx<PK.total-1){ PK.qIdx++; renderPKQuiz(); }
+  else {
+    if(PK.player===0){ PK.player=1; PK.qIdx=0; PKshowHandoff(); }
+    else PKresult();
+  }
+}
+function PKresult(){
+  const a=PK.scores[0], b=PK.scores[1];
+  app.innerHTML=`<div class="pad fade center">
+    <div class="pk-title">⚔️ 对战结果</div>
+    <div class="pkwin">${a>b?"🏆 "+PK.names[0]+" 获胜！":b>a?"🏆 "+PK.names[1]+" 获胜！":"🤝 平局！不分伯仲"}</div>
+    <div class="vs">
+      <div class="vscard a"><div class="pn">🔵 ${PK.names[0]}</div><div class="ps">${a}</div><div class="pc">答对 ${PK.perCorrect[0]} 题</div></div>
+      <div class="vscard b"><div class="pn">🔴 ${PK.names[1]}</div><div class="ps">${b}</div><div class="pc">答对 ${PK.perCorrect[1]} 题</div></div>
+    </div>
+    <button class="btn" onclick="PKstart()">🔁 再来一局</button>
+    <div style="height:10px"></div>
+    <button class="btn hollow" onclick="showTitle()">🏠 返回首页</button>
+  </div>`;
+}
+/* ---- 同屏同时（split） ---- */
+function PKsplitStart(na,nb,pool){
+  const half=Math.floor(pool.length/2);
+  PK={mode:"split",names:[na,nb],total:Math.min(PK.count||10,half),idx:0,
+      poolA:pool.slice(0,half),poolB:pool.slice(half,half*2),
+      p:[{score:0,correct:0,answered:false,choice:-1},{score:0,correct:0,answered:false,choice:-1}]};
+  PKrenderSplit();
+}
+function PKrenderSplit(){
+  const s=PK;
+  s.p[0].answered=false; s.p[1].answered=false; s.p[0].choice=-1; s.p[1].choice=-1;
+  const q1=s.poolA[s.idx], q2=s.poolB[s.idx];
+  app.innerHTML=`<div class="topbar">
+      <div class="brand">⚔️ 同屏对战</div>
+      <div class="hud">第 ${s.idx+1}/${s.total} 题</div>
+    </div>
+    <div class="pad fade">
+      <div class="split-top"><div>🔵 ${s.names[0]} · 🪙 ${s.p[0].score}</div><div>🪙 ${s.p[1].score} · ${s.names[1]} 🔴</div></div>
+      <div class="qbar"><div id="splitBar" style="width:${s.idx/s.total*100}%"></div></div>
+      <div class="split-panels">
+        <div class="spanel"><div class="phead">🔵 ${s.names[0]}</div><div class="pq" id="splitQ1">${q1.q}</div><div class="sopts" id="optsP1"></div><div class="pcol-status" id="stP1"></div><div class="feedback" id="spFb1"></div></div>
+        <div class="spanel-div"></div>
+        <div class="spanel"><div class="phead">${s.names[1]} 🔴</div><div class="pq" id="splitQ2">${q2.q}</div><div class="sopts" id="optsP2"></div><div class="pcol-status" id="stP2"></div><div class="feedback" id="spFb2"></div></div>
+      </div>
+      <div class="split-foot"><button class="btn hollow" onclick="showTitle()">← 退出</button><button class="btn hidden" id="splitNext" onclick="PKsplitNext()">下一题 →</button></div>
+    </div>`;
+  PKbuildCol("optsP1",0,q1); PKbuildCol("optsP2",1,q2);
+}
+function PKbuildCol(elId,pi,q){
+  const el=$(elId); const keys=["A","B","C","D","E"];
+  el.innerHTML="";
+  q.o.forEach((op,idx)=>{ const d=document.createElement("div"); d.className="sopt"; d.innerHTML=`<span class="ok">${keys[idx]}</span><span>${op}</span>`; d.onclick=()=>PKsplitAnswer(pi,idx,d); el.appendChild(d); });
+}
+function PKsplitAnswer(pi,idx,el){
+  const s=PK; if(s.p[pi].answered) return;
+  s.p[pi].answered=true; s.p[pi].choice=idx;
+  const q = pi===0 ? s.poolA[s.idx] : s.poolB[s.idx];
+  const correct=idx===q.a; s.p[pi].correct=correct; if(correct) s.p[pi].score+=10;
+  const opts=el.parentNode.children;
+  for(let i=0;i<opts.length;i++) opts[i].classList.add("disabled");
+  el.classList.add(correct?"correct":"wrong");
+  const okOpt=opts[q.a]; if(okOpt) okOpt.classList.add("correct");
+  const st=pi===0?$("stP1"):$("stP2"); st.textContent=correct?"✅ 答对 +10":"❌ 答错"; st.className="pcol-status "+(correct?"ok":"no");
+  const fb=pi===0?$("spFb1"):$("spFb2"); fb.innerHTML=(correct?"✅ <b>回答正确！</b> ":"❌ <b>答错了。</b> ")+q.e; fb.classList.add("show");
+  if(pi===0) $("splitQ1").parentNode.querySelector(".phead").textContent="🔵 "+s.names[0]+" · 🪙 "+s.p[0].score;
+  else $("splitQ2").parentNode.querySelector(".phead").textContent=s.names[1]+" 🔴 · 🪙 "+s.p[1].score;
+  if(s.p[0].answered && s.p[1].answered){
+    $("splitBar").style.width=((s.idx+1)/s.total*100)+"%";
+    $("splitNext").classList.remove("hidden");
+    setTimeout(()=>PKsplitNext(),1200);
+  }
+}
+function PKsplitNext(){
+  const s=PK;
+  if(s.idx<s.total-1){ s.idx++; PKrenderSplit(); }
+  else PKsplitResult();
+}
+function PKsplitResult(){
+  const s=PK;
+  app.innerHTML=`<div class="pad fade center">
+    <div class="pk-title">⚔️ 对战结果</div>
+    <div class="pkwin">${s.p[0].score>s.p[1].score?"🏆 "+s.names[0]+" 获胜！":s.p[1].score>s.p[0].score?"🏆 "+s.names[1]+" 获胜！":"🤝 平局！不分伯仲"}</div>
+    <div class="vs">
+      <div class="vscard a"><div class="pn">🔵 ${s.names[0]}</div><div class="ps">${s.p[0].score}</div><div class="pc">答对 ${Math.round(s.p[0].score/10)} 题</div></div>
+      <div class="vscard b"><div class="pn">🔴 ${s.names[1]}</div><div class="ps">${s.p[1].score}</div><div class="pc">答对 ${Math.round(s.p[1].score/10)} 题</div></div>
+    </div>
+    <button class="btn" onclick="PKstart()">🔁 再来一局</button>
+    <div style="height:10px"></div>
+    <button class="btn hollow" onclick="showTitle()">🏠 返回首页</button>
+  </div>`;
+}
+
+/* ============ 启动 ============ */
+load();
+showTitle();
+</script>
+</body>
+</html>

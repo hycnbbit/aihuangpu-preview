@@ -21,6 +21,7 @@ export default function Navbar() {
   const [location] = useLocation();
 
   const isHome = location === "/";
+  const homeUrl = import.meta.env.BASE_URL;
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
@@ -36,7 +37,7 @@ export default function Navbar() {
       if (el) el.scrollIntoView({ behavior: "smooth" });
     } else {
       // 在其他页面：跳回首页并带上锚点
-      window.location.href = "/" + href;
+      window.location.href = homeUrl + href;
     }
   };
 
@@ -52,7 +53,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <a
-            href={isHome ? "#hero" : "/"}
+            href={isHome ? "#hero" : homeUrl}
             onClick={(e) => {
               if (isHome) {
                 e.preventDefault();
@@ -79,7 +80,7 @@ export default function Navbar() {
             {navLinks.map((link) => (
               <a
                 key={link.href}
-                href={isHome ? link.href : "/" + link.href}
+                href={isHome ? link.href : homeUrl + link.href}
                 onClick={(e) => { e.preventDefault(); handleNavClick(link.href); }}
                 className="px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded transition-all duration-200 font-medium"
               >
@@ -111,7 +112,7 @@ export default function Navbar() {
               认证证书
             </Link>
             <a
-              href={isHome ? aboutLink.href : "/" + aboutLink.href}
+              href={isHome ? aboutLink.href : homeUrl + aboutLink.href}
               onClick={(e) => { e.preventDefault(); handleNavClick(aboutLink.href); }}
               className="px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded transition-all duration-200 font-medium"
             >
@@ -146,7 +147,7 @@ export default function Navbar() {
             {navLinks.map((link) => (
               <a
                 key={link.href}
-                href={isHome ? link.href : "/" + link.href}
+                href={isHome ? link.href : homeUrl + link.href}
                 onClick={(e) => { e.preventDefault(); handleNavClick(link.href); }}
                 className="px-4 py-3 text-white/80 hover:text-white hover:bg-white/10 rounded text-sm font-medium transition-all"
               >
@@ -182,7 +183,7 @@ export default function Navbar() {
               认证证书
             </Link>
             <a
-              href={isHome ? aboutLink.href : "/" + aboutLink.href}
+              href={isHome ? aboutLink.href : homeUrl + aboutLink.href}
               onClick={(e) => { e.preventDefault(); handleNavClick(aboutLink.href); }}
               className="px-4 py-3 text-white/80 hover:text-white hover:bg-white/10 rounded text-sm font-medium transition-all"
             >

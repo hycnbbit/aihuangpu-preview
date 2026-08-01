@@ -6,6 +6,9 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, Calendar, MapPin, Users, ChevronRight, X } from "lucide-react";
 import { Zap } from "lucide-react";
+import { runtimeAssetOrFallback } from "@/lib/publicAsset";
+
+const EVENT_PLACEHOLDER = "images/event-placeholder.svg";
 
 const activities = [
   {
@@ -20,7 +23,10 @@ const activities = [
     summary:
       "7月4日，由 AI 黄埔学院主办的首期香港青少年 AI 黑客松在天后 CAI 大厦顺利举行。本次活动得到 CAI 大厦的大力支持；CAI 大厦由著名天使投资人、美图秀秀创始人蔡文胜先生全资购入，旨在打造新型 AI-Web3 创业中心。黑客松吸引了来自香港、深圳、韩国的多位青少年参加。大家在导师指导下完成高质量作品，并全部登台进行项目路演，获得家长的高度认可和赞扬。应大家的强烈要求，第二期黑客松将于7月18日在 CAI 大厦举行。",
     highlights: ["多地青少年同场创作", "导师全程项目指导", "全员完成项目路演", "第二期7月18日举行"],
-    image: "/manus-storage/hong-kong-youth-ai-hackathon-2026_25f29e55.jpg",
+    image: runtimeAssetOrFallback(
+      "/manus-storage/hong-kong-youth-ai-hackathon-2026_25f29e55.jpg",
+      EVENT_PLACEHOLDER,
+    ),
   },
   {
     id: 5,
@@ -34,7 +40,10 @@ const activities = [
     summary:
       "2026亚洲智能传感器与应用技术博览会（SSA 2026）在深圳会展中心（福田）举行，展览面积超10000平方米，由广东省投资促进局指导，广东省电子信息行业协会和提客易（上海）会展有限公司联合主办，汇聚全球300余家企业展示智能传感前沿技术。AI黄埔学院作为协办方组织了25日下午的AI分论坛，进行了主题演讲和圆桌论坛，现场异常火爆，观众反响积极。",
     highlights: ["10000+平方米展览面积", "全球300+企业参展", "AI分论坛主题演讲", "圆桌论坛反响热烈"],
-    image: "/manus-storage/activity-ssa-2026-forum_d204f656.jpg",
+    image: runtimeAssetOrFallback(
+      "/manus-storage/activity-ssa-2026-forum_d204f656.jpg",
+      EVENT_PLACEHOLDER,
+    ),
   },
   {
     id: 1,
@@ -47,7 +56,10 @@ const activities = [
     summary:
       "两天高强度线下实操课，多位导师倾囊传授；从认知提升到行业投资逻辑；从基础知识到提示词实操；从工作中的提效工具到VibeCoding的实操项目；每位导师都用自己实际做出的项目做例子，和学员深度互动，手把手教学。充实的两天很快结束，大家反响积极，期待下次太原继续开班。",
     highlights: ["多位导师手把手教学", "提示词实操训练", "VibeCoding 实战项目", "学员反响积极"],
-    image: "/manus-storage/activity-taiyuan_b0f43bd3.webp",
+    image: runtimeAssetOrFallback(
+      "/manus-storage/activity-taiyuan_b0f43bd3.webp",
+      EVENT_PLACEHOLDER,
+    ),
   },
   {
     id: 2,
@@ -60,7 +72,10 @@ const activities = [
     summary:
       "人气爆棚！OpenClaw太原站现场座无虚席，400人齐聚一堂，共探Web4.0新机遇！全场聚焦Web4.0，现场氛围直接拉满！",
     highlights: ["400人齐聚一堂", "座无虚席", "聚焦Web4.0新机遇", "现场氛围爆棚"],
-    image: "/manus-storage/activity-openclaw-taiyuan_2da526f3.jpg",
+    image: runtimeAssetOrFallback(
+      "/manus-storage/activity-openclaw-taiyuan_2da526f3.jpg",
+      EVENT_PLACEHOLDER,
+    ),
   },
   {
     id: 3,

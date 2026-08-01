@@ -1,10 +1,9 @@
-name: Restore July 31 site to GitHub Pages
+name: Deploy Preview to GitHub Pages
 
 on:
   push:
     branches:
       - main
-      - agent/restore-2026-07-31
   workflow_dispatch:
 
 permissions:
@@ -23,13 +22,13 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout restored site
+      - name: Checkout site
         uses: actions/checkout@v4
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload July 31 static site
+      - name: Upload static site
         uses: actions/upload-pages-artifact@v4
         with:
           path: .

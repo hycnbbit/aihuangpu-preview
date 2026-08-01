@@ -4,6 +4,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { Mail, MapPin, Send, CheckCircle } from "lucide-react";
+import { runtimeAssetOrFallback } from "@/lib/publicAsset";
 
 const courseOptions = [
   "小白入门班",
@@ -83,7 +84,10 @@ export default function ContactSection() {
             {/* WeChat QR Code */}
             <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-6 flex items-center gap-6">
               <img
-                src="/manus-storage/wechat-qrcode_e6ff045c.jpg"
+                src={runtimeAssetOrFallback(
+                  "/manus-storage/wechat-qrcode_e6ff045c.jpg",
+                  "images/qr-placeholder.svg",
+                )}
                 alt="微信二维码"
                 className="w-28 h-28 rounded-xl object-cover shrink-0 bg-white p-1"
               />

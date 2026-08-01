@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { MapPin, TrendingUp, Users, Award, ChevronRight } from "lucide-react";
+import { runtimeAssetOrFallback } from "@/lib/publicAsset";
 
 const benefits = [
   {
@@ -75,7 +76,7 @@ export default function Partner() {
               诚邀有志于 AI 教育事业的伙伴加入，获得城市独家授权，共享品牌与课程资源，携手开拓本地市场。
             </p>
             <a
-              href="/#contact"
+              href={`${import.meta.env.BASE_URL}#contact`}
               className="inline-flex items-center gap-2 px-8 py-4 bg-[#E63329] hover:bg-[#c42a21] active:scale-[0.98] text-white font-bold text-base rounded-lg transition-all duration-200 shadow-lg shadow-[#E63329]/30"
             >
               立即申请合伙人
@@ -161,7 +162,7 @@ export default function Partner() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
               <a
-                href="/#contact"
+                href={`${import.meta.env.BASE_URL}#contact`}
                 className="inline-flex items-center gap-2 px-8 py-4 bg-[#E63329] hover:bg-[#c42a21] active:scale-[0.98] text-white font-bold text-base rounded-lg transition-all duration-200 shadow-lg shadow-[#E63329]/30"
               >
                 立即联系我们
@@ -170,7 +171,10 @@ export default function Partner() {
               <div className="flex flex-col items-center gap-2">
                 <div className="bg-white p-3 rounded-xl shadow-lg">
                   <img
-                    src="/manus-storage/wechat-qrcode_fb9000cf.jpg"
+                    src={runtimeAssetOrFallback(
+                      "/manus-storage/wechat-qrcode_fb9000cf.jpg",
+                      "images/qr-placeholder.svg",
+                    )}
                     alt="微信二维码"
                     className="w-28 h-28 object-contain"
                   />

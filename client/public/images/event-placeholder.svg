@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title description">
+  <title id="title">AI 黄埔学院活动影像</title>
+  <desc id="description">活动照片暂未迁移到静态预览站</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1117"/>
+      <stop offset="1" stop-color="#22100f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(1180 170) rotate(140) scale(700 520)">
+      <stop offset="0" stop-color="#e63329" stop-opacity=".42"/>
+      <stop offset="1" stop-color="#e63329" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#background)"/>
+  <rect width="1600" height="900" fill="url(#glow)"/>
+  <g fill="none" stroke="#fff" stroke-opacity=".08">
+    <path d="M0 180h1600M0 450h1600M0 720h1600"/>
+    <path d="M260 0v900M800 0v900M1340 0v900"/>
+  </g>
+  <g transform="translate(150 615)">
+    <rect width="72" height="72" rx="8" fill="#e63329"/>
+    <path d="M43 12 22 43h17l-8 17 23-32H37z" fill="#fff"/>
+    <text x="100" y="31" fill="#fff" font-family="Arial, 'Noto Sans SC', sans-serif" font-size="34" font-weight="700">AI 黄埔学院</text>
+    <text x="100" y="65" fill="#fff" fill-opacity=".55" font-family="Arial, sans-serif" font-size="19" letter-spacing="4">EVENT ARCHIVE</text>
+  </g>
+</svg>

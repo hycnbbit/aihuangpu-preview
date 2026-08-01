@@ -5,6 +5,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FloatingCTA from "@/components/FloatingCTA";
+import { publicAsset } from "@/lib/publicAsset";
 import { Link } from "wouter";
 import { ChevronRight, Award, BookOpen, Briefcase } from "lucide-react";
 
@@ -24,7 +25,7 @@ const teachers: Teacher[] = [
     id: 1,
     name: "王子健",
     title: "AI 行业研究员 · OPC 践行者",
-    avatar: "/manus-storage/teacher-wangzijian_6c072819.webp",
+    avatar: publicAsset("images/mentors/wangzijian.webp"),
     tags: ["AI研究", "G20青联", "福布斯专栏"],
     experience: [
       "AI 行业研究员，深度研究 AI 产业趋势与应用落地",
@@ -37,7 +38,7 @@ const teachers: Teacher[] = [
     id: 2,
     name: "James Zhao",
     title: "Sunday Venture Studio 合伙人 · 独立 AI 研究员",
-    avatar: "/manus-storage/teacher-james_449407ef.jpg",
+    avatar: publicAsset("images/mentors/james-zhao.jpg"),
     avatarPosition: "center 30%",
     tags: ["硅谷视角", "AI Agent", "早期投资"],
     experience: [
@@ -51,7 +52,7 @@ const teachers: Teacher[] = [
     id: 3,
     name: "王海平",
     title: "百度高级工程师 · AI 技术顾问",
-    avatar: "/manus-storage/teacher-wanghaiping_a6d45319.webp",
+    avatar: publicAsset("images/mentors/wanghaiping.webp"),
     tags: ["百度", "好未来", "AI工程"],
     experience: [
       "百度高级工程师，深耕 AI 技术研发与工程落地",
@@ -64,7 +65,7 @@ const teachers: Teacher[] = [
     id: 4,
     name: "Dafu Gao",
     title: "OnePiece Labs 孵化器合伙人 · 硅谷连续创业者",
-    avatar: "/manus-storage/teacher-dafu_fb4b9275.jpg",
+    avatar: publicAsset("images/mentors/dafu-gao.jpg"),
     tags: ["硅谷创业", "孵化器", "500+初创"],
     experience: [
       "曾任英途北美 CIO、车库咖啡北美分部负责人、风子科技联合创始人",
@@ -77,7 +78,7 @@ const teachers: Teacher[] = [
     id: 5,
     name: "融合",
     title: "连续创业者 · AI 培训讲师",
-    avatar: "/manus-storage/teacher-ronghe_d7de17bf.jpg",
+    avatar: publicAsset("images/mentors/ronghe.jpg"),
     tags: ["AI产品", "心愿卡", "Onex社区"],
     experience: [
       "连续创业者，互联网产品经理，拥有丰富的产品从 0 到 1 经验",
@@ -90,7 +91,7 @@ const teachers: Teacher[] = [
     id: 6,
     name: "Joshua",
     title: "AI 原生开发者 · Imgou.com 创始人",
-    avatar: "/manus-storage/teacher-joshua_996841cc.jpg",
+    avatar: publicAsset("images/mentors/joshua.jpg"),
     tags: ["AI开发", "Multi-Agent", "外贸AI"],
     experience: [
       "AI 原生开发者，擅长用 AI 多 Agent 协作模式构建复杂业务系统",
@@ -103,7 +104,7 @@ const teachers: Teacher[] = [
     id: 7,
     name: "蔡清华",
     title: "资深软件工程师 · AI 编程工具深度用户",
-    avatar: "/manus-storage/teacher-caiqinghua-new_2c302de7.png",
+    avatar: publicAsset("images/mentors/caiqinghua.png"),
     avatarPosition: "center center",
     tags: ["AI编程", "芯片设计", "20年经验"],
     experience: [
@@ -117,7 +118,7 @@ const teachers: Teacher[] = [
     id: 8,
     name: "冯红兵",
     title: "联拓数科 CEO · 产业互联网专家",
-    avatar: "/manus-storage/teacher-fenghongbing_8fea29aa.jpg",
+    avatar: publicAsset("images/mentors/fenghongbing.jpg"),
     tags: ["产业互联网", "线下数字化", "AI应用"],
     experience: [
       "联拓数科 CEO，资深产业互联网产品经理",
